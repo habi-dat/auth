@@ -1,0 +1,30 @@
+version: '3.5'
+
+volumes:
+  user-data:
+
+networks:
+  habidat-proxy:
+    external:
+      name: habidat-proxy
+  habidat-back:
+    external:
+      name: habidat-backend
+
+
+services:
+
+  habidat-user:
+    build:
+      context: ./
+    env_file:
+      - ./user.env
+    volumes:
+      - user-data:/app/data
+      - ./server/routes:/app/routes
+      - ./server/utils:/app/utils
+    ports:
+      - 3000
+    networks:
+      - habidat-proxy
+      - habidat-back

@@ -1,0 +1,88 @@
+{
+  "debug": false,
+  "settings":
+  { 
+    "general": {
+      "title": "$HABIDAT_TITLE",
+      "domain": "$HABIDAT_DOMAIN",
+      "subdomain": "$HABIDAT_USER_SUBDOMAIN",
+      "modules": "$HABIDAT_USER_INSTALLED_MODULES",
+      "contact": "$HABIDAT_ADMIN_EMAIL"
+    },
+    "activation":
+    {
+      "email_from": "$HABIDAT_USER_SMTP_EMAILFROM",
+      "base_url": "https://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN"
+    }
+  }, 
+  "smtp": {
+      "host": "$HABIDAT_USER_SMTP_HOST",
+      "port": "$HABIDAT_USER_SMTP_PORT",
+      "requireTLS": "$HABIDAT_USER_SMTP_TLS",
+      "authMethod": "$HABIDAT_USER_SMTP_AUTHMETHOD",
+      "auth": {
+        "user": "$HABIDAT_USER_SMTP_USER",
+        "pass": "$HABIDAT_USER_SMTP_PASSWORD" 
+      },
+      "tls": {
+      	"rejectUnauthorized": false
+      }	  
+  },  
+  "ldap": { 
+  	"server": {
+	    "url": "ldap://$HABIDAT_USER_LDAP_HOST:$HABIDAT_USER_LDAP_PORT",
+	    "bindDn": "$HABIDAT_USER_LDAP_BINDDN",
+            "base": "$HABIDAT_USER_LDAP_BASE",
+	    "bindCredentials": "$HABIDAT_USER_LDAP_PASSWORD",
+	    "searchBase": "ou=users,$HABIDAT_USER_LDAP_BASE",
+	    "searchFilter": "(cn={{username}})"
+  	}
+  },
+  "saml": {
+    "enabled": $HABIDAT_USER_SAML,
+    "idp": {
+      "entityID": "https://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN",
+      "baseURL": "https://$HABIDAT_USER_SUBDOMAIN.$HABIDAT_DOMAIN"
+    }
+  },
+  "discourse": {
+    "subdomain": "$HABIDAT_USER_DISCOURSE_SUBDOMAIN",
+  	"APIURL": "$HABIDAT_DISCOURSE_API_URL",
+  	"APIKEY": "$HABIDAT_DISCOURSE_API_KEY",
+  	"USERNAME": "$HABIDAT_DISCOURSE_API_USERNAME",
+    "SSOSECRET": "$HABIDAT_DISCOURSE_SSO_SECRET",
+    "settings": [
+        { "name": "discoures internal name", "datatype" : "string / boolean / number", "Label": "Label text"}
+    ]
+  },
+  "nextcloud": {
+    "subdomain": "$HABIDAT_USER_NEXTCLOUD_SUBDOMAIN",
+    "defaultQuota": "$HABIDAT_USER_NEXTCLOUD_DEFAULTQUOTA",
+    "db": {
+      "host": "$HABIDAT_USER_NEXTCLOUD_DB_HOST", 
+      "port": "$HABIDAT_USER_NEXTCLOUD_DB_PORT",
+      "database": "$HABIDAT_USER_NEXTCLOUD_DB_DATABASE",
+      "user": "$HABIDAT_USER_NEXTCLOUD_DB_USER",
+      "password": "$HABIDAT_USER_NEXTCLOUD_DB_PASSWORD",
+      "prefix": "oc"
+    },
+    "api": {
+      "url": "$HABIDAT_USER_NEXTCLOUD_API_URL"
+    }
+  },
+  "dokuwiki": {
+    "subdomain": "$HABIDAT_USER_DOKUWIKI_SUBDOMAIN"
+  },
+  "mediawiki": {
+    "subdomain": "$HABIDAT_USER_MEDIAWIKI_SUBDOMAIN"
+  },
+  "direktkredit": {
+    "subdomain": "$HABIDAT_USER_DIREKTKREDIT_SUBDOMAIN"
+  },
+  "mailtrain": {
+    "subdomain": "$HABIDAT_USER_MAILTRAIN_SUBDOMAIN"
+  },
+  "emailnotification": {
+    "secret": "$HABIDAT_USER_IMAP_SECRET"
+  }
+}

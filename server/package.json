@@ -1,0 +1,34 @@
+{
+  "name": "habidat-user-backend",
+  "version": "1.0.0",
+  "description": "backend for user module for habi*DAT platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --legacy-watch index.js --ignore './data/' --ignore './public/' --ignore './views/'"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "jsonfile": "^6.1.0",
+    "ldapjs": "^2.3.3",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "nodemailer": "^6.7.8",
+    "openldap_ssha": "^0.0.11",
+    "passport": "^0.6.0",
+    "passport-ldapauth": "^3.0.1",
+    "passport-local": "^1.0.0",
+    "passport-saml": "^3.2.1",
+    "path": "^0.12.7",
+    "pug": "^2.0.4",
+    "query-string": "^7.1.1",
+    "request-promise": "^4.2.6",
+    "samlify": "^2.8.5",
+    "session-file-store": "^1.5.0"
+  }
+}
