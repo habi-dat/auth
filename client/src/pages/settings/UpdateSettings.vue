@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -38,6 +39,7 @@ export default {
       valid: false,
       settings: {},
       loaded: false,
+      loading: false
     }
   },
   methods: {
@@ -45,20 +47,19 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       var post = {...this.settings};
       axios.post('/api/settings', post)
         .then(response => {
+          this.loading = false;
           this.$snackbar.success('Einstellungen geändert')
         })
-        .catch(error => {
-          console.log('error at updating settings: ', error)
-        })
+        .catch(error => {this.loading=false;})
     },
     getData: function () {
       return axios.get('/api/settings')
         .then(response => {
           this.settings = response.data.settings;
-          this.settings.title = this.settings.title || this.$store.state.config.title;
           this.settings.theme.primary = this.settings.theme.primary || this.$vuetify.theme.themes.light.primary;
           this.settings.theme.secondary = this.settings.theme.secondary || this.$vuetify.theme.themes.light.secondary;
           this.settings.theme.accent = this.settings.theme.accent || this.$vuetify.theme.themes.light.accent;
@@ -68,6 +69,7 @@ export default {
           this.settings.theme.info = this.settings.theme.info || this.$vuetify.theme.themes.light.info;
           this.loaded = true;
         })
+        .catch(e => {})
     }
   },
   created() {

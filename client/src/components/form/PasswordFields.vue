@@ -9,8 +9,7 @@
         @click:append-outer="showPw = !showPw"
         :rules="[passwordRequired, passwordStrongEnough]"
         v-model="passwordValue"
-        @change="onPasswordChanged"
-        @keyup="onKeyUp"
+        @input="onInput"
         autocomplete="new-password"
         :label="label || 'Passwort'"
         loading
@@ -63,10 +62,6 @@ export default {
     required: Boolean,
     label: String
   },
-  model: {
-    prop: 'password',
-    event: 'change'
-  },
   data () {
     return {
       score: { suggestions: '', score: 5},
@@ -79,8 +74,9 @@ export default {
     focus(field) {
       this.$refs[field].focus()
     },
-    onKeyUp(event) {
-      this.updateScore(event.target.value);
+    onInput(value) {
+      this.updateScore(value);
+      this.$emit('input', value)
     },
     updateScore(password) {
       var result = zxcvbn(password)
@@ -112,10 +108,6 @@ export default {
       }
       this.$refs.passwordRepeat.validate();
     },
-    onPasswordChanged(password) {
-      this.updateScore(password)
-      this.$emit('change', password);
-    }
   },
   computed: {
     passwordRequired() {

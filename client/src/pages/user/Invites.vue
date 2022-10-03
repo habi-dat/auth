@@ -6,6 +6,7 @@
           icon="refresh"
           tooltip="Einladung(en) erneut senden"
           color="primary"
+          :loading="loadingRefresh"
           @click="repeatInvites"
           :disabled="selectedRows.length === 0"
         />
@@ -13,6 +14,7 @@
           icon="delete"
           tooltip="Einladung(en) löschen"
           color="error"
+          :loading="loadingDelete"
           @click="deleteInvites"
           :disabled="selectedRows.length === 0"
         />
@@ -78,7 +80,9 @@ export default {
       selectedRows: [],
       search: '',
       gridApi: null,
-      columnApi: null
+      columnApi: null,
+      loadingRefresh: false,
+      loadingDelete: false
     }
   },
   watch: {
@@ -154,19 +158,29 @@ export default {
             'Willst du die Einladung(en) an ' + emails + ' wirklich löschen?'
           )
         ) {
-          axios.delete('/api/user/invites', {data: {tokens: this.selectedRows.map(row => { return row.token})}})
+          this.loadingDelete = true;
+          axios.delete('/api/user/invites/delete', {data: {tokens: this.selectedRows.map(row => { return row.token})}})
             .then(response => {
+              this.loadingDelete = false;
               this.$snackbar.success('Einladung(en) an ' + emails + ' gelöscht')
               this.gridApi.applyTransaction({ remove: this.selectedRows});
+            })
+            .catch(e => {
+              this.loadingDelete = false;
             })
         }
     },
     repeatInvites() {
+      this.loadingRefresh = true;
       var emails = this.selectedRows.map(row => { return row.mail}).join(', ');
       axios.put('/api/user/invites/repeat', {tokens: this.selectedRows.map(row => { return row.token})})
         .then(response => {
+          this.loadingRefresh = false;
           this.$snackbar.success('Einladung(en) an ' + emails + ' erneut gesendet')
           this.gridApi.applyTransaction({ update: this.transformInvites(response.data.invites)});
+        })
+        .catch(e => {
+          this.loadingRefresh = false;
         })
     }
   },

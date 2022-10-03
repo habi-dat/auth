@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -19,6 +20,8 @@
         @valid="onValid"
         action="updateUser"
         showGroups
+        allowMail
+        allowDescription
         :onlyGroups="!$store.state.user.isAdmin"
       />
     </v-card-text>
@@ -39,6 +42,7 @@ export default {
       user: {},
       valid: true,
       loaded: false,
+      loading: false
     }
   },
   methods: {
@@ -55,10 +59,18 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       this.user.member = this.user.memberGroups.map(g => g.dn);
       this.user.owner = this.user.ownerGroups.map(g => g.dn);
-      axios.post('/api/user/update', this.user)
+      var endpoint = '/api/user/update';
+      if (!this.$store.state.user.isAdmin) {
+        endpoint = '/api/user/updategroups'
+        this.user.member = this.user.member.filter(dn => this.$store.state.user.owner.includes(dn))
+        this.user.owner = this.user.owner.filter(dn => this.$store.state.user.owner.includes(dn))
+      }
+      axios.post(endpoint, this.user)
         .then(response => {
+          this.loading = false;
           this.$snackbar.success('Account ' + this.user.cn + ' geändert')
           if (this.$store.state.user.dn === response.data.user.dn) {
             this.$store.state.user = response.data.user;
@@ -66,8 +78,7 @@ export default {
           router.push('/user/list')
         })
         .catch(errors => {
-          //this.$snackbar.error('Profil konnte nicht gespeichert werden: ' + errors)
-          console.log('error at updating user: ', errors)
+          this.loading = false;
         })
     }
   },

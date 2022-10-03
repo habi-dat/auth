@@ -35,6 +35,15 @@
           label="Vordergrundfarbe"
           v-model="category.text_color"
         />
+        <v-select
+          :disabled="category.children && category.children.length > 0"
+          :items="parentCategories"
+          item-text="name"
+          item-value="id"
+          prepend-icon="expand_less"
+          v-model="category.parent"
+          label="Überkategorie">
+        </v-select>
         <MemberField
           v-if="showGroups"
           icon="groups"
@@ -60,7 +69,7 @@
         @onGridReady="params => groupGripApi = params.api"
         @onDataRendered="selectGroups"
         rowSelection="multiple"
-        heightOffset="30"/>
+        :heightOffset="30" />
     </v-col>
   </v-row>
 </template>
@@ -90,6 +99,7 @@ export default {
       groups: [],
       valid: false,
       oldCategory: {},
+      parentCategories: [],
       loaded: false
     }
   },
@@ -105,15 +115,23 @@ export default {
       } else if (!selected && this.category.groupsPopulated.find(g => g.dn === group.dn)) {
         this.category.groupsPopulated.splice(this.category.groupsPopulated.findIndex(g => g.dn === group.dn), 1);
       }
+      this.category.groups = this.category.groupsPopulated.map(g => g.cn);
     },
     selectGroups() {
+      if (!this.category.populateGroups) {
+        this.category.groups = this.category.groupsPopulated.map(g => g.cn);
+      }
       this.groupGripApi.forEachNode((rowNode, index) => {
-        if (this.category.groupsPopulated.find(g => g.dn === rowNode.data.dn)) {
+        if (this.category.groups.includes(rowNode.data.cn)) {
+          if (this.category.populateGroups && !this.category.groupsPopulated.find(g => g.dn === rowNode.data.dn)) {
+            this.category.groupsPopulated.push(rowNode.data)
+          }
           rowNode.setSelected(true);
         } else {
           rowNode.setSelected(false);
         }
       });
+      this.category.populateGroups = false;
     },
     async checkNameAvailability (name) {
       this.errors.name = []
@@ -155,12 +173,20 @@ export default {
       axios.get('/api/groups')
         .then(response => {
           this.groups = response.data.groups;
-          this.category.groupsPopulated = this.groups.filter(g => this.category.groups.includes(g.cn));
-          this.loaded = true;
-        });
+          this.category.groupsPopulated = [];
+          this.category.populateGroups = true;
+          return axios.get('/api/categories')
+            .then(response => {
+              // filter categories to only show root level categories
+              this.parentCategories = [{id:-1, name: '(keine Überkategorie)'}].concat(response.data.categories.filter(c => c.parent === -1 && c.id !== this.category.id));
+              this.loaded = true;
+            })
+        })
+        .catch(e => {});
     }
   },
   created() {
+    this.category.parent = this.category.parent || -1;
     this.oldCategory = {... this.category};
     this.getData();
   }

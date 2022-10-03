@@ -7,7 +7,7 @@
     @change="checkMailAvailability"
     :value="value"
     @input="val => $emit('input', val)"
-    label="E-Mail">
+    label="E-Mailadresse">
   </v-text-field>
 </template>
 
@@ -31,7 +31,7 @@ export default {
   methods: {
     async checkMailAvailability (uid) {
       this.errors = []
-      if (checkAvailability) {
+      if (this.checkAvailability) {
         if (this.oldValue !== this.value) {
           try {
             await axios.get('/api/user/available/mail/' + this.value)

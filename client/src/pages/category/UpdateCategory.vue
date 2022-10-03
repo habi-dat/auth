@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -38,6 +39,7 @@ export default {
       category: {},
       valid: false,
       loaded: false,
+      loading: false
     }
   },
   methods: {
@@ -45,6 +47,7 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       var post = {...this.category};
       post.groups = post.groupsPopulated.map(g => g.cn);
       post.color = post.color.substr(1)
@@ -52,11 +55,10 @@ export default {
       axios.post('/api/category/update', post)
         .then(response => {
           this.$snackbar.success(response.data.message)
+          this.loading = false;
           router.push('/category/list')
         })
-        .catch(error => {
-          console.log('error at updating category: ', error)
-        })
+        .catch(error => {this.loading=false;})
     },
     getData: function () {
       return axios.get('/api/category/' + this.$route.query.id)
@@ -66,6 +68,7 @@ export default {
           this.category = response.data.category;
           this.loaded = true;
         })
+        .catch(e => {})
     }
   },
   created() {

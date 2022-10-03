@@ -1,16 +1,14 @@
 <template>
   <v-app id="inspire" v-if="initialized">
     <Snackbar></Snackbar>
-    <v-navigation-drawer app dark clipped color="secondary" class="elevation-3 ">
+    <v-navigation-drawer app dark permanent clipped color="secondary" class="elevation-3 " :mini-variant="$vuetify.breakpoint.mdAndDown">
       <template v-slot:prepend v-if="!isIframe()">
         <v-list-item two-line>
-          <v-list-item-avatar>
-            <img src="@/assets/img/habidat.png">
+          <v-list-item-avatar size="40px" style="position: relative; left:-7px">
+            <v-img :src="require('@/assets/img/habidat.png')"></v-img>
           </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title>{{ $store.state.config.title }}</v-list-item-title>
-            <v-list-item-subtitle v-if="$store.state.config.authenticated">{{$store.state.user.cn }}</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title v-if="$store.state.config.authenticated">{{$store.state.user.cn }}</v-list-item-title>
+          <v-list-item-title v-if="!$store.state.config.authenticated">{{$store.state.config.title }}</v-list-item-title>
         </v-list-item>
       </template>
       <v-divider v-if="!isIframe()" />
@@ -42,6 +40,10 @@
         <v-list-item to="/settings" v-if="$store.state.config.authenticated && $store.state.user.isAdmin">
           <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Einstellungen</v-list-item-title></v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/templates" v-if="$store.state.config.authenticated && $store.state.user.isAdmin">
+          <v-list-item-icon><v-icon>email</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>E-Mail Vorlagen</v-list-item-title></v-list-item-content>
         </v-list-item>
         <v-list-item to="/login" v-if="!$store.state.config.authenticated">
           <v-list-item-icon><v-icon>login</v-icon></v-list-item-icon>
@@ -101,9 +103,9 @@ export default {
           self.$store.state.config = response.data.config
           document.title = response.data.config.title;
           self.$store.state.user = response.data.user || {}
-          if (!response.data.config.authenticated && router.currentRoute.path !== '/login') {
+          /*if (!response.data.config.authenticated && router.currentRoute.path !== '/login') {
             router.push('/login')
-          }
+          }*/
           this.$vuetify.theme.themes.original = {...this.$vuetify.theme.themes.light}
           if (response.data.config.settings.customTheme) {
 
@@ -113,8 +115,7 @@ export default {
           }
           this.initialized = true;
         })
-        .catch(error => {
-        })
+        .catch(error => {})
     },
     setupInterceptor: function () {
       var self = this;

@@ -9,9 +9,9 @@ Is done via the habi-dat/setup module
 ## Configuration
 
 A configuration file has to be present in `config/config.json`.
-See `config/config.json.sample` for a sample configuration file.
+See `templates/config.json` for the template configuration file.
 
-Using the sample configuration file, most values can be directly set by using the following environment variables:
+Using the template configuration file, most values can be directly set by using the following environment variables:
   * HABIDAT_DOMAIN: the domain of your application and email-account
   * HABIDAT_TITLE: the name of the habi\*DAT instance
   * HABIDAT_USER_SUBDOMAIN: used subdomain for web-application

@@ -14,6 +14,15 @@
           label="Plattformname"
           required
         />
+        <v-text-field
+          prepend-icon="link"
+          v-model="settings.entryUrl"
+          @input="onInput"
+          :rules="[v => isURL(v) || 'keine gültige URL', v => !!v || 'darf nicht leer sein']"
+          hint="mindestens 3 Zeichen"
+          label="Einstiegspunkt nach Accounterstellung"
+          required
+        />
         <v-checkbox
           v-model="settings.customTheme"
           label="Farbeinstellungen"
@@ -112,6 +121,17 @@ export default {
     },
   },
   methods: {
+    isURL(str) {
+      let url;
+
+      try {
+        url = new URL(str);
+      } catch (_) {
+        return false;
+      }
+
+      return url.protocol === "http:" || url.protocol === "https:";
+    },
     updateTheme() {
       const colors = ['primary', 'secondary', 'accent', 'success', 'warning', 'error', 'info']
       if (this.settings.customTheme) {

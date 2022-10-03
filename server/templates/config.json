@@ -35,7 +35,7 @@
             "base": "$HABIDAT_USER_LDAP_BASE",
 	    "bindCredentials": "$HABIDAT_USER_LDAP_PASSWORD",
 	    "searchBase": "ou=users,$HABIDAT_USER_LDAP_BASE",
-	    "searchFilter": "(cn={{username}})"
+      "searchFilter": "|(cn={{username}})(mail={{username}})"
   	}
   },
   "saml": {

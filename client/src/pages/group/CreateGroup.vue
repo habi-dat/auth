@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -38,6 +39,7 @@ export default {
     return {
       group: {},
       valid: true,
+      loading: false
     }
   },
   methods: {
@@ -45,14 +47,14 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       axios.post('/api/group/create', this.group)
         .then(response => {
           this.$snackbar.success('Gruppe ' + this.group.o + ' erstellt')
+          this.loading = false;
           router.push('/group/list')
         })
-        .catch(errors => {
-          console.log('error at creating group: ', errors)
-        })
+        .catch(errors => {this.loading = false;})
     }
   },
   created() {

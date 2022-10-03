@@ -26,6 +26,7 @@
         <v-textarea
           prepend-icon="description"
           v-model="group.description"
+          :rules="[v => !!v || 'Beschreibung darf nicht leer sein' ]"
           label="Beschreibung"
           required>
         </v-textarea>
@@ -114,11 +115,10 @@
             @selectUser="onSelectUser"
             @onGridReady="params => gridApi.users = params.api"
             @onDataRendered="selectUsers"
-            showGroups="false"
-            comboSelect="true"
+            comboSelect
             :selectCellItems="selectCellItems"
             rowSelection="multiple"
-            heightOffset="30"/>
+            :heightOffset="30" />
         </v-tab-item>
         <v-tab-item key="2" value="tab-parentgroups" style="height: 100%; min-height: 400px; overflow: hidden;">
           <GroupTable
@@ -130,7 +130,7 @@
             @onGridReady="params => gridApi.parentGroups = params.api"
             @onDataRendered="selectParentGroups"
             rowSelection="multiple"
-            heightOffset="30"/>
+            :heightOffset="30" />
         </v-tab-item>
         <v-tab-item key="3" value="tab-subgroups" style="height: 100%; min-height: 400px; overflow: hidden;">
           <GroupTable
@@ -142,7 +142,7 @@
             @onGridReady="params => gridApi.subGroups = params.api"
             @onDataRendered="selectSubGroups"
             rowSelection="multiple"
-            heightOffset="30"/>
+            :heightOffset="30" />
         </v-tab-item>
       </v-tabs-items>
     </v-col>
@@ -184,7 +184,7 @@ export default {
       selectCellItems: [
           { value: 'none', icon: 'check_box_outline_blank', text: 'Kein Mitglied', color:'black'},
           { value: 'member', icon: 'portrait', text:'Mitglied', selected: true, color: 'info'},
-          { value: 'owner', icon: 'edit_square', text: 'Admin', selected: true, color: 'success'}
+          { value: 'owner', icon: 'edit', text: 'Admin', selected: true, color: 'success'}
         ]
     }
   },
@@ -321,6 +321,7 @@ export default {
               this.loaded = true;
             })
         })
+        .catch(e => {})
     }
   },
   async created() {

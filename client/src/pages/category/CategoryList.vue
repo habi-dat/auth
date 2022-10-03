@@ -13,6 +13,7 @@
           icon="delete"
           tooltip="Kategorie löschen"
           color="error"
+          :loading="loading"
           @click="deleteCategory"
           :disabled="selectedCategories.length === 0"
         />
@@ -54,6 +55,7 @@ export default {
       categories: [],
       selectedCategories: [],
       loaded: false,
+      loading: false,
       search: '',
       gridApi: null
     }
@@ -66,15 +68,19 @@ export default {
       this.selectedCategories = selectedRows;
     },
     async deleteCategory() {
+
       var category = this.selectedCategories[0];
       if (await this.$refs.confirm.open('Bist du sicher?','Willst du die Kategorie ' + category.name + ' wirklich löschen?')) {
+        this.loading = true;
         axios.delete('/api/category/' + category.id)
           .then(response => {
             if (response.data.status === 'success') {
               this.$snackbar.success('Kategorie ' + category.name + ' gelöscht')
+              this.loading = false;
               this.gridApi.applyTransaction({ remove: [category]});
             }
           })
+          .catch(e => {this.loading=false;})
       }
     },
     updateCategory() {
@@ -85,7 +91,8 @@ export default {
         .then(response => {
           this.categories = response.data.categories;
           this.loaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   async created() {

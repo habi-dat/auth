@@ -166,8 +166,7 @@ exports.populateUserGroups = function(user, parentGroups = true) {
 
         client.search('ou=groups,'+config.server.base, opts, function(err, res) {
             res.on('searchEntry', function(entry) {
-                //console.log('groupentry: '+ JSON.stringify(entry.object));
-                //console.log(JSON.stringify(entry.object.member));
+
                 entries.push(entry.object);
             });
             res.on('error', function(err) {
@@ -179,6 +178,8 @@ exports.populateUserGroups = function(user, parentGroups = true) {
                 user.owner = [];
                 user.ownerGroups = [];
                 entries.forEach(group => {
+                    group.member = exports.ldapAttributeToArray(group.member);
+                    group.owner = exports.ldapAttributeToArray(group.owner);
                     if (group.owner && group.owner.includes(user.dn)) {
                         user.owner.push(group.dn);
                         user.ownerGroups.push(group);
@@ -424,37 +425,6 @@ exports.fetchGroupTree = function() {
     })
 }
 
-exports.fetchOwnedGroups = function(currentUser) {
-    return new Promise((resolve, reject) => {
-
-        var opts = {
-            scope: 'sub'
-        };
-
-        var owner = [];
-        var member = [];
-
-        client.search('ou=groups,'+config.server.base, opts, function(err, res) {
-            res.on('searchEntry', function(entry) {
-                //console.log('groupentry: '+ JSON.stringify(entry.object));
-                //console.log(JSON.stringify(entry.object.member));
-                if (currentUser.isAdmin || (entry.object.owner && entry.object.owner.indexOf(currentUser.dn) > -1)) {
-                    owner.push(entry.object);
-                }
-                if (entry.object.member && entry.object.member.indexOf(currentUser.dn) > -1) {
-                    member.push(entry.object);
-                }
-            });
-            res.on('error', function(err) {
-                reject('Error fetching users owned groups: ' + err.message);
-            });
-            res.on('end', function(result) {
-                resolve({owner: owner, member: member});
-            });
-        });
-    });
-};
-
 exports.getByEmail = function(mail) {
     return new Promise((resolve, reject) => {
 
@@ -557,7 +527,6 @@ exports.createUser = function(user) {
           reject('Fehler beim Passwortverschlüsseln: ' + err);
       }
       user.userPassword = hash;
-      console.log('new user', user);
       client.add(exports.userCnToDn(user.cn), user, function(err) {
           if (err) {
               reject(err);
@@ -610,7 +579,9 @@ exports.updateUser = function(dn, user) {
   var steps = [];
   return exports.fetchUser(dn)
     .then(oldUser => {
-      user.dn = exports.userCnToDn(user.cn);
+      if ('cn' in user) {
+        user.dn = exports.userCnToDn(user.cn);
+      }
       if ('cn' in user && oldUser.cn !== user.cn) {
         return exports.updateDN(dn, user.dn)
           .then(() => { return oldUser; });
@@ -730,7 +701,7 @@ exports.syncParentGroups = function(dn, parentGroups) {
 exports.updateGroup = function(dn, group) {
   var steps = [];
   return exports.fetchGroup(dn)
-    .then(oldGroup => {
+/*    .then(oldGroup => {
       group.dn = exports.groupCnToDn(group.cn);
       if ('cn' in group && oldGroup.cn !== group.cn) {
         return exports.updateDN(dn, group.dn)
@@ -740,10 +711,11 @@ exports.updateGroup = function(dn, group) {
       else {
         return oldGroup;
       }
-    })
+    })*/
     .then(oldGroup => {
+      group.dn = exports.groupCnToDn(group.cn);
       var updateKeys = Object.keys(group).filter(key => {
-        return (['cn', 'o', 'description', 'member', 'owner'].includes(key) && group[key] !== undefined);
+        return (['o', 'description', 'member', 'owner'].includes(key) && group[key] !== undefined);
       })
       if (group.member && group.member.length ===0) {
         group.member = ''
@@ -805,33 +777,6 @@ exports.groupCnToDn = function(cn) {
   return 'cn=' + cn + ',ou=groups,' + config.server.base;
 }
 
-exports.fetchIsAdmin = function(userDn) {
-    return new Promise((resolve, reject) => {
-
-        var opts = {
-        };
-
-        var admin = null;
-
-        client.search('cn=admin,ou=groups,'+config.server.base, opts, function(err, res) {
-            res.on('searchEntry', function(entry) {
-                if (entry.object.member && entry.object.member.indexOf(userDn) > -1){
-                    admin = true;
-                } else {
-                    admin = false;
-                }
-            });
-            res.on('error', function(err) {
-                reject('isAdmin error: ' + err.message);
-            });
-            res.on('end', function(result) {
-                resolve(admin);
-            });
-        });
-    })
-
-};
-
 exports.dnToUid = function(dns) {
 	return exports.fetchUsers()
 		.then(users => {
@@ -861,44 +806,23 @@ exports.hashPassword = function(password) {
     });
 };
 
-exports.updatePassword = function(uid, userPassword, userPassword2) {
+exports.checkPassword = function(dn, password) {
+  return new Promise((resolve, reject) => {
+    var clientCheck = ldap.createClient({
+      url: config.server.url
+    });
+    clientCheck.bind(dn, password, function(err) {
+        if (err) {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+    });
+  })
+}
 
-    return Promise.resolve()
-        .then(() => {
-
-            if (userPassword != userPassword2) {
-                throw "Passwörter sind unterschiedlich";
-            } else if (userPassword && !passwordValid(userPassword)) {
-                throw "Passwort muss den Vorgaben entsprechen";
-            }
-
-            return exports.getByUID(uid)
-                .then((user) => {
-                    if (!user) {
-                        throw "Benutzer*in " + uid + " nicht gefunden";
-                    }
-
-                    return hashPassword(userPassword)
-                        .then((hash) => {
-
-                            return new Promise((resolve, reject) => {
-
-                                var change = new ldap.Change( {
-                                    operation: 'replace',
-                                    modification: {
-                                        userPassword: hash
-                                    }
-                                });
-                                client.modify('cn=' +user.cn + ',ou=users,'+config.server.base, change, function(err) {
-                                    if (err) {
-                                        reject(err);
-                                    } else {
-                                        resolve();
-                                    }
-                                })
-                            })
-                        });
-            });
-        })
+exports.updatePassword = function(dn, userPassword) {
+  return exports.hashPassword(userPassword)
+    .then(hash => exports.change(dn, 'replace', { userPassword: hash }))
 };
 

@@ -1,7 +1,7 @@
 upload
 node_modules
-config/config.json
-data
+config/*
+data/*
 
 # Compiled source #
 ###################

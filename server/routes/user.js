@@ -176,22 +176,57 @@ router.post('/api/user/create', auth.isLoggedInGroupAdmin, function(req, res, ne
     .catch(next);
 });
 
+// CREATE USER
+
+router.post('/api/user/acceptinvite/:token', function(req, res, next) {
+  var user = {
+      cn: req.body.cn,
+      uid: req.body.uid,
+      ou: req.body.ou,
+      l: req.body.l,
+      sn: 'none',
+      givenName: 'none',
+      preferredLanguage: req.body.preferredLanguage,
+      description : config.nextcloud.defaultQuota || '1 GB',
+      userPassword: req.body.password,
+  };
+  var member = [];
+  var owner = [];
+  return activation.isTokenValid(req.params.token)
+    .then(token => {
+      user.mail = token.data.mail;
+      member = token.data.member;
+    })
+    .then(() => validateUser(user, member))
+    .then(() => validateEmail(user.mail))
+    .then(() => validateUid(user.uid))
+    .then(() => validateCn(user.cn))
+    .then(() => ldaphelper.populateUserTitle(user))
+    .then(ldaphelper.createUser)
+      .then(user => {
+        return ldaphelper.addUserToGroups(user.dn, 'member', member)
+          .then(() => ldaphelper.addUserToGroups(user.dn, 'owner', owner))
+          .then(() => ldaphelper.populateUserGroups(user))
+      })
+    .then(discoursehelper.syncUser)
+    .then(() => activation.deleteToken(req.params.token))
+    .then(() => res.send({}))
+    .catch(next);
+});
+
 // UPDATE USER
 
-router.post('/api/user/update', auth.isLoggedInGroupAdmin, function(req, res, next) {
-  var user = {};
-  if (req.user.isAdmin) {
-    user = {
-        cn: req.body.cn,
-        ou: req.body.ou?req.body.ou:'',
-        l: req.body.l,
-        sn: 'none',
-        givenName: 'none',
-        mail: req.body.mail,
-        preferredLanguage: req.body.preferredLanguage,
-        description : req.body.description || config.nextcloud.defaultQuota || '1 GB'
-    };
-  }
+router.post('/api/user/update', auth.isLoggedInAdmin, function(req, res, next) {
+  var user = {
+      cn: req.body.cn,
+      ou: req.body.ou?req.body.ou:'',
+      l: req.body.l,
+      sn: 'none',
+      givenName: 'none',
+      mail: req.body.mail,
+      preferredLanguage: req.body.preferredLanguage,
+      description : req.body.description || config.nextcloud.defaultQuota || '1 GB'
+  };
   return validateUser(user, req.body.member)
     .then(() => validateEmail(user.mail, req.body.dn))
     .then(() => validateCn(user.cn, req.body.dn))
@@ -209,15 +244,37 @@ router.post('/api/user/update', auth.isLoggedInGroupAdmin, function(req, res, ne
     .catch(next);
 });
 
+// UPDATE USER
+
+router.post('/api/user/updategroups', auth.isLoggedInGroupAdmin, function(req, res, next) {
+  var user = {
+    dn: req.body.dn,
+    ou: req.body.ou
+  }
+  return validateUserGroups(req.body.member, req.body.owner, req.user)
+    .then(() => ldaphelper.populateUserTitle(user))
+    .then(user => ldaphelper.updateUser(req.body.dn, user))
+    .then(user => ldaphelper.populateUserGroups(user, false))
+      .then(user => {
+        return ldaphelper.syncUserGroups(user.dn, 'member', user.member, req.body.member, req.user)
+          .then(() => ldaphelper.syncUserGroups(user.dn, 'owner', user.owner, req.body.owner, req.user))
+          .then(() => ldaphelper.fetchUser(user.dn))
+      })
+    .then(discoursehelper.syncUser)
+    .then(user => res.send({user: user}))
+    .catch(next);
+});
+
+
 // DELETE USER
 
-router.delete('/api/user/:dn', auth.isLoggedInGroupAdmin, function(req, res, next) {
+router.delete('/api/user/delete/:dn', auth.isLoggedInGroupAdmin, function(req, res, next) {
   return ldaphelper.fetchUser(req.params.dn, false)
     .then(user => {
       if (!req.user.isAdmin) {
-        var notOwnedGroups = user.member.filter(memberGroupDn => { return !req.user.owner.includes(memberGroupDn)})
+        var notOwnedGroups = user.memberGroups.filter(memberGroup => { return !req.user.owner.includes(memberGroup.dn)}).map(g => g.o);
         if (notOwnedGroups.length > 0) {
-          throw {status: 400, message: 'Benutzer*in existiert in anderen von dir nicht verwalteten Gruppen (' + notOwnedGroups.join(', ') + '). Falls der Account auch für diese Gruppen gesperrt werden soll, kontaktiere bitte die Gruppenadmin@s der anderen Gruppen. Alternativ zur Löschung kannst du die Gruppenrechte für deine Gruppen entziehen'}
+          throw {status: 400, message: 'Benutzer*in ist Mitglied in anderen von dir nicht verwalteten Gruppen (' + notOwnedGroups.join(', ') + '). Falls der Account auch für diese Gruppen gesperrt werden soll, kontaktiere bitte die Gruppenadmin@s der anderen Gruppen. Alternativ zur Löschung kannst du die Gruppenrechte für deine Gruppen entziehen'}
         }
       }
       return ldaphelper.removeUserFromGroups(user.dn, 'member', user.member)
@@ -255,7 +312,7 @@ const isAuthorizedForInvite = function(tokenId, user) {
         if (token.currentUser && token.currentUser.dn !== user.dn && token.data.member) {
           var notAuthorizedGroups = [];
           [].concat(token.data.owner).concat(token.data.member).forEach(group => {
-            if (!user.ownedGroups.includes(group)) {
+            if (!user.owner.includes(group)) {
               notAuthorizedGroups.push(group);
             }
           })
@@ -277,8 +334,8 @@ router.get("/api/user/invites", auth.isLoggedInGroupAdmin, function(req, res, ne
       if (req.user.isGroupAdmin && !req.user.isAdmin) {
         invites = invites.filter(invite => {
           return invite.currentUser && invite.currentUser.dn === req.user.dn
-          || invite.data.owner.some(ownr => req.user.ownedGroups.includes(ownr))
-          || invite.data.member.some(membr => req.user.memberGroups.includes(ldaphelper.dnToCn(membr)));
+          || invite.data.owner.some(ownr => req.user.owner.includes(ownr))
+          || invite.data.member.some(membr => req.user.owner.includes(membr));
           ;
         })
       }
@@ -298,7 +355,7 @@ router.post('/api/user/invite', auth.isLoggedInGroupAdmin, function(req, res, ne
         // when user is group admin check if he/she is group admin of all given groups
         if (!req.user.isAdmin) {
           groups.forEach(group => {
-            if (!req.body.ownedGroups.includes(group)) {
+            if (!req.user.ownedGroups.includes(group)) {
               throw {status: 400, message: 'Keine Berechtigungen für Gruppe ' + group};
             }
           })
@@ -310,12 +367,12 @@ router.post('/api/user/invite', auth.isLoggedInGroupAdmin, function(req, res, ne
         return activation.getTokenByData(req.body.email.toLowerCase(), 'mail', 'invite')
           .then(token => {
             if (token) {
-              throw {status: 400, message: 'Eine Einladung an ' + req.body.email + ' wurde bereits von ' + token.currentUser.cn + ' versendet'};
+              throw {status: 400, message: 'Eine Einladung an ' + req.body.email + ' wurde bereits von ' + token.currentUser.cn + ' versendet. Du kannst die E-Mail unter Einladungen erneut senden.'};
             } else {
               return activation.createAndSaveToken(req.user, {mail: req.body.email.toLowerCase(), owner: [], member: groups}, 7*24, 'invite');
             }
           })
-          .then(token => mailhelper.sendMail(req, res, req.body.email, 'invite', { inviteLink: config.settings.activation.base_url+ '/user/invite/accept/' + token.token }))
+          .then(token => mailhelper.sendActivationEmail(token))
       })
       .then(() => {
         res.send({ success: true})
@@ -324,8 +381,25 @@ router.post('/api/user/invite', auth.isLoggedInGroupAdmin, function(req, res, ne
     }
 );
 
+router.get('/api/user/invite/:token', function(req, res, next) {
+    activation.isTokenValid(req.params.token)
+        .then(token => {
+          return ldaphelper.fetchGroups(token.data.member)
+            .then(groups => {
+              res.send({valid: true, user: {
+                mail: token.data.mail,
+                member: token.data.member,
+                memberGroups: groups,
+                owner: [],
+                ownerGroups: []
+              }})
+            })
+        })
+        .catch(error => res.send({valid: false}))
+})
+
 // DELETE INVITATION
-router.delete('/api/user/invites', auth.isLoggedInGroupAdmin, function(req, res, next) {
+router.delete('/api/user/invites/delete', auth.isLoggedInGroupAdmin, function(req, res, next) {
   return Promise.map(req.body.tokens, token => isAuthorizedForInvite(token, req.user))
     .then(() => {
       return Promise.map(req.body.tokens, token => activation.deleteToken(token))
@@ -341,10 +415,8 @@ router.put('/api/user/invites/repeat', auth.isLoggedInGroupAdmin, function(req, 
     .then(() => {
       return Promise.map(req.body.tokens, token => {
         return  activation.refreshToken(req.user, token, 7*24)
-          .then(token => {
-            return mailhelper.sendMail(req, res, token.data.mail,'invite', { inviteLink: config.settings.activation.base_url+ '/user/invite/accept/' + token.token})
-              .then(mailResponse => { return token; })
-         })
+          .then(token => mailhelper.sendActivationEmail(token))
+          .then(mailResponse => { return token; })
       })
       .then(updatedData => {
         res.send({invites: updatedData})

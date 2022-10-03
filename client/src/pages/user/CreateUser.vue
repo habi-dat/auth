@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -19,6 +20,9 @@
         action="createUser"
         showGroups
         showPassword
+        allowUid
+        allowMail
+        allowDescription
       />
     </v-card-text>
   </v-card>
@@ -37,6 +41,7 @@ export default {
     return {
       user: {},
       valid: true,
+      loading: false,
     }
   },
   methods: {
@@ -44,21 +49,26 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       this.user.member = this.user.memberGroups.map(g => g.dn);
       this.user.owner = this.user.ownerGroups.map(g => g.dn);
       axios.post('/api/user/create', this.user)
         .then(response => {
+          this.loading = false;
           this.$snackbar.success('Account erstellt')
-          router.push('/user/list')
+          if (this.$route.query.token) {
+            router.push('/login')
+          } else {
+            router.push('/user/list')
+          }
         })
         .catch(errors => {
-          //this.$snackbar.error('Profil konnte nicht gespeichert werden: ' + errors)
-          console.log('error at creating user: ', errors)
+          this.loading = false;
         })
     }
   },
   created() {
-    this.user = { preferredLanguage: 'de', description: '10 GB', member: [], owner: [], memberGroups: [], ownerGroups: []}
+    this.user = { preferredLanguage: 'de', description: '1 GB', member: [], owner: [], memberGroups: [], ownerGroups: []}
   }
 }
 </script>

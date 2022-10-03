@@ -13,6 +13,7 @@
           icon="delete"
           tooltip="App löschen"
           color="error"
+          :loading="loading"
           @click="deleteApp"
           :disabled="selectedApps.length === 0"
         />
@@ -54,6 +55,7 @@ export default {
       apps: [],
       selectedApps: [],
       loaded: false,
+      loading: false,
       search: '',
       gridApi: null
     }
@@ -68,13 +70,16 @@ export default {
     async deleteApp() {
       var app = this.selectedApps[0];
       if (await this.$refs.confirm.open('Bist du sicher?','Willst du die Kategorie ' + app.id + ' wirklich löschen?')) {
+        this.loading = true;
         axios.delete('/api/app/' + app.id)
           .then(response => {
             if (response.data.status === 'success') {
               this.$snackbar.success('Kategorie ' + app.id + ' gelöscht')
+              this.loading=false;
               this.gridApi.applyTransaction({ remove: [app]});
             }
           })
+          .catch(e => {this.loading=false;})
       }
     },
     updateApp() {
@@ -85,7 +90,8 @@ export default {
         .then(response => {
           this.apps = response.data.apps;
           this.loaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   async created() {

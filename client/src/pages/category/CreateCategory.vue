@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -35,7 +36,8 @@ export default {
   data() {
     return {
       category: {},
-      valid: false
+      valid: false,
+      loading: false
     }
   },
   methods: {
@@ -43,6 +45,7 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       var post = {...this.category};
       post.color = post.color.substr(1)
       post.text_color = post.text_color.substr(1)
@@ -50,11 +53,10 @@ export default {
       axios.post('/api/category/create', post)
         .then(response => {
           this.$snackbar.success(response.data.message)
+          this.loading = false;
           router.push('/category/list')
         })
-        .catch(error => {
-          console.log('error at creating category: ', error)
-        })
+        .catch(error => {this.loading=false;})
     }
   },
   created() {

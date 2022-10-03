@@ -8,6 +8,7 @@
         :to="to"
         :color="color"
         :disabled="disabled"
+        :loading="loading"
         style="margin-left: 5px;"
         @click="clickHandler"
       >
@@ -29,7 +30,8 @@ export default {
     icon: String,
     label: String,
     tooltip: String,
-    disabled: Boolean
+    disabled: Boolean,
+    loading: Boolean
   },
   methods: {
     clickHandler(event) {

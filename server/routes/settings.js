@@ -1,5 +1,7 @@
 const config      = require('../config/config.json');
 const settings    = require('../utils/settings');
+const mailhelper  = require('../utils/mailhelper');
+const auth  = require('../utils/auth');
 const express = require('express');
 const Promise = require("bluebird");
 
@@ -13,7 +15,7 @@ router.get("/api/config",  (req, res, next) => {
       res.send({
           config: {
               saml: config.saml.enabled,
-              title: config.settings.general.title || settings.title,
+              title: settings.title || config.settings.general.title,
               authenticated: req.isAuthenticated(),
               settings: settings || { theme: {}}
           },
@@ -34,6 +36,7 @@ router.get("/api/settings",  (req, res, next) => {
 router.post('/api/settings', (req, res, next) => {
   const post = {
     title: req.body.title !== config.settings.general.title?req.body.title:undefined,
+    entryUrl: req.body.entryUrl,
     customTheme: req.body.customTheme,
     theme: {
       primary: req.body.theme.primary,
@@ -51,3 +54,18 @@ router.post('/api/settings', (req, res, next) => {
     })
     .catch(next);
 })
+
+// EDIT EMAIL TEMPLATES
+
+router.get('/api/email/templates', auth.isLoggedInAdmin, function(req, res, next) {
+  Promise.join(mailhelper.getTemplate('invite'),
+               mailhelper.getTemplate('passwordReset'),
+    (inviteEmail, passwdEmail) => res.send({ templates: { invite: inviteEmail, passwordReset: passwdEmail } }))
+        .catch(next);
+});
+
+router.post('/api/email/templates', auth.isLoggedInAdmin, function(req, res, next) {
+  mailhelper.saveCustomTemplate(req.body.template, {activated: req.body.activated, subject: req.body.subject, body: req.body.body})
+    .then(() => res.send({}))
+    .catch(next);
+});

@@ -6,6 +6,7 @@ import ChangePassword from '@/pages/user/ChangePassword'
 import ResetPassword from '@/pages/user/ResetPassword'
 import Invites from '@/pages/user/Invites'
 import SendInvite from '@/pages/user/SendInvite'
+import AcceptInvite from '@/pages/user/AcceptInvite'
 import UserList from '@/pages/user/UserList'
 import CreateUser from '@/pages/user/CreateUser'
 import UpdateUser from '@/pages/user/UpdateUser'
@@ -19,6 +20,7 @@ import AppList from '@/pages/app/AppList'
 import CreateApp from '@/pages/app/CreateApp'
 import UpdateApp from '@/pages/app/UpdateApp'
 import UpdateSettings from '@/pages/settings/UpdateSettings'
+import TemplateEditor from '@/pages/settings/TemplateEditor'
 import Login from '@/pages/Login'
 import ErrorPage from '@/pages/ErrorPage'
 import axios from 'axios'
@@ -40,6 +42,11 @@ var router = new Router({
     {
       path: '/user/password',
       name: 'ChangePassword',
+      component: ChangePassword
+    },
+    {
+      path: '/user/setpassword',
+      name: 'SetPassword',
       component: ChangePassword
     },
     {
@@ -66,6 +73,11 @@ var router = new Router({
       path: '/user/create',
       name: 'CreateUser',
       component: CreateUser
+    },
+    {
+      path: '/user/acceptinvite',
+      name: 'AcceptInvite',
+      component: AcceptInvite
     },
     {
       path: '/user/update',
@@ -117,11 +129,15 @@ var router = new Router({
       name: 'UpdateApp',
       component: UpdateApp
     },
-
     {
       path: '/settings',
       name: 'UpdateSettings',
       component: UpdateSettings
+    },
+    {
+      path: '/templates',
+      name: 'TemplateEditor',
+      component: TemplateEditor
     },
     {
       path: '/login',
@@ -138,9 +154,11 @@ var router = new Router({
 
 router.beforeEach(async (to, from, next) => {
   // check if server is online
+  var noLoginPages = ['ErrorPage', 'SetPassword', 'AcceptInvite'];
+  var noReturnToPages = ['ErrorPage', 'SetPassword', 'ResetPassword', 'AcceptInvite', 'Login'];
   try {
-    if (to.name !== 'ErrorPage') {
-      if (to.name === 'Login' && !to.query.returnTo && from.name !== 'ErrorPage' && from.path !== '/'&& from.path !== '/logout') {
+    if (!noLoginPages.includes(to.name)) {
+      if (to.name === 'Login' && !to.query.returnTo && !noReturnToPages.includes(from.name) && from.path !== '/logout') {
         next({name: 'Login', query: {returnTo: from.path, returnToDn: from.query.dn}})
       } else {
         if (to.name !== 'Login' && from.name !== 'Login') {

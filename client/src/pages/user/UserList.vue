@@ -20,6 +20,7 @@
         <ToolbarButton
           icon="delete"
           tooltip="Account löschen"
+          :loading="loading"
           color="error"
           @click="deleteUser"
           :disabled="selectedUsers.length === 0"
@@ -40,7 +41,7 @@
         :search="search"
         @selectionChanged="onSelectionChanged"
         @onGridReady="onGridReadyHandler"
-        showGroups="true"
+        showGroups
         rowSelection="single"/>
     </v-card-text>
     <ConfirmDialog ref="confirm" />
@@ -62,6 +63,7 @@ export default {
       users: [],
       selectedUsers: [],
       usersLoaded: false,
+      loading: false,
       search: '',
       gridApi: null
     }
@@ -74,10 +76,13 @@ export default {
       this.selectedUsers = selectedRows;
     },
     async deleteUser() {
+
       var user = this.selectedUsers[0];
       if (await this.$refs.confirm.open('Bist du sicher?','Willst du den Account ' + user.cn + ' wirklich löschen?')) {
-        axios.delete('/api/user/' + user.dn)
+        this.loading = true;
+        axios.delete('/api/user/delete/' + user.dn)
           .then(response => {
+            this.loading = false;
             if (response.data.status === 'success') {
               this.$snackbar.success(response.data.message)
             } else {
@@ -85,6 +90,10 @@ export default {
             }
             this.gridApi.applyTransaction({ remove: [user]});
           })
+          .catch(e => {
+            this.loading = false;
+          })
+
       }
     },
     updateUser() {
@@ -99,7 +108,8 @@ export default {
         .then(response => {
           self.users = response.data.users;
           self.usersLoaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   async created() {

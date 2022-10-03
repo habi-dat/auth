@@ -1,19 +1,27 @@
 <template>
-  <v-container fill-height fluid>
+  <v-container fill-height fluid style="padding-right: 37px;">
     <v-row justify="center">
-      <v-card outlined class="d-inline-block" style="position:relative; top: -20vh;" min-width="800">
+      <v-card outlined class="d-inline-block" style="position:relative; top: 15px; left: 25px; margin-bottom: 150px" width="800" elevation="5">
         <Toolbar
-          title="Login"
-          icon="login"
+          :title="$store.state.config.title"
         >
           <template #right>
             <ToolbarButton
               icon="login"
               tooltip="Login"
               color="success"
+              :loading="loading"
               :disabled="!valid"
               @click="login"
             />
+          </template>
+          <template #icon>
+            <v-tooltip right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-img v-bind="attrs" v-on="on" width="80px" @mouseover.prevent="getQuote" :src="require('@/assets/img/habidat.png')" style="position: relative; left:-25px; top:-15px; filter: drop-shadow(4px 4px 4px rgba(0, 0, 0, 0.5));"></v-img>
+              </template>
+              {{ quote }}
+            </v-tooltip>
           </template>
         </Toolbar>
         <v-card-text>
@@ -21,23 +29,31 @@
             <v-text-field
               prepend-icon="person"
               v-model="username"
-              label="Login"
+              label="Username / E-Mailadresse"
               id="username"
               type="text"
               name="username"
+              @keyup.enter="login"
               required
             ></v-text-field>
             <v-text-field
               prepend-icon="lock"
               v-model="password"
-              label="Password"
+              label="Passwort"
               id="password"
               name="password"
               type="password"
+              @keyup.enter="login"
               required
             ></v-text-field>
           </v-form>
         </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text color="info" to="/user/password/reset">
+            Passwort vergessen?
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-row>
   </v-container>
@@ -55,7 +71,9 @@ export default {
     return {
       username: null,
       password: null,
-      valid: false
+      valid: false,
+      loading: false,
+      quote:''
     }
   },
   methods: {
@@ -72,8 +90,10 @@ export default {
           data.requestId = this.$route.query.requestId;
           data.appId = this.$route.query.appId;
         }
+        this.loading = true;
         axios.post('/api/login', data)
           .then(response => {
+            this.loading = false;
             this.$store.state.config.authenticated = true
             this.$store.state.user = response.data.user
             if (response.data.redirect) {
@@ -88,8 +108,8 @@ export default {
               }
             }
           })
-          .catch((errors) => {
-            console.log('Cannot log in', errors)
+          .catch(errors => {
+            this.loading = false;
           })
       }
       login();
@@ -98,6 +118,12 @@ export default {
       if (this.$store.state.config.authenticated) {
         router.push('/')
       }
+    },
+    getQuote() {
+      const quotes = [
+        "Wessen Daten? Unsere Daten!",
+      ]
+      this.quote = quotes[Math.floor(Math.random() * quotes.length)]
     }
   },
   created () {

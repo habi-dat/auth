@@ -23,9 +23,12 @@ router.post("/api/login", (req, res, next) => {
     if (!user) {
       return res.status(400).send({message: "Login fehlgeschlagen: Falscher Username oder falsches Passwort "});
     }
-    req.login(user, err => {
-      ldaphelper.populateUserGroups(user, false)
-        .then(user => {
+    ldaphelper.populateUserGroups(user, false)
+      .then(user => {
+        req.login(user, err => {
+          if (err) {
+            throw err;
+          }
           if (req.body.requestId && req.body.appId) {
             const request  = saml.buildRequest(req.body.requestId);
             return apps.getApp(req.body.appId)
@@ -36,11 +39,11 @@ router.post("/api/login", (req, res, next) => {
           } else {
             return res.send({user: user});
           }
-        })
-        .catch(error => {
-          next(error);
-        })
-    });
+        });
+      })
+      .catch(error => {
+        next(error);
+      })
   })(req, res, next);
 });
 
@@ -59,56 +62,9 @@ router.get('/api/logout', (req, res) => {
     })
 });
 
-//}
+// SEND PASSWORD RESET E-MAIL
 
-// LOST PASSWORD ROUTES
-/*
-router.get('/lostpasswd', function(req, res) {
-    routing.render(req, res, 'user/lostpasswd', 'Passwort Vergessen');
-});
-
-router.get('/passwd/:uid/:token', function(req, res) {
-    activation.isTokenValid(req.params.token)
-        .then(token => {
-            return ldaphelper.getByUID(req.params.uid)
-                .then(user => routing.render(req, res, 'user/passwd', 'Passwort Ändern', {user: user, token: req.params.token}));
-        })
-        .catch(error => routing.errorPage(req,res,error));
-});
-
-router.post('/user/passwd', function(req, res) {
-    var user = {
-                    cn: false,
-                    l: false,
-                    ou: false,
-                    mail: false,
-                    description: false,
-                    changedUid: false,
-                    password: req.body.password,
-                    passwordRepeat: req.body.passwordRepeat,
-                    language: false,
-                    member: false,
-                    owner: false
-                };
-    activation.isTokenValid(req.body.token)
-        .then(token => {
-            user.dn = token.data.dn;
-            user.uid = token.data.uid;
-            return actions.user.modify(user, { ownedGroups : []})
-                .then(response => {
-                    if (response.status) {
-                        return activation.deleteToken(req.body.token)
-                            .then(() => {return response;});
-                    } else {
-                        return response;
-                    }
-                })
-                .then(response => routing.checkResponseAndRedirect(req, res, response, 'Passwort geändert', 'Fehler beim Ändern des Passworts', '/redirect', '/passwd/' + req.body.uid + '/' + req.body.token));
-            })
-        .catch(error => routing.errorPage(req, res, 'Fehler beim Ändern des Passworts: ' + error));
-});
-
-router.post('/user/lostpasswd', function(req, res) {
+router.post('/api/user/resetpassword', function(req, res, next) {
     ldaphelper.getByEmail(req.body.mail)
         .then(users => {
             if (users.length == 0) {
@@ -116,12 +72,39 @@ router.post('/user/lostpasswd', function(req, res) {
             } else if (users.length > 1) {
                 throw "Mehrere Benutzer*innen mit dieser E-Mail Adresse gefunden";
             }
-            return mail.sendPasswordResetEmail(req, res, users[0])
-                .then(info =>  routing.successRedirect(req, res, 'Link zum Ändern des Passworts wurde per E-Mail verschickt', '/lostpasswd'))
-                .catch(error => routing.errorRedirect(req, res, 'Link zum Ändern des Passworts konnte nicht verschickt werden: ' + error, '/lostpasswd'));
+            return mail.sendPasswordResetEmail(users[0])
+                .then(() => res.send({}))
+                .catch(error => next('Fehler beim Senden der E-Mail: ' + error));
         })
-        .catch(error => routing.errorRedirect(req, res, 'E-Mailadresse nicht gefunden: ' + error, '/lostpasswd'));
-});*/
+        .catch(error => next('E-Mailadresse nicht gefunden: ' + error));
+});
 
+// UPDATE USER PASSWORD
+
+router.post('/api/user/changepassword', auth.isLoggedIn, function(req, res, next) {
+  if (req.body.dn && !req.user.isAdmin) {
+    res.status(401).send('Das ist nicht erlaubt')
+  } else {
+    return ldaphelper.checkPassword(req.user.dn, req.body.currentPassword)
+      .then(result => {
+        if (!result) {
+          return next('Falsches Passwort')
+        } else {
+          return ldaphelper.updatePassword(req.body.dn || req.user.dn, req.body.password)
+            .then(res.send({}))
+        }
+      })
+      .catch(next)
+  }
+});
+
+// SET USER PASSWORD (AFTER RESET EMAIL)
+
+router.post('/api/user/setpassword', function(req, res, next) {
+  return activation.isTokenValid(req.body.token)
+    .then(token => ldaphelper.updatePassword(token.data.dn, req.body.password))
+    .then(res.send({}))
+    .catch(next);
+});
 
 module.exports = router;

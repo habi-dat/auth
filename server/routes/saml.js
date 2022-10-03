@@ -11,7 +11,7 @@ router.get('/sso/metadata', (req, res, next) => {
 });
 
 // endpoint for SP initiated SSO
-router.get('/sso/SingleSignOnService/:id', async (req, res, next) => {
+router.get('/sso/login/:id', async (req, res, next) => {
   return apps.getApp(req.params.id)
     .then(app => {
       if (!app || !app.saml.samlEnabled) {
@@ -33,7 +33,7 @@ router.get('/sso/SingleSignOnService/:id', async (req, res, next) => {
 });
 
 // endpoint for SP initiated SLO and SLO responses from SPs
-router.get('/sso/SingleLogoutService/:id', async (req, res, next) => {
+router.get('/sso/logout/:id', async (req, res, next) => {
   return apps.getApp(req.params.id)
     .then(app => {
       if (!app || !app.saml.samlEnabled) {

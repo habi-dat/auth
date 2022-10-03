@@ -1,7 +1,8 @@
 <template>
   <v-toolbar flat>
     <slot name="left">
-      <v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @mouseover.prevent="">
+        <slot name="icon" />
         <v-icon v-if="!!icon">{{ icon }}</v-icon>
         <v-tooltip v-if="back" bottom>
           <template v-slot:activator="{ on, attrs }">

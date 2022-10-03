@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -43,6 +44,7 @@ export default {
       users: [],
       groups: [],
       loaded: false,
+      loading: false
     }
   },
   methods: {
@@ -50,8 +52,10 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       axios.post('/api/group/update', this.group)
         .then(response => {
+          this.loading = false;
           if (response.data.status === 'success') {
             this.$snackbar.success(response.data.message)
           } else {
@@ -59,16 +63,15 @@ export default {
           }
           router.push('/group/list')
         })
-        .catch(errors => {
-          console.log('error updating group: ', errors)
-        })
+        .catch(errors => {this.loading=false;})
     },
     getData: function () {
       return axios.get('/api/group/' +  this.$route.query.dn)
         .then(response => {
           this.group = response.data.group
           this.loaded = true;
-        });
+        })
+        .catch(e => {this.loading=false;});
     }
   },
   async created() {

@@ -6,6 +6,7 @@
           icon="send"
           tooltip="Einladung senden"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -47,7 +48,7 @@
             @onGridReady="params => gridApi.groups = params.api"
             @onDataRendered="selectGroups"
             rowSelection="multiple"
-            heightOffset="30"/>
+            :heightOffset="30" />
         </v-col>
       </v-row>
     </v-card-text>
@@ -68,6 +69,7 @@ export default {
   components: { GroupTable, Toolbar, ToolbarButton, EmailField, MemberField },
   data() {
     return {
+      loading: false,
       valid: false,
       groups: [],
       loaded: false,
@@ -105,13 +107,15 @@ export default {
     },
     save: function () {
       var self = this;
+      this.loading = true;
       axios.post('/api/user/invite', {email: this.email, groups: this.memberGroups.map(g => g.dn)})
         .then(response => {
           this.$snackbar.success('Einladung an ' + self.email + ' verschickt')
+          this.loading = false;
           router.push('/invites')
         })
         .catch(error => {
-          console.log('error', error);
+          this.loading = false;
         })
     },
     getGroups: function () {
@@ -119,7 +123,8 @@ export default {
         .then(response => {
           this.groups = response.data.groups;
           this.loaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   created() {

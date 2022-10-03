@@ -19,7 +19,7 @@
         </v-text-field>
         <v-text-field
           prepend-icon="person"
-          :disabled="onlyGroups || action !=='createUser'"
+          :disabled="onlyGroups || !allowUid"
           v-model="user.uid"
           :rules="[v => /^[A-Za-z0-9_]{2,}[A-Za-z0-9]+$/.test(v) || 'mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen']"
           :error-messages="errors.uid"
@@ -40,12 +40,10 @@
           :disabled="onlyGroups"
           prepend-icon="home"
           v-model="user.l"
-          :rules="[ v=> !!v || 'bitte den Ort deines Projekts angeben' ]"
-          label="Ort"
-          required>
+          label="Ort">
         </v-text-field>
         <EmailField
-          :disabled="onlyGroups || action ==='editProfile'"
+          :disabled="onlyGroups || !allowMail"
           v-model="user.mail"
           checkAvailability
         />
@@ -59,7 +57,7 @@
         </v-select>
         <v-text-field
           prepend-icon="upload"
-          :disabled="onlyGroups || action ==='editProfile'"
+          :disabled="onlyGroups || !allowDescription"
           v-model="user.description"
           label="Speicherplatz"
           required>
@@ -67,7 +65,7 @@
         <PasswordFields
           v-if="showPassword"
           v-model="user.password"
-          required="true"
+          required
         />
         <MemberField
           v-if="showGroups"
@@ -105,9 +103,9 @@
         @selectGroup="onSelectGroup"
         @onGridReady="params => gridApi.groups = params.api"
         @onDataRendered="selectGroups"
-        comboSelect="true"
+        comboSelect
         rowSelection="multiple"
-        heightOffset="30"/>
+        :heightOffset="30" />
     </v-col>
   </v-row>
 </template>
@@ -129,7 +127,11 @@ export default {
     user: Object,
     showPassword: Boolean,
     showGroups: Boolean,
-    onlyGroups: Boolean
+    onlyGroups: Boolean,
+    allowUid: Boolean,
+    allowMail: Boolean,
+    allowDescription: Boolean,
+    token: String
   },
   components: { PasswordFields, EmailField, MemberField, GroupTable, Toolbar, ToolbarButton },
   data() {
@@ -149,13 +151,13 @@ export default {
       selectCellItems: [
           { value: 'none', icon: 'check_box_outline_blank', text: 'Kein Mitglied', color:'black'},
           { value: 'member', icon: 'portrait', text:'Mitglied', selected: true, color: 'info'},
-          { value: 'owner', icon: 'edit_square', text: 'Admin', selected: true, color: 'success'}
+          { value: 'owner', icon: 'edit', text: 'Admin', selected: true, color: 'success'}
         ]
     }
   },
   watch: {
     "valid": function(newValue, oldValue) {
-      this.$emit('valid', newValue);
+      this.$emit('valid', newValue || this.onlyGroups);
     },
     "user.memberGroups": function (newValue, oldValue) {
       if (newValue.length === 0) {
@@ -175,7 +177,11 @@ export default {
       this.errors.cn = []
       if (cn !== this.oldUser.cn) {
         try {
-          await axios.get('/api/user/available/cn/' + cn)
+          var endpoint = '/api/user/available/cn/' + cn;
+          if (this.token) {
+            endpoint += '/' + this.token;
+          }
+          await axios.get(endpoint)
             .then(response => {
               if(!response.data.available) {
                 this.errors.cn.push('Anzeigename ist leider bereits vergeben')
@@ -234,6 +240,10 @@ export default {
       this.errors.uid = []
       if (uid !== this.oldUser.uid) {
         try {
+          var endpoint = '/api/user/available/uid/' + uid;
+          if (this.token) {
+            endpoint += '/' + this.token
+          }
           await axios.get('/api/user/available/uid/' + uid)
             .then(response => {
               if(!response.data.available) {
@@ -244,7 +254,7 @@ export default {
       }
     },
     updateUid(newCn) {
-      if (this.action === 'createUser') {
+      if (this.allowUid) {
         this.user.uid = newCn.toLowerCase()
               .replaceAll('ä', 'ae')
               .replaceAll('ö', 'oe')
@@ -260,7 +270,8 @@ export default {
         .then(response => {
           this.groups = response.data.groups;
           this.loaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   created() {

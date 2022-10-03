@@ -1,11 +1,12 @@
 <template>
 
-  <v-card outlined class="d-inline-block" min-width="800">
-    <Toolbar title="Passwort zurücksetzen" icon="lock" infoText="Gib deine E-Mailadresse an und du bekommst einen Link zum Zurücksetzen deines Passworts.">
+  <v-card outlined class="d-inline-block" width="800">
+    <Toolbar title="Passwort zurücksetzen" back infoText="Gib deine E-Mailadresse an und du bekommst einen Link zum Zurücksetzen deines Passworts.">
       <template #right>
         <ToolbarButton
           icon="send"
           tooltip="E-Mail senden"
+          :loading="loading"
           color="success"
           @click="send"
           :disabled="!valid"
@@ -19,9 +20,7 @@
         v-model="valid"
       >
         <EmailField
-          :disabled="onlyGroups || action ==='editProfile'"
           v-model="mail"
-          checkAvailability
         />
       </v-form>
     </v-card-text>
@@ -41,17 +40,24 @@ export default {
   data() {
     return {
       valid: true,
-      mail: ''
+      mail: '',
+      loading: false
     }
   },
   methods: {
     send: function () {
+      this.loading = true;
       var post = {
         mail: this.mail
       }
       axios.post('/api/user/resetpassword', post)
         .then(response => {
-          router.push('/profile')
+          this.loading = false;
+          this.$snackbar.success('Eine E-Mail mit einem Link zum Zurücksetzen des Passworts wurde an ' + this.mail + ' verschickt')
+          router.push('/login')
+        })
+        .catch(e => {
+          this.loading = false;
         });
     }
   }

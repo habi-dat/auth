@@ -112,7 +112,7 @@ export default {
           }
         });
       }
-      if (this.comboSelect !== 'true') {
+      if (!this.comboSelect) {
         this.$emit('selectGroup', event.node.data, event.node.isSelected())
       } else {
         this.$emit('selectGroup', event.node.data, event.node.data.selectCell)

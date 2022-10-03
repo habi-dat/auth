@@ -27,22 +27,18 @@ var buildOptions = function(method, url, parameters = undefined) {
 }
 
 exports.put = function(url, parameters) {
-    console.log('put', url, parameters);
   return request(buildOptions('PUT', url, parameters));
 }
 
 exports.get = function(url, parameters) {
-    console.log('get', url, parameters);
   return request(buildOptions('GET', url, parameters));
 };
 
 exports.del = function(url, parameters) {
-    console.log('del', url, parameters);
   return request(buildOptions('DELETE', url, parameters));
 };
 
 exports.post = function(url, parameters) {
-    console.log('post', url, parameters);
   return request(buildOptions('POST', url, parameters));
 };
 
@@ -225,16 +221,22 @@ exports.createUser = function(name, email, password, username, title) {
         });
 };
 
-const categoryProps = ['id', 'name', 'slug', 'color', 'text_color', 'topic_count', 'post_count', 'description']
+const categoryProps = ['id', 'name', 'slug', 'color', 'text_color', 'topic_count', 'post_count', 'description', 'parent', 'children']
 
 exports.getCategory = function(id) {
     return exports.get('c/' + id + "/show.json")
         .then(response => {
-          var category = _.pick(response.category, categoryProps);
-          category.groups = response.category.group_permissions
-                              .filter(perm => perm.permission_type === 1&& !['jeder', 'team', 'vertrauensstufe_0', 'vertrauensstufe_1', 'vertrauensstufe_2', 'vertrauensstufe_3', 'vertrauensstufe_4'].includes(perm.group_name))
-                              .map(perm => perm.group_name);
-          return category;
+          return exports.getCategories()
+            .then(categories => {
+              var category = _.pick(response.category, categoryProps);
+              category.children = categories.filter(c => c.parent === category.id);
+              category.parent = categories.find(c => c.id === category.id).parent;
+              category.groups = response.category.group_permissions
+                                  .filter(perm => perm.permission_type === 1&& !['jeder', 'team', 'vertrauensstufe_0', 'vertrauensstufe_1', 'vertrauensstufe_2', 'vertrauensstufe_3', 'vertrauensstufe_4'].includes(perm.group_name))
+                                  .map(perm => perm.group_name);
+              return category;
+
+            })
         })
 };
 
@@ -282,7 +284,7 @@ const buildCategory = function(category) {
       color: category.color,
       parent_category_id: ''
     };
-    if (category.parent && category.parent !== '-1') {
+    if (category.parent && category.parent != '-1') {
       post.parent_category_id = category.parent;
     }
     if (category.groups && Array.isArray(category.groups)) {

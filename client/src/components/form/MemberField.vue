@@ -34,6 +34,7 @@
           />
         </v-tooltip>
         <v-icon
+          v-if="$store.state.user.isAdmin || $store.state.user.owner.includes(item[itemValue])"
           small
           @click="parent.selectItem(item)"
         >

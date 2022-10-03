@@ -5,7 +5,7 @@ var moment = require('moment');
 
 var Promise = require("bluebird");
 
-var activationStoreFile = path.join(__dirname, '../data/saml/appStore.json');
+var activationStoreFile = path.join(__dirname, '../data/appStore.json');
 
 var readStore = function() {
   return new Promise((resolve, reject) => {

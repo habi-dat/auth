@@ -13,6 +13,7 @@
           icon="delete"
           tooltip="Gruppe löschen"
           color="error"
+          :loading="loading"
           @click="deleteGroup"
           :disabled="selectedGroups.length === 0"
         />
@@ -32,7 +33,7 @@
         :search="search"
         @selectionChanged="onSelectGroup"
         @onGridReady="onGridReadyHandler"
-        showMembers="true"
+        showMembers
         rowSelection="single"/>
     </v-card-text>
     <ConfirmDialog ref="confirm" />
@@ -55,6 +56,7 @@ export default {
       groups: [],
       selectedGroups: [],
       groupsLoaded: false,
+      loading: false,
       search: '',
       gridApi: null
     }
@@ -67,10 +69,12 @@ export default {
       this.selectedGroups = selectedRows;
     },
     async deleteGroup() {
+      this.loading = true;
       var group = this.selectedGroups[0];
       if (await this.$refs.confirm.open('Bist du sicher?','Willst du die Gruppe ' + group.cn + ' wirklich löschen?')) {
         axios.delete('/api/group/' + group.dn)
           .then(response => {
+            this.loading = false;
             if (response.data.status === 'success') {
               this.$snackbar.success(response.data.message)
             } else {
@@ -78,6 +82,7 @@ export default {
             }
             this.gridApi.applyTransaction({ remove: [group]});
           })
+          .catch(e => { this.loading = false; })
       }
     },
     updateGroup() {
@@ -89,7 +94,8 @@ export default {
         .then(response => {
           self.groups = response.data.groups;
           self.groupsLoaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   async created() {

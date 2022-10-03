@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -34,7 +35,8 @@ export default {
   data() {
     return {
       app: {},
-      valid: false
+      valid: false,
+      loading: false
     }
   },
   methods: {
@@ -42,16 +44,16 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       var post = {...this.app};
       post.groups = post.groupsPopulated.map(g => g.dn);
       axios.post('/api/app/create', post)
         .then(response => {
           this.$snackbar.success('App ' + this.app.id + ' erstellt');
+          this.loading = false;
           router.push('/app/list')
         })
-        .catch(error => {
-          console.log('error at creating app: ', error)
-        })
+        .catch(error => {this.loading=false;})
     }
   },
   created() {

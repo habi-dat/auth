@@ -13,28 +13,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(user, done) {
-    if (user.isAdmin == undefined) {
-        ldaphelper.fetchIsAdmin(user.dn)
-            .then((isAdmin) => {
-                user.isAdmin = isAdmin;
-                ldaphelper.fetchOwnedGroups(user)
-                    .then((groups) => {
-                        user.ownedGroups = groups.owner.map((group) => { return group.dn;});
-                        user.memberGroups = groups.member.map((group) => { return group.cn;});
-                        if (user.isAdmin  || groups.owner.length > 0) {
-                            user.isGroupAdmin = true;
-                        } else {
-                            user.isGroupAdmin = false;
-                        }
-                        done (null, user);
-                    })
-            })
-            .catch((error) => {
-                done(error);
-            });
-    } else {
-        done(null, user);
-    }
+  done(null, user);
 });
 
 exports.isLoggedIn = (req, res, next) => {

@@ -15,15 +15,12 @@ const validateGroup = async (group) => {
           errors.push('Gruppen ID: mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen');
         }
       }
-      if ('o' in group) {
-        if (!(/^.{3,}$/.test(group.o))) {
-          errors.push('Anzeigename: mindestens 3 Zeichen');
-        }
+      if (!(/^.{3,}$/.test(group.o))) {
+        errors.push('Anzeigename: mindestens 3 Zeichen');
       }
-      if ('description' in group) {
-        if (group.description == '') {
-          errors.push('Beschreibung: darf nicht leer sein');
-        }
+
+      if (group.description == '') {
+        errors.push('Beschreibung: darf nicht leer sein');
       }
 
       if (errors.length > 0) {
@@ -57,10 +54,7 @@ router.get('/api/groups', auth.isLoggedInGroupAdmin, function(req, res, next) {
       if (req.user.isAdmin) {
         return ldaphelper.fetchGroupTree()
       } else {
-        return ldaphelper.fetchOwnedGroups(req.user)
-          .then(groups => {
-            return groups.owner;
-          });
+        return req.user.ownerGroups
       }
     })
     .then(groups => {
@@ -90,7 +84,7 @@ router.post('/api/group/create', auth.isLoggedInAdmin, function(req, res, next) 
   var group = {
       cn: req.body.cn,
       o: req.body.o,
-      description: req.body.description,
+      description: req.body.description || '',
       member: member,
       owner: owner,
       parentGroups: parentGroups
@@ -122,7 +116,7 @@ router.post('/api/group/update', auth.isLoggedInAdmin, function(req, res, next) 
       parentGroups: parentGroups
   };
   return validateGroup(group)
-    .then(() => validateCn(group.cn, req.body.dn))
+    .then(() => validateCn(req.body.cn, req.body.dn))
     .then(() => ldaphelper.updateGroup(req.body.dn, group))
     .then(() => discoursehelper.updateGroup(ldaphelper.dnToCn(req.body.dn), group)
         .then(() => res.send({status: 'success', message: 'Gruppe ' + group.cn + ' wurde geändert.'}))

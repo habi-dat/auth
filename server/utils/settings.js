@@ -31,12 +31,23 @@ const saveStore = function (activationStore) {
   })
 }
 
+const setDefault = function(settings, key, defaultValue) {
+  if (!settings[key] || settings[key] === '') {
+    settings[key] = defaultValue;
+  }
+}
+
 exports.getSettings = () => {
   return readStore()
     .then(settings => {
-      if (!settings.theme) {
-        settings.theme = {}
+      if (!settings) {
+        settings = {}
       }
+      setDefault(settings, 'theme', {})
+      setDefault(settings, 'customTheme', false)
+      setDefault(settings, 'entryUrl', 'https://' + config.nextcloud.subdomain + '.' + config.settings.general.domain)
+      setDefault(settings, 'title', config.settings.general.title)
+
       return settings;
     })
 }

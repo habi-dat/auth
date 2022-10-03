@@ -1,5 +1,7 @@
 var nodemailer = require('nodemailer');
 var activation = require('./activation');
+var handlebars = require('handlebars')
+var settings = require('./settings')
 var config = require('../config/config.json');
 var jsonfile = require('jsonfile');
 var path = require('path');
@@ -36,7 +38,7 @@ var saveStore = function (store) {
   })
 }
 
-sendMail = function(options) {
+var sendMail = function(options) {
   return new Promise((resolve, reject) => {
     nodemailer.createTransport(config.smtp).sendMail(options, (error, info) => {
         if (error) {
@@ -48,39 +50,26 @@ sendMail = function(options) {
   });
 }
 
-exports.getDefaultSubject = function(template) {
-	if (template === 'passwd') {
-		return config.settings.general.title + ' Passwort wurde zurückgesetzt';
-	} else if (template === 'invite') {
-		return 'Einladung zu ' + config.settings.general.title;
-	} else {
-		return 'N/A';
-	}
+var supplementGeneralData = function(data) {
+  return settings.getSettings()
+    .then(settings => {
+      data.url = config.settings.activation.base_url;
+      data.title = settings.title;
+      data.email = config.settings.general.contact;
+      return data;
+    })
 }
 
-
-exports.getTitle = function(template) {
-	if (template === 'passwd') {
-		return 'Passwort Zurücksetzen';
-	} else if (template === 'invite') {
-		return 'Einladung';
-	} else {
-		return 'N/A';
-	}
+exports.getTemplate = function(template) {
+  return readStore()
+    .then(store => {
+      if (store[template]) {
+        return store[template];
+      } else {
+        return store['_' + template];
+      }
+    })
 }
-
-
-exports.renderHtml = function (res, template, data) {
-    return new Promise((resolve, reject) => {
-        res.render(template, data, (err, html) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(html);
-          }
-        });
-    });
-};
 
 exports.saveCustomTemplate = function(template, email) {
 	return readStore()
@@ -91,46 +80,52 @@ exports.saveCustomTemplate = function(template, email) {
 }
 
 
-exports.renderEmail = function (res, template, data, useCustomIfExists = false) {
+exports.renderEmail = function (template, parameters) {
 	return readStore()
 		.then(store => {
-			if (store[template] && (store[template].activated || useCustomIfExists)) {
-				var email = store[template]
-				Object.keys(data).forEach(key => {
-					email.body = email.body.split('{{' + key + '}}').join(data[key])
-				})
-				email.label=exports.getTitle(template);
-				return email;
-			} else {
-				return exports.renderHtml(res, template, data)
-					.then(body => {
-						return {subject: exports.getDefaultSubject(template), body: body, label: exports.getTitle(template)};
-					})
-			}
-		})
+      var email;
+      if (!store[template]  || !store[template].activated) {
+        email = store['_' + template];
+      } else {
+        email = store[template];
+      }
+      var data = {...parameters}
+      return supplementGeneralData(data)
+        .then(data => {
+          var body = handlebars.compile(email.body)(data);
+          var subject = handlebars.compile(email.subject)(data);
+          return {
+            subject: subject,
+            body: body
+          }
+        })
+    })
 }
 
-exports.sendMail = function(req, res, to, template, data) {
-    return exports.renderEmail(res, template, data)
-      .then((email) => {
-
-          var mailOptions = {
-            from: (config.settings.activation.email_from || 'no-reply@habidat.org'),
-            to: to,
-            subject: email.subject,
-            html: email.body
-          }
-
-          return sendMail(mailOptions);
-    })
+var sendMailTemplate = function(to, template, data) {
+  return exports.renderEmail(template, data)
+    .then(email => {
+      var mailOptions = {
+        from: (config.settings.activation.email_from || 'no-reply@habidat.org'),
+        to: to,
+        subject: email.subject,
+        html: email.body
+      }
+      return sendMail(mailOptions);
+  })
 
 };
 
-exports.sendPasswordResetEmail = function(req, res, user) {
-    return activation.createAndSaveToken(req.user, {uid: user.uid, dn: user.dn})
-      .then(token => {
-          var link = config.settings.activation.base_url + '/passwd/' + user.uid + '/'+token.token;
-          return exports.sendMail(req, res, user.mail, 'passwd', { passwdLink: link })
-    })
+exports.sendPasswordResetEmail = function(user) {
+  return activation.createAndSaveToken(null, {uid: user.uid, dn: user.dn})
+    .then(token => {
+      var link = config.settings.activation.base_url + '/#/user/setpassword?token='+token.token;
+      return sendMailTemplate(user.mail, 'passwordReset', { link: link })
+  })
+};
 
+
+exports.sendActivationEmail = function(token) {
+  var link = config.settings.activation.base_url+ '/#/user/acceptinvite?token=' + token.token
+  return sendMailTemplate(token.data.mail, 'invite', { link: link });
 };

@@ -6,6 +6,7 @@
           icon="save"
           tooltip="Speichern"
           color="success"
+          :loading="loading"
           @click="save"
           :disabled="!valid"
         />
@@ -38,6 +39,7 @@ export default {
       app: {},
       valid: false,
       loaded: false,
+      loading: false
     }
   },
   methods: {
@@ -45,16 +47,16 @@ export default {
       this.valid = valid;
     },
     save: function () {
+      this.loading = true;
       var post = {...this.app};
       post.groups = post.groupsPopulated.map(g => g.dn);
       axios.post('/api/app/update', post)
         .then(response => {
           this.$snackbar.success('App ' + this.app.id + ' geändert')
+          this.loading = false;
           router.push('/app/list')
         })
-        .catch(error => {
-          console.log('error at updating app: ', error)
-        })
+        .catch(error => {this.loading=false; })
     },
     getData: function () {
       return axios.get('/api/app/' + this.$route.query.id)
@@ -62,6 +64,7 @@ export default {
           this.app = response.data.app;
           this.loaded = true;
         })
+        .catch(e => {})
     }
   },
   created() {

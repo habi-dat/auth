@@ -72,7 +72,7 @@ export default {
       this.$emit('onDataRendered');
     },
     onRowSelected(event) {
-      if (this.comboSelect !== 'true') {
+      if (!this.comboSelect) {
         this.$emit('selectUser', event.node.data, event.node.isSelected())
       } else {
         this.$emit('selectUser', event.node.data, event.node.data.selectCell)

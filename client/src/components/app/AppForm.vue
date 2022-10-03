@@ -96,7 +96,7 @@
         @onGridReady="params => groupGripApi = params.api"
         @onDataRendered="selectGroups"
         rowSelection="multiple"
-        heightOffset="30"/>
+        :heightOffset="30" />
     </v-col>
   </v-row>
 </template>
@@ -179,7 +179,8 @@ export default {
           this.groups = response.data.groups;
           this.app.groupsPopulated = this.groups.filter(g => this.app.groups.includes(g.dn));
           this.loaded = true;
-        });
+        })
+        .catch(e => {});
     }
   },
   created() {
