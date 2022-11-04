@@ -196,6 +196,7 @@ router.post('/api/user/acceptinvite/:token', function(req, res, next) {
     .then(token => {
       user.mail = token.data.mail;
       member = token.data.member;
+      owner = token.data.owner;
     })
     .then(() => validateUser(user, member))
     .then(() => validateEmail(user.mail))
@@ -347,15 +348,21 @@ router.get("/api/user/invites", auth.isLoggedInGroupAdmin, function(req, res, ne
 // SEND INVITE
 
 router.post('/api/user/invite', auth.isLoggedInGroupAdmin, function(req, res, next) {
-    var groups = [];
+    var member = [], owner = [];
     return validateEmail(req.body.email)
       .then(() => {
         // filter duplicates
-        groups = [...new Set(req.body.groups)];
+        member = [...new Set(req.body.member)];
+        owner = [...new Set(req.body.owner)];
         // when user is group admin check if he/she is group admin of all given groups
         if (!req.user.isAdmin) {
-          groups.forEach(group => {
-            if (!req.user.ownedGroups.includes(group)) {
+          member.forEach(group => {
+            if (!req.user.owner.includes(group)) {
+              throw {status: 400, message: 'Keine Berechtigungen für Gruppe ' + group};
+            }
+          })
+          owner.forEach(group => {
+            if (!req.user.owner.includes(group)) {
               throw {status: 400, message: 'Keine Berechtigungen für Gruppe ' + group};
             }
           })
@@ -369,7 +376,7 @@ router.post('/api/user/invite', auth.isLoggedInGroupAdmin, function(req, res, ne
             if (token) {
               throw {status: 400, message: 'Eine Einladung an ' + req.body.email + ' wurde bereits von ' + token.currentUser.cn + ' versendet. Du kannst die E-Mail unter Einladungen erneut senden.'};
             } else {
-              return activation.createAndSaveToken(req.user, {mail: req.body.email.toLowerCase(), owner: [], member: groups}, 7*24, 'invite');
+              return activation.createAndSaveToken(req.user, {mail: req.body.email.toLowerCase(), member: member, owner: owner}, 7*24, 'invite');
             }
           })
           .then(token => mailhelper.sendActivationEmail(token))

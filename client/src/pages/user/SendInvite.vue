@@ -34,6 +34,16 @@
               tooltip="group"
               close
             />
+            <MemberField
+              icon="groups"
+              label="Admin von"
+              v-model="ownerGroups"
+              @input="selectGroups"
+              itemText="o"
+              itemValue="dn"
+              tooltip="group"
+              close
+            />
           </v-form>
         </v-col>
         <v-divider vertical />
@@ -44,11 +54,13 @@
             :groups="groups"
             :search="search"
             :flat="!$store.state.user.isAdmin"
+            :selectCellItems="selectCellItems"
             @selectGroup="onSelectGroup"
             @onGridReady="params => gridApi.groups = params.api"
             @onDataRendered="selectGroups"
             rowSelection="multiple"
-            :heightOffset="30" />
+            :heightOffset="30"
+            comboSelect/>
         </v-col>
       </v-row>
     </v-card-text>
@@ -76,39 +88,68 @@ export default {
       email: '',
       search: '',
       memberGroups: [],
+      ownerGroups: [],
       gridApi: {
         groups: null
-      }
+      },
+      selectCellItems: [
+          { value: 'none', icon: 'check_box_outline_blank', text: 'Kein Mitglied', color:'black'},
+          { value: 'member', icon: 'portrait', text:'Mitglied', selected: true, color: 'info'},
+          { value: 'owner', icon: 'edit', text: 'Admin', selected: true, color: 'success'}
+        ],
     }
   },
   methods: {
-    onSelectGroup: function(group, selected) {
-      if (selected && !this.memberGroups.find(g => g.dn === group.dn)) {
-        this.memberGroups.push(group);
-      } else if (!selected) {
-        var index = this.memberGroups.findIndex(g => g.dn === group.dn)
-        if (index >= 0) {
-          this.memberGroups.splice(index, 1);
+    onSelectGroup: function(group, selectCell) {
+
+      // little helpers
+      const pushIfNotExists = (list, group) => {
+        if (!list.find(l => l.dn === group.dn)) {
+          list.push(group);
         }
+      }
+      const deleteIfExists = (list, dn, listPopulated) => {
+        if (list.find(l => l.dn === group.dn)) {
+          list.splice(list.findIndex(l => l.dn === group.dn), 1);
+        }
+      }
+
+      if (selectCell.value === 'owner') {
+        pushIfNotExists(this.memberGroups, group);
+        pushIfNotExists(this.ownerGroups, group);
+      } else if (selectCell.value === 'member') {
+        pushIfNotExists(this.memberGroups, group);
+        deleteIfExists(this.ownerGroups, group)
+      } else {
+        deleteIfExists(this.memberGroups, group);
+        deleteIfExists(this.ownerGroups, group);
       }
     },
     selectGroups() {
       this.gridApi.groups.forEachNode(rowNode => {
-        if (this.memberGroups.find(p => p.dn === rowNode.data.dn)) {
-          if (!rowNode.isSelected()) {
-            rowNode.setSelected(true);
+        var selectCell;
+        if (this.ownerGroups.find(o => o.dn === rowNode.data.dn)) {
+          if (this.memberGroups.find(m => m.dn === rowNode.data.dn)) {
+            selectCell = this.selectCellItems[2]
+          } else {
+            this.ownerGroups.splice(this.ownerGroups.findIndex(o => o.dn === rowNode.data.dn), 1)
+            selectCell = this.selectCellItems[0]
           }
+        } else if (this.memberGroups.find(m => m.dn === rowNode.data.dn)) {
+          selectCell = this.selectCellItems[1]
         } else {
-          if (rowNode.isSelected()) {
-            rowNode.setSelected(false);
-          }
+          selectCell = this.selectCellItems[0]
         }
-      })
+        if (selectCell && selectCell !== rowNode.data.selectCell) {
+          rowNode.data.selectCell = selectCell;
+          rowNode.setData(rowNode.data);
+        }
+      });
     },
     save: function () {
       var self = this;
       this.loading = true;
-      axios.post('/api/user/invite', {email: this.email, groups: this.memberGroups.map(g => g.dn)})
+      axios.post('/api/user/invite', {email: this.email, member: this.memberGroups.map(g => g.dn), owner: this.ownerGroups.map(g => g.dn)})
         .then(response => {
           this.$snackbar.success('Einladung an ' + self.email + ' verschickt')
           this.loading = false;

@@ -59,7 +59,7 @@ exports.isLoggedInGroupAdminForGroup = function(container, field) {
 
   return function(req, res, next) {
     // if user is authenticated in the session, carry on
-    if (req.isAuthenticated() && (req.user.isAdmin || req.user.isGroupAdmin && req.user.ownedGroups.includes(req[container][field]))) {
+    if (req.isAuthenticated() && (req.user.isAdmin || req.user.isGroupAdmin && req.user.owner.includes(req[container][field]))) {
         next();
     } else {
         //  if they aren't redirect them to the home page

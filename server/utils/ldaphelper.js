@@ -45,7 +45,7 @@ exports.change = function (dn, operation, modification) {
             operation: operation,
             modification: modification
         });
-        console.log('change', dn, operation, modification, change)
+        //console.log('change', dn, operation, modification, change)
         client.modify(dn, change, function(err ) {
             if (err) {
                 reject(err);
@@ -144,7 +144,7 @@ exports.populateParentGroups = function(user, groups) {
                 if (newParentGroups.length > 0) {
                     resolve(exports.populateParentGroups(user, newParentGroups));
                 } else {
-                    console.log('user: ', user);
+                    //console.log('user: ', user);
                     resolve(user);
                 }
             });

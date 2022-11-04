@@ -49,6 +49,17 @@ export default {
     onValid (valid) {
       this.valid = valid;
     },
+    isURL(str) {
+      let url;
+
+      try {
+        url = new URL(str);
+      } catch (_) {
+        return false;
+      }
+
+      return url.protocol === "http:" || url.protocol === "https:";
+    },
     save: function () {
       this.loading = true;
       axios.post('/api/user/acceptinvite/' + this.$route.query.token, this.user)
@@ -57,6 +68,9 @@ export default {
           if (this.$store.state.config.authenticated) {
             this.$snackbar.success('Account ' + this.user.cn + ' erstellt, logge dich aus um dich mit dem neuen Account einzuloggen', 6000)
             router.push('/')
+          } else if (this.$store.state.config.settings.entryUrl && this.isURL(this.$store.state.config.settings.entryUrl)) {
+            this.$snackbar.success('Account ' + this.user.cn + ' erstellt, du wirst in Kürze zum Login weitergeleitet', 6000)
+            setTimeout(window.location.replace(this.$store.state.config.settings.entryUrl), 8000);
           } else {
             this.$snackbar.success('Account ' + this.user.cn + ' erstellt, du kannst dich jetzt einloggen', 6000)
             router.push('/login')
