@@ -1,6 +1,7 @@
 server/node_modules
 server/config/*
 server/data/*
+server/public
 docker-compose.yml
 user.env
 

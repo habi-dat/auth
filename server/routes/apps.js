@@ -5,6 +5,7 @@ const apps = require('../utils/apps');
 const _ = require('lodash');
 const express = require('express');
 const Promise = require('bluebird');
+const config    = require('../config/config.json');
 
 const readdir = Promise.promisify(fs.readdir);
 
@@ -26,6 +27,19 @@ const validateApp= app => {
     })
 }
 
+router.get('/appmenu/:from', function(req, res, next){
+    if (config.settings.general.modules.includes('discourse')) {
+        res.setHeader('Access-Control-Allow-Origin', 'https://' + config.discourse.subdomain + '.' + config.settings.general.domain);
+    }
+    return apps.getApps()
+      .then(apps => {
+        const appsFiltered = apps.filter(app => {
+          return app.groups.length === 0 || req.user && app.groups.find(group => req.user.member.includes(group));
+        })
+        res.render('appmenu', {apps: appsFiltered, fromUrl: req.params.from})
+      })
+      .catch(next)
+});
 
 router.get("/api/apps", auth.isLoggedInAdmin, function(req, res, next) {
   return apps.getApps()

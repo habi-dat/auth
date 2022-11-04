@@ -24,7 +24,14 @@ const LocalStrategy = require('passport-local').Strategy
 const publicRoot = './dist'
 
 app.use(express.static(publicRoot))
-app.use(express.static('./data/public'));
+app.use(express.static('./public', {
+  setHeaders: res =>
+    {
+      if (config.discourse.subdomain) {
+        res.setHeader('Access-Control-Allow-Origin', 'https://' + config.discourse.subdomain + '.' + config.settings.general.domain);
+      }
+    }
+}));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())

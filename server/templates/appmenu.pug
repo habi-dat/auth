@@ -1,0 +1,13 @@
+.dropdown.habidat-dropdown
+  button.dropbtn.habidat-dropbtn(title=config.settings.general.title + ' Apps')
+    img(style='height: 2.57em;', src=baseUrl + '/img/habidat.png')
+  span.habidat-spacer &nbsp;
+  .dropdown-content.habidat-dropdown-content
+    each app in apps
+      - var iconUrl = app.icon?app.icon.url:'/img/icons/files.svg'
+      if (!app.url.includes(fromUrl))
+        a.active(href=app.url)
+          span.habidat-icon(style='mask-image: url(' + baseUrl + iconUrl + '); -webkit-mask-image: url(' + baseUrl + iconUrl + '); -webkit-mask-size: 16px 16px;')
+          span.habidat-spacer &nbsp;
+          span=app.label
+
