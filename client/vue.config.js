@@ -12,5 +12,10 @@ module.exports = {
         changeOrigin: true
       },
     }
+  },
+  pwa: {
+    iconPaths: {
+       favicon32: 'src/assets/img/favicon.png',
+    }
   }
 }
