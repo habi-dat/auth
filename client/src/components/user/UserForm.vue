@@ -115,7 +115,7 @@
 import axios from 'axios'
 import router from '@/router'
 import GroupTable from '@/components/group/GroupTable'
-import PasswordFields from '@/components/form/PasswordFields'
+const PasswordFields = () => import('@/components/form/PasswordFields')
 import EmailField from '@/components/form/EmailField'
 import MemberField from '@/components/form/MemberField'
 import Toolbar from '@/components/layout/Toolbar'

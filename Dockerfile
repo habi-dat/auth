@@ -51,7 +51,7 @@ WORKDIR /app/client
 
 RUN yarn install && yarn build
 
-RUN mv /app/client/dist /app && rm -rf /app/client
+RUN mv /app/client/dist /app && mkdir -p /app/data/public/img && mv /app/client/src/assets/img/icons /app/data/public/img/ && rm -rf /app/client
 
 WORKDIR /app
 

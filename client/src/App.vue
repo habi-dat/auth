@@ -49,14 +49,14 @@
           <v-list-item-icon><v-icon>login</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Login</v-list-item-title></v-list-item-content>
         </v-list-item>
-        <v-list-item to="/logout" @click="logout" v-if="$store.state.config.authenticated">
+        <v-list-item to="/logout" @click="logout" v-if="$store.state.config.authenticated && !isIframe()"">
           <v-list-item-icon><v-icon>logout</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Logout</v-list-item-title></v-list-item-content>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-main>
-      <v-container fluid fill-height style="align-items: start" class="grey lighten-4" >
+      <v-container fluid fill-height style="align-items: start;" class="grey lighten-4" >
       <!-- Display view pages here based on route -->
         <router-view></router-view>
       </v-container>

@@ -24,6 +24,7 @@ const LocalStrategy = require('passport-local').Strategy
 const publicRoot = './dist'
 
 app.use(express.static(publicRoot))
+app.use(express.static('./data/public'));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())

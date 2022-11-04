@@ -1,9 +1,15 @@
-dist
-node_modules
-.editorconfig
-.git
-.gitignore
-.yarn
+server/node_modules
+server/config/*
+server/data/*
+docker-compose.yml
+user.env
+
+client/dist
+client/node_modules
+client/.editorconfig
+client/.git
+client/.gitignore
+
 
 # Compiled source #
 ###################

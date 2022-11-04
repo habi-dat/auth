@@ -16,6 +16,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@adobe/css-tools@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@adobe/css-tools@npm:4.0.1"
+  checksum: 80226e2229024c21da9ffa6b5cd4a34b931f071e06f45aba4777ade071d7a6c94605cf73b13718b0c4b34e8b124c65c607b82eaa53a326d3eb73d9682a04a593
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0":
   version: 7.18.6
   resolution: "@babel/code-frame@npm:7.18.6"
@@ -992,7 +999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-walk@npm:^8.0.0, acorn-walk@npm:^8.0.2":
+"acorn-walk@npm:^8.0.0, acorn-walk@npm:^8.0.2, acorn-walk@npm:^8.2.0":
   version: 8.2.0
   resolution: "acorn-walk@npm:8.2.0"
   checksum: 1715e76c01dd7b2d4ca472f9c58968516a4899378a63ad5b6c2d668bba8da21a71976c14ec5f5b75f887b6317c4ae0b897ab141c831d741dc76024d8745f1ad1
@@ -1005,6 +1012,15 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 7270ca82b242eafe5687a11fea6e088c960af712683756abf0791b68855ea9cace3057bd5e998ffcef50c944810c1e0ca1da526d02b32110e13c722aa959afdc
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.4.1":
+  version: 8.8.1
+  resolution: "acorn@npm:8.8.1"
+  bin:
+    acorn: bin/acorn
+  checksum: 4079b67283b94935157698831967642f24a075c52ce3feaaaafe095776dfbe15d86a1b33b1e53860fc0d062ed6c83f4284a5c87c85b9ad51853a01173da6097f
   languageName: node
   linkType: hard
 
@@ -1990,6 +2006,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"callsite@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "callsite@npm:1.0.0"
+  checksum: 569686d622a288a4f0a827466c2f967b6d7a98f2ee1e6ada9dcf5a6802267a5e2a995d40f07113b5f95c7b2b2d5cbff4fdde590195f2a8bed24b829d048688f8
+  languageName: node
+  linkType: hard
+
 "callsites@npm:^3.0.0":
   version: 3.1.0
   resolution: "callsites@npm:3.1.0"
@@ -2210,6 +2233,7 @@ __metadata:
     babel-preset-es2015: ^6.24.1
     css-loader: ^6.7.1
     dart-sass: ^1.25.0
+    deepmerge: ^4.2.2
     file-loader: ^6.2.0
     grapesjs: ^0.20.1
     grapesjs-preset-newsletter-v2: ^1.0.20
@@ -2220,6 +2244,9 @@ __metadata:
     prettier: ^2.7.1
     sass: ^1.54.5
     sass-loader: ^13.0.2
+    style-loader: ^3.3.1
+    stylus: ^0.59.0
+    stylus-loader: ^7.1.0
     url-loader: ^4.1.1
     vue: ^2.6.14
     vue-class-component: ^7.2.6
@@ -2229,8 +2256,10 @@ __metadata:
     vue-property-decorator: ^9.1.2
     vue-router: ^3.0.1
     vuetify: ^2.6.9
+    vuetify-loader: ^1.9.2
     vuex: ^3.6.2
     webpack: ^5.74.0
+    webpack-bundle-analyzer: ^4.7.0
     webpack-cli: ^4.10.0
     webpack-dev-server: ^4.10.0
   languageName: unknown
@@ -2728,7 +2757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.3":
+"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.2, debug@npm:^4.3.3":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -2749,10 +2778,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"decache@npm:^4.6.0":
+  version: 4.6.1
+  resolution: "decache@npm:4.6.1"
+  dependencies:
+    callsite: ^1.0.0
+  checksum: 3e8cf879ecad1ebc1a0fed782d008ea4f331c2a3688de3b3f18fca03e51b3aa829be90ee0b7c6e1ebc0b0a0f4e911529efdfb3cef28d69b9605131b7c69daea9
+  languageName: node
+  linkType: hard
+
 "deepmerge@npm:^1.5.2":
   version: 1.5.2
   resolution: "deepmerge@npm:1.5.2"
   checksum: 5ecfe328e0105f2c554b90af555cbba052ab4468f1893e3b26800cb8869d3c1a1c590a5bbe1fdf481a8cc89b1bc47b5ac73a7153d5a0e4b702ea6eca081038a8
+  languageName: node
+  linkType: hard
+
+"deepmerge@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "deepmerge@npm:4.2.2"
+  checksum: a8c43a1ed8d6d1ed2b5bf569fa4c8eb9f0924034baf75d5d406e47e157a451075c4db353efea7b6bcc56ec48116a8ce72fccf867b6e078e7c561904b5897530b
   languageName: node
   linkType: hard
 
@@ -3234,6 +3279,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-glob@npm:^3.2.12":
+  version: 3.2.12
+  resolution: "fast-glob@npm:3.2.12"
+  dependencies:
+    "@nodelib/fs.stat": ^2.0.2
+    "@nodelib/fs.walk": ^1.2.3
+    glob-parent: ^5.1.2
+    merge2: ^1.3.0
+    micromatch: ^4.0.4
+  checksum: 0b1990f6ce831c7e28c4d505edcdaad8e27e88ab9fa65eedadb730438cfc7cde4910d6c975d6b7b8dc8a73da4773702ebcfcd6e3518e73938bb1383badfe01c2
+  languageName: node
+  linkType: hard
+
 "fast-glob@npm:^3.2.7, fast-glob@npm:^3.2.9":
   version: 3.2.11
   resolution: "fast-glob@npm:3.2.11"
@@ -3512,7 +3570,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^7.1.3, glob@npm:^7.1.4":
+"glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
   version: 7.2.3
   resolution: "glob@npm:7.2.3"
   dependencies:
@@ -6233,6 +6291,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sax@npm:~1.2.4":
+  version: 1.2.4
+  resolution: "sax@npm:1.2.4"
+  checksum: d3df7d32b897a2c2f28e941f732c71ba90e27c24f62ee918bd4d9a8cfb3553f2f81e5493c7f0be94a11c1911b643a9108f231dd6f60df3fa9586b5d2e3e9e1fe
+  languageName: node
+  linkType: hard
+
 "schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.0, schema-utils@npm:^3.1.1":
   version: 3.1.1
   resolution: "schema-utils@npm:3.1.1"
@@ -6533,6 +6598,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"source-map@npm:^0.7.3":
+  version: 0.7.4
+  resolution: "source-map@npm:0.7.4"
+  checksum: 01cc5a74b1f0e1d626a58d36ad6898ea820567e87f18dfc9d24a9843a351aaa2ec09b87422589906d6ff1deed29693e176194dc88bcae7c9a852dc74b311dbf5
+  languageName: node
+  linkType: hard
+
 "spdx-correct@npm:^3.0.0":
   version: 3.1.1
   resolution: "spdx-correct@npm:3.1.1"
@@ -6720,6 +6792,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"style-loader@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "style-loader@npm:3.3.1"
+  peerDependencies:
+    webpack: ^5.0.0
+  checksum: 470feef680f59e2fce4d6601b5c55b88c01ad8d1dd693c528ffd591ff5fd7c01a4eff3bdbe62f26f847d6bd2430c9ab594be23307cfe7a3446ab236683f0d066
+  languageName: node
+  linkType: hard
+
 "stylehacks@npm:^5.1.0":
   version: 5.1.0
   resolution: "stylehacks@npm:5.1.0"
@@ -6729,6 +6810,35 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: 310b3452c11fd443b0d327aa2d5b43ae7479407339204b7ad11cf2e16d33b690c1cbf47a21b737ef112411e53563f0f996c5fa3642d135c896329950a008277f
+  languageName: node
+  linkType: hard
+
+"stylus-loader@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "stylus-loader@npm:7.1.0"
+  dependencies:
+    fast-glob: ^3.2.12
+    klona: ^2.0.5
+    normalize-path: ^3.0.0
+  peerDependencies:
+    stylus: ">=0.52.4"
+    webpack: ^5.0.0
+  checksum: 1406fd7ee08d2113659eae66a602e32a26a7c14036110da8287a38bb7142591cb26150d67178752a4949f40f7bad0bc8c07fdb4d4ba03008c35bd60c30645400
+  languageName: node
+  linkType: hard
+
+"stylus@npm:^0.59.0":
+  version: 0.59.0
+  resolution: "stylus@npm:0.59.0"
+  dependencies:
+    "@adobe/css-tools": ^4.0.1
+    debug: ^4.3.2
+    glob: ^7.1.6
+    sax: ~1.2.4
+    source-map: ^0.7.3
+  bin:
+    stylus: bin/stylus
+  checksum: 2faf4a5618747c17b7d10854e40efdd43b438a6cf99d197b0231578f5091bfe9313663d846b5666bb37140140420c51606bb127fd877bbf2db46730c01403b01
   languageName: node
   linkType: hard
 
@@ -7184,6 +7294,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"vuetify-loader@npm:^1.9.2":
+  version: 1.9.2
+  resolution: "vuetify-loader@npm:1.9.2"
+  dependencies:
+    acorn: ^8.4.1
+    acorn-walk: ^8.2.0
+    decache: ^4.6.0
+    file-loader: ^6.2.0
+    loader-utils: ^2.0.0
+  peerDependencies:
+    gm: ^1.23.0
+    pug: ^2.0.0 || ^3.0.0
+    sharp: "*"
+    vue: ^2.7.2
+    vuetify: ^1.3.0 || ^2.0.0
+    webpack: ^4.0.0 || ^5.0.0
+  peerDependenciesMeta:
+    gm:
+      optional: true
+    pug:
+      optional: true
+    sharp:
+      optional: true
+  checksum: 4e04323092e017f37e641940269443434055e3b01ffb8f7f05b3e79c3ff477cda0fc4f2f2b095b51f4e1f5435c3264772477b49ac2cf0dcb8f0ac04b4f18418b
+  languageName: node
+  linkType: hard
+
 "vuetify@npm:^2.6.9":
   version: 2.6.9
   resolution: "vuetify@npm:2.6.9"
@@ -7267,6 +7404,25 @@ __metadata:
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
   checksum: 4bc97ac6a1d9cd1f133444b0fc9d9091c97f4bd8388f97636ce27abd1ebffaa7dd45d29f6693661a666e77bcc08dff43ab7c2f5e2600a3101b956c94c1d038d0
+  languageName: node
+  linkType: hard
+
+"webpack-bundle-analyzer@npm:^4.7.0":
+  version: 4.7.0
+  resolution: "webpack-bundle-analyzer@npm:4.7.0"
+  dependencies:
+    acorn: ^8.0.4
+    acorn-walk: ^8.0.0
+    chalk: ^4.1.0
+    commander: ^7.2.0
+    gzip-size: ^6.0.0
+    lodash: ^4.17.20
+    opener: ^1.5.2
+    sirv: ^1.0.7
+    ws: ^7.3.1
+  bin:
+    webpack-bundle-analyzer: lib/bin/analyzer.js
+  checksum: 4ce3b379c61ce16b2219756843407cc99f2b82cd191f653043f1b705a3e32b3af03834af0dfded98ab852313a892a148bed1a8effaacd6440f028c19f41581f3
   languageName: node
   linkType: hard
 

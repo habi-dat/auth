@@ -29,18 +29,29 @@
           label="URL"
           required
         />
-        <v-file-input
+        <v-select
+          :items="icons"
           v-model="app.icon"
-          prepend-icon="category"
-          label="Icon"
-          @change="onFileChange"
-          accept=".jpg,.png,.gif,.svg,.ico"
-        >
-          <template #append-outer>
-            <v-img :src="imageUrl" max-height="40" max-width="40"/>
+          label="Icon">
+          <template v-slot:item="{ active, item, attrs, on }">
+            <v-list-item v-on="on" v-bind="attrs" >
+              <v-list-item-icon >
+                <img :src="'http://localhost:3000'+item.url" width="24" :style="'background-color: ' + $vuetify.theme.themes.light.secondary"/>
+              </v-list-item-icon>
+              <v-list-item-content>
+                  {{ item.name }}
+              </v-list-item-content>
+            </v-list-item>
           </template>
-        </v-file-input>
-
+          <template #prepend>
+            <v-container  style="padding:0px">
+            <img  width="24" :src="'http://localhost:3000'+app.icon.url" :style="'background-color: ' + $vuetify.theme.themes.light.secondary"/>
+          </v-container>
+          </template>
+          <template v-slot:selection="{ item }">
+            {{ item.name }}
+          </template>
+        </v-select>
         <v-checkbox
           v-model="app.saml.samlEnabled"
           label="Single Sign On"
@@ -123,7 +134,8 @@ export default {
       groups: [],
       valid: false,
       loaded: false,
-      imageUrl: ""
+      imageUrl: "",
+      icons: []
     }
   },
   watch: {
@@ -178,12 +190,18 @@ export default {
         .then(response => {
           this.groups = response.data.groups;
           this.app.groupsPopulated = this.groups.filter(g => this.app.groups.includes(g.dn));
-          this.loaded = true;
+          return axios.get('/api/app/icons')
+            .then(response => {
+              this.icons = response.data.icons;
+              this.app.icon = this.app.icon || this.icons[0]
+              this.loaded = true;
+            })
         })
         .catch(e => {});
     }
   },
   created() {
+
     this.getData();
   }
 }

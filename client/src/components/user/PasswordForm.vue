@@ -31,7 +31,7 @@
 
 import axios from 'axios'
 import router from '@/router'
-import PasswordFields from '@/components/form/PasswordFields'
+const PasswordFields = () => import('@/components/form/PasswordFields')
 
 export default {
   props: {

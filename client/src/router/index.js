@@ -20,7 +20,7 @@ import AppList from '@/pages/app/AppList'
 import CreateApp from '@/pages/app/CreateApp'
 import UpdateApp from '@/pages/app/UpdateApp'
 import UpdateSettings from '@/pages/settings/UpdateSettings'
-import TemplateEditor from '@/pages/settings/TemplateEditor'
+const TemplateEditor = () => import('@/pages/settings/TemplateEditor')
 import Login from '@/pages/Login'
 import ErrorPage from '@/pages/ErrorPage'
 import axios from 'axios'
@@ -158,7 +158,7 @@ router.beforeEach(async (to, from, next) => {
   var noReturnToPages = ['ErrorPage', 'SetPassword', 'ResetPassword', 'AcceptInvite', 'Login'];
   try {
     if (!noLoginPages.includes(to.name)) {
-      if (to.name === 'Login' && !to.query.returnTo && !noReturnToPages.includes(from.name) && from.path !== '/logout') {
+      if (to.name === 'Login' && !to.query.returnTo && !noReturnToPages.includes(from.name) && from.path !== '/logout' && from.path !== '/') {
         next({name: 'Login', query: {returnTo: from.path, returnToDn: from.query.dn}})
       } else {
         if (to.name !== 'Login' && from.name !== 'Login') {
