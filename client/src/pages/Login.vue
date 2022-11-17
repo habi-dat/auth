@@ -1,7 +1,7 @@
 <template>
-  <v-container fill-height fluid style="padding-right: 37px;">
-    <v-row justify="center">
-      <v-card outlined class="d-inline-block" style="position:relative; top: 15px; left: 25px; margin-bottom: 150px" width="800" elevation="5">
+  <v-container fill-height fluid>
+    <v-row style="padding-right: 60px; padding-bottom: 40vh">
+      <v-card outlined class="d-inline-block" style="position:relative; top: 90px; left:max(calc((100% - 1056px) / 2), 50px); margin-bottom: 150px; margin-left: 30px; " width="800" elevation="5">
         <Toolbar
           :title="$store.state.config.title"
         >

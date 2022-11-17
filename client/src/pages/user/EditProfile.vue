@@ -1,6 +1,6 @@
 <template>
 
-  <v-card outlined class="d-inline-block" width="800">
+  <v-card outlined class="d-inline-block" width="800" elevation="5">
     <Toolbar title="Profil bearbeiten" back>
       <template #right>
         <ToolbarButton

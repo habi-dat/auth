@@ -182,6 +182,13 @@ exports.loginRedirect = (req, app, request) => {
     })
 }
 
+exports.unauthorizedRedirect = (req, app, request) => {
+  return Promise.resolve()
+    .then(() => {
+      return '/#/error?type=unauthorized&appName=' + app.label;
+    })
+}
+
 exports.buildRequest = (requestId) => {
   return {  extract: { request: { id: requestId }}};
 }

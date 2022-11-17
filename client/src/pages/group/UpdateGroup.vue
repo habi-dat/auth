@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" v-if="loaded">
+  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" v-if="loaded" elevation=5>
     <Toolbar :title="'Gruppe ' + group.o + ' bearbeiten'" back >
       <template #right>
         <ToolbarButton

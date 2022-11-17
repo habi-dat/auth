@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%">
+  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" elevation=5>
     <Toolbar :title="'App ' + app.id + ' bearbeiten'" back >
       <template #right>
         <ToolbarButton

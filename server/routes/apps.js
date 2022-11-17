@@ -48,7 +48,7 @@ router.get("/api/apps", auth.isLoggedInAdmin, function(req, res, next) {
 })
 
 router.get("/api/app/icons", auth.isLoggedInAdmin, function(req, res, next) {
-  var directoryPath = path.join(__dirname, '../data/public/img/icons');
+  var directoryPath = path.join(__dirname, '../public/img/icons');
   return readdir(directoryPath)
     .then(files => files.map(file => {return {name: file, url: '/img/icons/' + file}}))
     .then(icons => res.send({ icons: icons }))

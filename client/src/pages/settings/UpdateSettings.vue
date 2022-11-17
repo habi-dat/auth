@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined style="display: flex; flex-direction:column"  min-width="800" >
+  <v-card outlined style="display: flex; flex-direction:column"  min-width="800"  elevation=5>
     <Toolbar title="Einstellungen" back >
       <template #right>
         <ToolbarButton

@@ -1,6 +1,6 @@
 <template>
 
-  <v-card outlined class="d-inline-block" width="800">
+  <v-card outlined class="d-inline-block" width="800" elevation=5>
     <Toolbar title="Passwort zurücksetzen" back infoText="Gib deine E-Mailadresse an und du bekommst einen Link zum Zurücksetzen deines Passworts.">
       <template #right>
         <ToolbarButton

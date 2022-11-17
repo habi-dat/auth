@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="d-inline-block" width="800">
+  <v-card outlined class="d-inline-block" width="800" elevation=5>
     <Toolbar :title="title" :back="!token" :icon="token?'key':undefined">
       <template #right>
         <ToolbarButton

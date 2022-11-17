@@ -14,6 +14,18 @@ router.get('/api/ping', (req, res, next) => {
   res.send('pong');
 })
 
+const login = (req, user) => {
+  return new Promise((resolve, reject) => {
+    req.login(user, err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(user);
+      }
+    })
+  })
+}
+
 router.post("/api/login", (req, res, next) => {
   passport.authenticate("ldapauth", (err, user, info) => {
     if (err) {
@@ -25,6 +37,27 @@ router.post("/api/login", (req, res, next) => {
     }
     ldaphelper.populateUserGroups(user, false)
       .then(user => {
+        if (req.body.requestId && req.body.appId) {
+          return apps.getApp(req.body.appId)
+            .then(app => {
+              if (auth.isAuthorized(user, app)) {
+                const request  = saml.buildRequest(req.body.requestId);
+                return login(req, user)
+                  .then(user => saml.createLoginResponse(req, app, request, 'post', user))
+                  .then(response => res.send({user: user, redirect: saml.postHtmlBody(app, response)}))
+              } else {
+                res.status(400).send({message: 'Du hast leider keine Berechtigungen für den Zugriff auf ' + app.label + '. Versuche es mit einem anderen Account, falls du mehrere hast oder wende dich an die Admin@s.'})
+              }
+            })
+        } else {
+          return login(req, user)
+            .then(user => {
+              res.send({user})
+            })
+        }
+
+
+
         req.login(user, err => {
           if (err) {
             throw err;
@@ -33,8 +66,10 @@ router.post("/api/login", (req, res, next) => {
             const request  = saml.buildRequest(req.body.requestId);
             return apps.getApp(req.body.appId)
               .then(app => {
-                return saml.createLoginResponse(req, app, request, 'post', user)
+                if (auth.isAuthorized(user, app)) {
+                  return saml.createLoginResponse(req, app, request, 'post', user)
                   .then(response => res.send({user: user, redirect: saml.postHtmlBody(app, response)}))
+                }
               })
           } else {
             return res.send({user: user});

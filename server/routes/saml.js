@@ -1,7 +1,7 @@
 const saml = require('../utils/saml');
+const auth = require('../utils/auth');
 const express = require('express');
 const apps = require('../utils/apps');
-const passport = require('passport');
 
 const router = express.Router();
 
@@ -20,10 +20,15 @@ router.get('/sso/login/:id', async (req, res, next) => {
       return saml.parseLoginRequest(req, app, 'redirect')
         .then(request => {
           if (req.isAuthenticated()) {
-            return saml.createLoginResponse(req, app, request, 'post', req.user)
-              .then(response => {
-                return res.type('html').send(saml.postHtml(app, response))
-              })
+            if (auth.isAuthorized(req.user, app)) {
+              return saml.createLoginResponse(req, app, request, 'post', req.user)
+                .then(response => {
+                  return res.type('html').send(saml.postHtml(app, response))
+                })
+            } else {
+              return saml.unauthorizedRedirect(req, app, request)
+                .then(redirectURL => res.redirect(redirectURL))
+            }
           } else {
             return saml.loginRedirect(req, app, request)
               .then(redirectURL => res.redirect(redirectURL))

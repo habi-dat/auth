@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="d-inline-block" width="800">
+  <v-card outlined class="d-inline-block" width="800" elevation=5>
     <Toolbar title="Account erstellen" icon="person">
       <template #right>
         <ToolbarButton

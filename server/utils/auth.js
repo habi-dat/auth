@@ -1,8 +1,5 @@
 const passport = require('passport')
 const config = require('../config/config.json')
-const ldaphelper = require('./ldaphelper')
-
-const SamlStrategy = require('passport-saml').Strategy
 const LdapStrategy = require('passport-ldapauth');
 
 // passport config
@@ -15,6 +12,14 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(user, done) {
   done(null, user);
 });
+
+exports.isAuthorized = (user, app) => {
+  if (app.groups && app.groups.length > 0) {
+    return !!app.groups.find(group => user.member.includes(group));
+  } else {
+    return true;
+  }
+}
 
 exports.isLoggedIn = (req, res, next) => {
     // if user is authenticated in the session, carry on

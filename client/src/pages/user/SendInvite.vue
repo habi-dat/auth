@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" min-height="700">
+  <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" min-height="700" elevation=5>
     <Toolbar title="Einladung senden" back >
       <template #right>
         <ToolbarButton

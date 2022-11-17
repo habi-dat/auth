@@ -25,7 +25,7 @@ router.get("/api/config",  (req, res, next) => {
     .catch(next)
 })
 
-router.get("/api/settings",  (req, res, next) => {
+router.get("/api/settings", auth.isLoggedInAdmin, (req, res, next) => {
   return settings.getSettings()
     .then(settings => {
       res.send({ settings: settings})
@@ -33,7 +33,7 @@ router.get("/api/settings",  (req, res, next) => {
     .catch(next)
 })
 
-router.post('/api/settings', (req, res, next) => {
+router.post('/api/settings', auth.isLoggedInAdmin, (req, res, next) => {
   const post = {
     title: req.body.title !== config.settings.general.title?req.body.title:undefined,
     entryUrl: req.body.entryUrl,
