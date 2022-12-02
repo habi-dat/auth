@@ -7,10 +7,10 @@
       {{ groupsLoaded.cn}}
     </v-card-subtitle>
     <v-divider />
-    <v-card-subtitle>
+    <v-card-subtitle v-if="!!groupsLoaded.description">
       {{ groupsLoaded.description}}
     </v-card-subtitle>
-    <v-divider />
+    <v-divider v-if="!!groupsLoaded.description"/>
     <v-card-text>
       <v-list>
         <v-list-item>
@@ -35,7 +35,7 @@ import axios from 'axios'
 export default {
   name: 'GroupTooltip',
   props: {
-    group: Object
+    group: String
   },
   data() {
     return {
@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     getGroup (dn) {
-      return axios.get('/api/group/' + dn)
+      return axios.create().get('/api/group/' + dn)
         .then(response => {
           this.groupsLoaded = response.data.group;
           this.loaded = true
@@ -66,8 +66,8 @@ export default {
     }
   },
   created() {
-    if (this.group && this.group.dn && !this.group.o) {
-      this.getGroup(this.group.dn);
+    if (this.group) {
+      this.getGroup(this.group);
     } else {
       this.groupsLoaded = this.group;
       this.loaded = true;

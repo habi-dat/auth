@@ -76,6 +76,7 @@ export default {
       defaultColDef: [],
       columnDefs: [],
       rowData: [],
+      groups: [],
       aggridLocale: aggridLocale,
       selectedRows: [],
       search: '',
@@ -112,26 +113,23 @@ export default {
           expires: moment(invite.expires),
           invitedBy: invite.currentUser.cn,
           created: moment(invite.created),
-          member: invite.data.member.map(item => {return {
-            dn: item,
-            cn: item.split(',')[0].split('=')[1]
-          }}),
-          owner: invite.data.owner.map(item => {return {
-            dn: item,
-            cn: item.split(',')[0].split('=')[1]
-          }}),
+          member: invite.data.member,
+          owner: invite.data.owner,
           data: invite.data,
           currentUser: invite.currentUser,
           token: invite.token
         }
       })
     },
-    getInvites: function () {
-      let self = this
-      axios.get('/api/user/invites')
+    getInvites: async function () {
+      return axios.get('/api/user/invites')
         .then(response => {
-          this.rowData = self.transformInvites(response.data.invites)
-          return rowData;
+          this.rowData = this.transformInvites(response.data.invites)
+          return axios.get('/api/groups/list')
+            .then(response => {
+              this.groups = response.data.groups
+              return rowData;
+            })
         })
         .catch(error => {})
     },
@@ -184,7 +182,8 @@ export default {
         })
     }
   },
-  created() {
+  async created() {
+    await this.getInvites();
     var textStyle = { 'line-height': 'normal', 'padding-top': '14px', 'padding-bottom': '14px'}
     this.columnDefs = [
       { checkboxSelection: true, maxWidth: 50},
@@ -200,9 +199,9 @@ export default {
           return moment(params.value).format('DD.MM.YYYY');
         }
       },
-      { headerName: "Mitglied in", field: "member", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'cn', tooltip: 'group'}
+      { headerName: "Mitglied in", field: "member", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'o', tooltip: 'group', itemData: this.groups}
       },
-      { headerName: "Admin von", field: "owner", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'cn', tooltip: 'group' }
+      { headerName: "Admin von", field: "owner", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'o', tooltip: 'group', itemData: this.groups }
       }
     ];
     this.defaultColDef = {
@@ -213,7 +212,6 @@ export default {
       autoHeight: true,
       cellStyle: { 'word-break': 'normal'}
     };
-    this.getInvites()
   },
 }
 </script>

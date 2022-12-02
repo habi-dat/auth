@@ -60,7 +60,23 @@ router.get('/api/groups', auth.isLoggedInGroupAdmin, function(req, res, next) {
     .then(groups => {
       return res.send({groups: groups})
     })
-    .catch(error => next);
+    .catch(next);
+})
+
+
+router.get('/api/groups/list', auth.isLoggedInGroupAdmin, function(req, res, next) {
+  return Promise.resolve()
+    .then(() => {
+      if (req.user.isAdmin) {
+        return ldaphelper.fetchGroups('all');
+      } else {
+        return req.user.ownerGroups
+      }
+    })
+    .then(groups => {
+      return res.send({groups: groups})
+    })
+    .catch(next);
 })
 
 router.get('/api/group/available/cn/:cn', auth.isLoggedInAdmin, function(req, res, next) {

@@ -69,12 +69,12 @@ export default {
     },
     async deleteApp() {
       var app = this.selectedApps[0];
-      if (await this.$refs.confirm.open('Bist du sicher?','Willst du die Kategorie ' + app.id + ' wirklich löschen?')) {
+      if (await this.$refs.confirm.open('Bist du sicher?','Willst du die App ' + app.id + ' wirklich löschen?')) {
         this.loading = true;
-        axios.delete('/api/app/' + app.id)
+        axios.delete('/api/app/delete/' + app.id)
           .then(response => {
             if (response.data.status === 'success') {
-              this.$snackbar.success('Kategorie ' + app.id + ' gelöscht')
+              this.$snackbar.success('App ' + app.id + ' gelöscht')
               this.loading=false;
               this.gridApi.applyTransaction({ remove: [app]});
             }

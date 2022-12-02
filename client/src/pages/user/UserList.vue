@@ -36,8 +36,9 @@
     <v-divider />
     <v-card-text style="height:100%;overflow: hidden;">
       <UserTable
-        v-if="usersLoaded"
+        v-if="dataLoaded"
         :users="users"
+        :groups="groups"
         :search="search"
         @selectionChanged="onSelectionChanged"
         @onGridReady="onGridReadyHandler"
@@ -61,8 +62,9 @@ export default {
   data() {
     return {
       users: [],
+      groups: [],
       selectedUsers: [],
-      usersLoaded: false,
+      dataLoaded: false,
       loading: false,
       search: '',
       gridApi: null
@@ -102,18 +104,21 @@ export default {
     changePassword() {
       router.push('/user/password?dn=' + this.selectedUsers[0].dn)
     },
-    getUsers: function () {
-      var self = this;
+    getData: function () {
       axios.get('/api/users')
         .then(response => {
-          self.users = response.data.users;
-          self.usersLoaded = true;
+          this.users = response.data.users;
+          axios.get('/api/groups/list')
+            .then(response => {
+              this.groups = response.data.groups;
+              this.dataLoaded = true;              
+            })
         })
         .catch(e => {});
     }
   },
   async created() {
-    this.getUsers();
+    this.getData();
   }
 }
 </script>

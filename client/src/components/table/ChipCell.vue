@@ -67,7 +67,10 @@ export default {
   },
   methods: {
     getText(object) {
-      if (this.params.field) {
+      if (this.params.itemData && this.params.field) {
+        const dataElement = this.params.itemData.find(o => o.dn === object);
+        return dataElement?dataElement[this.params.field]:'(n/a)';
+      } else if (this.params.field) {
         return object[this.params.field]
       } else {
         return object;

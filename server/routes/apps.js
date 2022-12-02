@@ -68,10 +68,16 @@ router.post("/api/app/create", auth.isLoggedInAdmin, function(req, res, next) {
     .catch(next);
 })
 
-router.post("/api/app/update", auth.isLoggedInAdmin, function(req, res, next) {
+router.post("/api/app/update/:id", auth.isLoggedInAdmin, function(req, res, next) {
   return validateApp(_.pick(req.body, 'id', 'label', 'url', 'saml', 'groups', 'icon'))
-    .then(apps.updateApp)
+    .then(app => apps.updateApp(req.params.id, app))
     .then(app => res.send({app: app}))
+    .catch(next);
+})
+
+router.delete("/api/app/delete/:id", auth.isLoggedInAdmin, function(req, res, next) {
+  return apps.deleteApp(req.params.id)
+    .then(() => res.send({status: 'success'}))
     .catch(next);
 })
 

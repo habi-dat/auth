@@ -24,6 +24,7 @@ services:
       - ./server/routes:/app/routes
       - ./server/data/saml:/app/data/saml
       - ./server/utils:/app/utils
+      - ./server/public:/app/public
     ports:
       - 3000
     networks:

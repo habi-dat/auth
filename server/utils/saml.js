@@ -11,6 +11,15 @@ samlify.setSchemaValidator({
   }
 });
 
+const buildLoginResponseTemplate = () => {
+  var attributes = '';
+  ['username', 'uid', 'place', 'email', 'title', 'groups']
+    .forEach(attribute => {
+      attributes += `<saml:Attribute Name="${attribute}" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attr_${attribute}}</saml:AttributeValue></saml:Attribute>`
+    })
+  return `<?xml version="1.0" encoding="utf-8"?><samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{ID}" Version="2.0" IssueInstant="{IssueInstant}" Destination="{Destination}" InResponseTo="{InResponseTo}"><saml:Issuer>{Issuer}</saml:Issuer><samlp:Status><samlp:StatusCode Value="{StatusCode}" /></samlp:Status><saml:Assertion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{AssertionID}" Version="2.0" IssueInstant="{IssueInstant}"><saml:Issuer>{Issuer}</saml:Issuer><saml:Subject><saml:NameID Format="{NameIDFormat}">{NameID}</saml:NameID><saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"><saml:SubjectConfirmationData NotOnOrAfter="{SubjectConfirmationDataNotOnOrAfter}" Recipient="{SubjectRecipient}" InResponseTo="{InResponseTo}" /></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore="{ConditionsNotBefore}" NotOnOrAfter="{ConditionsNotOnOrAfter}"><saml:AudienceRestriction><saml:Audience>{Audience}</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant="{ConditionsNotOnOrAfter}" SessionNotOnOrAfter="{ConditionsNotOnOrAfter}" SessionIndex="{AssertionID}"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement>${attributes}</saml:AttributeStatement></saml:Assertion></samlp:Response>`
+}
+
 const baseConfig = {
   privateKey: fs.readFileSync('data/saml/key.pem'), // in .pem format
   entityID: config.saml.idp.entityID,
@@ -35,7 +44,7 @@ const baseConfig = {
     'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified',
     'urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName'
   ],
-  loginResponseTemplate: { context: '<?xml version="1.0" encoding="utf-8"?><samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{ID}" Version="2.0" IssueInstant="{IssueInstant}" Destination="{Destination}" InResponseTo="{InResponseTo}"><saml:Issuer>{Issuer}</saml:Issuer><samlp:Status><samlp:StatusCode Value="{StatusCode}" /></samlp:Status><saml:Assertion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{AssertionID}" Version="2.0" IssueInstant="{IssueInstant}"><saml:Issuer>{Issuer}</saml:Issuer><saml:Subject><saml:NameID Format="{NameIDFormat}">{NameID}</saml:NameID><saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"><saml:SubjectConfirmationData NotOnOrAfter="{SubjectConfirmationDataNotOnOrAfter}" Recipient="{SubjectRecipient}" InResponseTo="{InResponseTo}" /></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore="{ConditionsNotBefore}" NotOnOrAfter="{ConditionsNotOnOrAfter}"><saml:AudienceRestriction><saml:Audience>{Audience}</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant="{ConditionsNotOnOrAfter}" SessionNotOnOrAfter="{ConditionsNotOnOrAfter}" SessionIndex="{AssertionID}"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute Name="username" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attrUsername}</saml:AttributeValue></saml:Attribute><saml:Attribute Name="uid" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attrUid}</saml:AttributeValue></saml:Attribute><saml:Attribute Name="place" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attrPlace}</saml:AttributeValue></saml:Attribute><saml:Attribute Name="email" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attrEmail}</saml:AttributeValue></saml:Attribute><saml:Attribute Name="title" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attrTitle}</saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion></samlp:Response>', attributes: []}
+  loginResponseTemplate: { context: buildLoginResponseTemplate(), attributes: []}
 };
 
 const idp = new samlify.IdentityProvider(baseConfig);
@@ -72,7 +81,9 @@ const buildUser = user => {
   return {
     uid: user.uid,
     name: user.cn,
-    email: user.mail
+    email: user.mail,
+    cn: user.cn,
+    mail: user.mail,
   }
 }
 
@@ -126,11 +137,12 @@ const createTemplateCallback = (_idp, _sp, user, requestId) => template => {
    EntityID: spEntityID,
    InResponseTo: requestId,
    StatusCode: 'urn:oasis:names:tc:SAML:2.0:status:Success',
-   attrUsername: user.cn,
-   attrUid: user.uid,
-   attrPlace: user.l,
-   attrEmail: user.mail,
-   attrTitle: user.title,
+   attr_username: user.cn,
+   attr_uid: user.uid,
+   attr_place: user.l,
+   attr_email: user.mail,
+   attr_title: user.title,
+   attr_groups: user.memberGroups.map(group => group.cn).join(',')
   };
   return {
    id: _id,

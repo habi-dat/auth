@@ -39,7 +39,8 @@ export default {
       app: {},
       valid: false,
       loaded: false,
-      loading: false
+      loading: false,
+      originalAppId: null,
     }
   },
   methods: {
@@ -50,18 +51,19 @@ export default {
       this.loading = true;
       var post = {...this.app};
       post.groups = post.groupsPopulated.map(g => g.dn);
-      axios.post('/api/app/update', post)
+      axios.post('/api/app/update/' + this.originalAppId, post)
         .then(response => {
           this.$snackbar.success('App ' + this.app.id + ' geändert')
           this.loading = false;
           router.push('/app/list')
         })
-        .catch(error => {this.loading=false; })
+        .catch(error => this.loading = false)
     },
     getData: function () {
       return axios.get('/api/app/' + this.$route.query.id)
         .then(response => {
           this.app = response.data.app;
+          this.originalAppId = this.app.id;
           this.loaded = true;
         })
         .catch(e => {})

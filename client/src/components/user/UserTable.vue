@@ -35,6 +35,7 @@ export default {
   },
   props: {
     users: Array,
+    groups: Array,
     search: String,
     showGroups: Boolean,
     comboSelect: Boolean,
@@ -103,14 +104,13 @@ export default {
     const groupValueGetter = params => {
       return params.value.map(g => g.o).join(' ');
     }
-
     if (this.showGroups) {
       this.columnDefs.push(
-        { headerName: "Mitglied in", field: "memberGroups", getQuickFilterText: groupValueGetter, cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'o', tooltip: 'group' }
+        { headerName: "Mitglied in", field: "member", getQuickFilterText: groupValueGetter, cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'o', tooltip: 'group', itemData: this.groups }
         }
       )
       this.columnDefs.push(
-        { headerName: "Admin von", field: "ownerGroups", cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true ,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'o', tooltip: 'group' }
+        { headerName: "Admin von", field: "owner", cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true ,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'o', tooltip: 'group', itemData: this.groups }
         }
       )
     }

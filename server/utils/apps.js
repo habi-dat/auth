@@ -51,11 +51,24 @@ exports.createApp = function(app) {
     });
 }
 
-exports.updateApp = function(app) {
+exports.updateApp = function(id, app) {
   return readStore()
     .then(store => {
-      var index = store.findIndex(a => a.id === app.id);
+      var index = store.findIndex(a => a.id === id);
       store[index] = app;
       return saveStore(store);
+    });
+}
+
+exports.deleteApp = function(id) {
+  return readStore()
+    .then(store => {
+      var index = store.findIndex(a => a.id === id);
+      if (index > -1) {
+        store.splice(index, 1)
+        return saveStore(store);  
+      } else {
+        throw "App not found"
+      }
     });
 }

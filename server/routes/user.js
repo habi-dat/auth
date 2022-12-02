@@ -445,7 +445,7 @@ router.get('/api/users', auth.isLoggedInGroupAdmin, function(req, res, next) {
 // GET USER
 
 router.get('/api/user/:dn', auth.isLoggedInGroupAdmin, function(req, res, next) {
-  return ldaphelper.fetchUser(req.params.dn, false)
+  return ldaphelper.fetchUser(req.params.dn, false, true)
     .then(user => {
       res.send({user: user})
     })

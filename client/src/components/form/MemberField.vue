@@ -26,7 +26,7 @@
           </template>
           <GroupTooltip
             v-if="tooltip === 'group'"
-            :group="item"
+            :group="item['dn']"
           />
           <UserTooltip
             v-if="tooltip === 'user'"
