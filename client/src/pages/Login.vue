@@ -1,6 +1,6 @@
 <template>
-  <v-container fill-height fluid>
-    <v-row style="padding-right: 60px; padding-bottom: 40vh">
+  <v-container fill-height fluid style="padding:0px; margin: 0px -30px;">
+    <v-row style="padding-right: 40px; padding-bottom: 40vh">
       <v-card outlined class="d-inline-block" style="position:relative; top: 90px; left:max(calc((100% - 1056px) / 2), 50px); margin-bottom: 150px; margin-left: 30px; " width="800" elevation="5">
         <Toolbar
           :title="$store.state.config.title"
@@ -67,6 +67,11 @@ import ToolbarButton from '@/components/layout/ToolbarButton'
 export default {
   name: 'Login',
   components: { Toolbar, ToolbarButton },
+  metaInfo: {
+    meta: [
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=0.9' }
+    ]
+  },   
   data () {
     return {
       username: null,

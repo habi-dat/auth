@@ -73,10 +73,15 @@ export default {
       this.$emit('onDataRendered');
     },
     onRowSelected(event) {
+      const user = {
+        dn: event.node.data.dn,
+        cn: event.node.data.cn,
+        uid: event.node.data.uid,
+      }
       if (!this.comboSelect) {
-        this.$emit('selectUser', event.node.data, event.node.isSelected())
+        this.$emit('selectUser', user, event.node.isSelected())
       } else {
-        this.$emit('selectUser', event.node.data, event.node.data.selectCell)
+        this.$emit('selectUser', user, event.node.data.selectCell)
       }
     }
   },

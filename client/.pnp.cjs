@@ -64,6 +64,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["vue-cookies", "npm:1.8.1"],\
             ["vue-email-editor", "npm:1.0.0"],\
             ["vue-loader", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:15.10.0"],\
+            ["vue-meta", "npm:2.4.0"],\
             ["vue-property-decorator", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:9.1.2"],\
             ["vue-router", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:3.6.3"],\
             ["vuetify", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:2.6.9"],\
@@ -2735,6 +2736,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["vue-cookies", "npm:1.8.1"],\
             ["vue-email-editor", "npm:1.0.0"],\
             ["vue-loader", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:15.10.0"],\
+            ["vue-meta", "npm:2.4.0"],\
             ["vue-property-decorator", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:9.1.2"],\
             ["vue-router", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:3.6.3"],\
             ["vuetify", "virtual:4fca998d120aa2ad17bb4acf52e38155218613ac1ec53bb5317f760a8161be6afceb36dcc61c5393e9d081b0c2fdbb8e7fa49c9ddbbe58dbfcb7f4ec98946dcc#npm:2.6.9"],\
@@ -9393,6 +9395,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packagePeers": [\
             "@types/webpack",\
             "webpack"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["vue-meta", [\
+        ["npm:2.4.0", {\
+          "packageLocation": "./.yarn/cache/vue-meta-npm-2.4.0-1952d99349-a6686e7351.zip/node_modules/vue-meta/",\
+          "packageDependencies": [\
+            ["vue-meta", "npm:2.4.0"],\
+            ["deepmerge", "npm:4.2.2"]\
           ],\
           "linkType": "HARD"\
         }]\

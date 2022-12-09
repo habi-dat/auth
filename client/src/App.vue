@@ -49,7 +49,7 @@
           <v-list-item-icon><v-icon>login</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Login</v-list-item-title></v-list-item-content>
         </v-list-item>
-        <v-list-item to="/logout" @click="logout" v-if="$store.state.config.authenticated && !isIframe()"">
+        <v-list-item to="/logout" @click="logout" v-if="$store.state.config.authenticated && !isIframe()">
           <v-list-item-icon><v-icon>logout</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Logout</v-list-item-title></v-list-item-content>
         </v-list-item>
@@ -73,6 +73,15 @@ import customcss from '@/assets/css/custom.css'
 export default {
   components: { Snackbar },
   name: 'App',
+  metaInfo: {
+    htmlAttrs: {
+      lang: 'de-DE'
+    },
+    meta: [
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+    ]
+  },  
   data () {
     return {
       initialized: false
@@ -115,7 +124,7 @@ export default {
           }
           this.initialized = true;
         })
-        .catch(error => {})
+        .catch(() => {})
     },
     setupInterceptor: function () {
       var self = this;

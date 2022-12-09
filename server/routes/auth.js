@@ -35,7 +35,7 @@ router.post("/api/login", (req, res, next) => {
     if (!user) {
       return res.status(400).send({message: "Login fehlgeschlagen: Falscher Username oder falsches Passwort "});
     }
-    ldaphelper.populateUserGroups(user, false)
+    ldaphelper.populateUserGroups(user, false, true)
       .then(user => {
         if (req.body.requestId && req.body.appId) {
           return apps.getApp(req.body.appId)

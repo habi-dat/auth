@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VueMeta from 'vue-meta'
 import vuetify from '@/plugins/vuetify'
 import snackbarPlugin from '@/plugins/snackbar';
 import App from './App'
@@ -9,6 +10,7 @@ import router from './router'
 
 Vue.config.productionTip = false
 
+Vue.use(VueMeta)
 Vue.use(Vuex)
 
 const store = new Vuex.Store({

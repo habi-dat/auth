@@ -27,10 +27,11 @@
       </template>
     </Toolbar>
     <v-divider />
-    <v-card-text style="height:100%">
+    <v-card-text  style="height:100%;overflow: hidden;">
       <ag-grid-vue
+        v-if="loaded"
+        style="height:100%;width:100%;"        
         :localeText="aggridLocale.locale_de"
-        style="width: 100%; height: 100%"
         class="ag-theme-material"
         :defaultColDef="defaultColDef"
         :columnDefs="columnDefs"
@@ -83,7 +84,8 @@ export default {
       gridApi: null,
       columnApi: null,
       loadingRefresh: false,
-      loadingDelete: false
+      loadingDelete: false,
+      loaded: false
     }
   },
   watch: {
@@ -128,6 +130,7 @@ export default {
           return axios.get('/api/groups/list')
             .then(response => {
               this.groups = response.data.groups
+              this.loaded = true;
               return rowData;
             })
         })
@@ -199,9 +202,9 @@ export default {
           return moment(params.value).format('DD.MM.YYYY');
         }
       },
-      { headerName: "Mitglied in", field: "member", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'o', tooltip: 'group', itemData: this.groups}
+      { headerName: "Mitglied in", field: "member", cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true,cellRenderer: 'ChipCell', cellRendererParams: {  color: 'success', field: 'o', tooltip: 'group', itemData: this.groups}
       },
-      { headerName: "Admin von", field: "owner", cellStyle: {'white-space': 'normal'}, maxWidth: 250, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'o', tooltip: 'group', itemData: this.groups }
+      { headerName: "Admin von", field: "owner", cellStyle: {'white-space': 'normal'}, maxWidth: 300, autoHeight: true, cellRenderer: 'ChipCell', cellRendererParams: {  color: 'info', field: 'o', tooltip: 'group', itemData: this.groups }
       }
     ];
     this.defaultColDef = {

@@ -8,7 +8,7 @@
     :rowData="rowData"
     :isExternalFilterPresent="isExternalFilterPresent"
     :doesExternalFilterPass="doesExternalFilterPass"
-    :suppressRowClickSelection="comboSelect"
+    :suppressRowClickSelection="comboSelect || !flat"
     :row-selection="rowSelection"
     @grid-ready="onGridReady"
     @first-data-rendered="onFirstDataRendered"
@@ -112,10 +112,16 @@ export default {
           }
         });
       }
+      var group = {
+        dn: event.node.data.dn,
+        cn: event.node.data.cn,
+        o: event.node.data.o,
+      }
+
       if (!this.comboSelect) {
-        this.$emit('selectGroup', event.node.data, event.node.isSelected())
+        this.$emit('selectGroup', group, event.node.isSelected())
       } else {
-        this.$emit('selectGroup', event.node.data, event.node.data.selectCell)
+        this.$emit('selectGroup', group, event.node.data.selectCell)
       }
     },
     flattenTree(groups, parents, group) {
