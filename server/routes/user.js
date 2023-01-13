@@ -48,7 +48,7 @@ const validateUser = async (user, member) => {
     }
 
     if ("mail" in user) {
-      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(user.mail)) {
+      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(user.mail)) {
         errors.push("E-Mailadresse: keine gültige E-Mailadresse");
       }
     }
@@ -344,7 +344,7 @@ router.delete(
   auth.isLoggedInGroupAdmin,
   function (req, res, next) {
     return ldaphelper
-      .fetchUser(req.params.dn, false)
+      .fetchUser(req.params.dn, false, true)
       .then((user) => {
         if (!req.user.isAdmin) {
           var notOwnedGroups = user.memberGroups
