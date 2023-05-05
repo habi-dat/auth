@@ -53,12 +53,12 @@
             v-if="loaded"
             :groups="groups"
             :search="search"
-            :flat="!$store.state.user.isAdmin"
             :selectCellItems="selectCellItems"
             @selectGroup="onSelectGroup"
             @onGridReady="params => gridApi.groups = params.api"
             @onDataRendered="selectGroups"
             rowSelection="multiple"
+            selection="owner"
             :heightOffset="30"
             comboSelect/>
         </v-col>

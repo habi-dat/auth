@@ -34,7 +34,7 @@
           />
         </v-tooltip>
         <v-icon
-          v-if="$store.state.user.isAdmin || $store.state.user.owner.includes(item[itemValue])"
+          v-if="!readonly && ($store.state.user.isAdmin || tooltip === 'user' || $store.state.user.owner.includes(item[itemValue]))"
           small
           @click="parent.selectItem(item)"
         >
@@ -60,7 +60,8 @@ export default {
     itemValue: String,
     tooltip: String,
     rules: Array,
-    close: Boolean
+    close: Boolean,
+    readonly: Boolean,
   }
 };
 

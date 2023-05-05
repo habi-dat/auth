@@ -2,7 +2,7 @@
   <v-text-field
     prepend-icon="email"
     :disabled="disabled"
-    :rules="[v => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(v) || 'keine gültige E-Mailadresse' ]"
+    :rules="[v => /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/.test(v) || 'keine gültige E-Mailadresse' ]"
     :error-messages="errors"
     @change="checkMailAvailability"
     :value="value"

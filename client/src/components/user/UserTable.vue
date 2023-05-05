@@ -5,7 +5,7 @@
     class="ag-theme-material"
     :defaultColDef="defaultColDef"
     :columnDefs="columnDefs"
-    :row-selection="rowSelection"
+    :row-selection="readonly?'':rowSelection"
     :rowData="rowData"
     @grid-ready="onGridReadyHandler"
     @first-data-rendered="onFirstDataRendered"
@@ -42,7 +42,8 @@ export default {
     selectCellItems: Array,
     groups: Array,
     heightOffset: Number,
-    rowSelection: String
+    rowSelection: String,
+    readonly: Boolean,
   },
   data () {
     return {
@@ -89,11 +90,11 @@ export default {
     this.tableStyle = "width: 100%; height: calc(100% - " + (this.heightOffset || 0) +"px);"
     var selectorCellDef;
     if (this.comboSelect) {
-      selectorCellDef = { headerName: "", field: "selectCell", maxWidth: 50, cellRenderer: 'SelectCell', cellRendererParams: { items: this.selectCellItems},
+      selectorCellDef = { headerName: "", field: "selectCell", maxWidth: 50, cellRenderer: 'SelectCell', cellRendererParams: { items: this.selectCellItems, readonly: this.readonly},
         autoHeight: false
       }
     } else {
-      selectorCellDef = { checkboxSelection: true, maxWidth: 50,
+      selectorCellDef = { checkboxSelection: !!!this.readonly, maxWidth: 50,
         cellStyle: {}};
     }
     var textStyle = { 'line-height': 'normal', 'padding-top': '14px', 'padding-bottom': '14px'}

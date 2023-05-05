@@ -11,11 +11,12 @@
           :rules="[v => /^.{3,}$/.test(v) || 'mindestens 3 Zeichen']"
           label="Anzeigenname"
           @input="updateCn"
+          :readonly="action==='openGroup'"
           required>
         </v-text-field>
         <v-text-field
           prepend-icon="groups"
-          :disabled="action ==='updateGroup' && oldGroup.cn === 'admin'"
+          :disabled="!$store.state.user.isAdmin || action ==='updateGroup' && oldGroup.cn === 'admin'"
           v-model="group.cn"
           :rules="[v => /^[A-Za-z0-9_-]{2,}[A-Za-z0-9]+$/.test(v) || 'mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen']"
           :error-messages="errors.cn"
@@ -40,6 +41,7 @@
           itemValue="dn"
           tooltip="user"
           close
+          :readonly="action==='openGroup'"
         />
         <MemberField
           v-if="showMembers"
@@ -51,6 +53,7 @@
           itemValue="dn"
           tooltip="user"
           close
+          :readonly="action==='openGroup'"          
         />
         <MemberField
           v-if="showParentgroups"
@@ -62,6 +65,7 @@
           itemValue="dn"
           tooltip="group"
           close
+          :readonly="action==='openGroup'"          
         />
         <MemberField
           v-if="showSubgroups"
@@ -73,6 +77,7 @@
           itemValue="dn"
           tooltip="group"
           close
+          :readonly="action==='openGroup'"          
         />
       </v-form>
 
@@ -86,15 +91,15 @@
             left
             icons-and-text>
             <v-tabs-slider></v-tabs-slider>
-            <v-tab href="#tab-member">
+            <v-tab href="#tab-member" v-if="showMembers">
               Mitglieder
               <v-icon>group</v-icon>
             </v-tab>
-            <v-tab href="#tab-parentgroups">
+            <v-tab href="#tab-parentgroups" v-if="showParentgroups">
               Übergruppen
               <v-icon>expand_less</v-icon>
             </v-tab>
-            <v-tab href="#tab-subgroups">
+            <v-tab href="#tab-subgroups" v-if="showSubgroups">
               Untergruppen
               <v-icon>expand_more</v-icon>
             </v-tab>
@@ -118,7 +123,8 @@
             comboSelect
             :selectCellItems="selectCellItems"
             rowSelection="multiple"
-            :heightOffset="30" />
+            :heightOffset="30"
+            :readonly="action==='openGroup'"  />
         </v-tab-item>
         <v-tab-item key="2" value="tab-parentgroups" style="height: 100%; min-height: 400px; overflow: hidden;">
           <GroupTable
@@ -327,7 +333,13 @@ export default {
   },
   async created() {
     this.oldGroup = {... this.group};
-    await this.getData();
+    if (this.action === 'openGroup') {
+      this.users = this.group.member;
+      this.groups = [this.group]
+      this.loaded = true;
+    } else {
+      await this.getData();
+    }
   }
 }
 </script>

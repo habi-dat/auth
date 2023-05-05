@@ -10,6 +10,7 @@
     :doesExternalFilterPass="doesExternalFilterPass"
     :suppressRowClickSelection="comboSelect || !flat"
     :row-selection="rowSelection"
+    :isRowSelectable="isRowSelectable"
     @grid-ready="onGridReady"
     @first-data-rendered="onFirstDataRendered"
     @row-selected="onRowSelected"
@@ -43,7 +44,8 @@ export default {
     selectCellItems: Array,
     comboSelect: Boolean,
     heightOffset: Number,
-    rowSelection: String
+    rowSelection: String,
+    selection: String
   },
   data () {
     return {
@@ -80,6 +82,9 @@ export default {
     }
   },
   methods: {
+    isRowSelectable(params) {
+      return this.$store.state.user.isAdmin || this.selection === 'member' && this.$store.state.user.member.includes(params.data.dn) || this.selection === 'owner' && this.$store.state.user.owner.includes(params.data.dn)
+    },
     onGridReady(params) {
         this.gridApi = params.api;
         this.columnApi = params.columnApi;
@@ -173,7 +178,7 @@ export default {
     var selectorCellDef;
     if (this.comboSelect) {
       selectorCellDef = { headerName: "", field: "selectCell", maxWidth: 50, cellRenderer: 'SelectCell', cellRendererParams:
-        { items: this.selectCellItems || []},
+        { items: this.selectCellItems || [], selection: this.selection},
         autoHeight: false
       }
     } else {

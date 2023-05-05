@@ -13,6 +13,7 @@ import UpdateUser from '@/pages/user/UpdateUser'
 import GroupList from '@/pages/group/GroupList'
 import CreateGroup from '@/pages/group/CreateGroup'
 import UpdateGroup from '@/pages/group/UpdateGroup'
+import OpenGroup from '@/pages/group/OpenGroup'
 import CategoryList from '@/pages/category/CategoryList'
 import CreateCategory from '@/pages/category/CreateCategory'
 import UpdateCategory from '@/pages/category/UpdateCategory'
@@ -98,6 +99,11 @@ var router = new Router({
       path: '/group/update',
       name: 'UpdateGroup',
       component: UpdateGroup
+    },
+    {
+      path: '/group/open',
+      name: 'OpenGroup',
+      component: OpenGroup
     },
     {
       path: '/category/list',

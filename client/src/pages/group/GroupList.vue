@@ -3,13 +3,22 @@
     <Toolbar title="Gruppen" icon="groups" search :searchText.sync="search">
       <template #right>
         <ToolbarButton
+          icon="visibility"
+          tooltip="Gruppe öffnen"
+          color="success"
+          @click="openGroup"
+          :disabled="selectedGroups.length === 0 || !$store.state.user.isAdmin && !selectedGroups[0].member.includes($store.state.user.dn)"
+        />        
+        <ToolbarButton
+          v-if="$store.state.user.isAdmin || $store.state.user.isGroupAdmin"
           icon="edit"
           tooltip="Gruppe bearbeiten"
           color="info"
           @click="updateGroup"
-          :disabled="selectedGroups.length === 0"
+          :disabled="selectedGroups.length === 0 || !$store.state.user.isAdmin && !selectedGroups[0].owner.includes($store.state.user.dn)"
         />
         <ToolbarButton
+          v-if="$store.state.user.isAdmin"
           icon="delete"
           tooltip="Gruppe löschen"
           color="error"
@@ -18,6 +27,7 @@
           :disabled="selectedGroups.length === 0"
         />
         <ToolbarButton
+          v-if="$store.state.user.isAdmin"
           icon="add"
           tooltip="Gruppe erstellen"
           color="success"
@@ -34,7 +44,8 @@
         @selectionChanged="onSelectGroup"
         @onGridReady="onGridReadyHandler"
         showMembers
-        rowSelection="single"/>
+        rowSelection="single"
+        selection="member"/>
     </v-card-text>
     <ConfirmDialog ref="confirm" />
   </v-card>
@@ -87,6 +98,9 @@ export default {
     },
     updateGroup() {
       router.push('/group/update?dn=' + this.selectedGroups[0].dn)
+    },
+    openGroup() {
+      router.push('/group/open?dn=' + this.selectedGroups[0].dn)
     },
     getGroups: function () {
       var self = this;

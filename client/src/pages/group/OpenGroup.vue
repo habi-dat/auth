@@ -1,26 +1,15 @@
 <template>
   <v-card outlined style="display: flex; flex-direction:column" width="100%" height="100%" v-if="loaded" elevation=5>
-    <Toolbar :title="'Gruppe ' + group.o + ' bearbeiten'" back >
-      <template #right>
-        <ToolbarButton
-          icon="save"
-          tooltip="Speichern"
-          color="success"
-          :loading="loading"
-          @click="save"
-          :disabled="!valid"
-        />
-      </template>
+    <Toolbar :title="'Gruppe ' + group.o" back >
     </Toolbar>
     <v-divider />
     <v-card-text style="height: 100%; overflow: hidden;">
      <GroupForm
         v-if="loaded"
-        @valid="onValid"
-        action="updateGroup"
+        action="openGroup"
         :group="group"
-        :showSubgroups="$store.state.user.isAdmin"
-        :showParentgroups="$store.state.user.isAdmin"
+        :showSubgroups="false"
+        :showParentgroups="false"
         :showMembers="true"
       />
     </v-card-text>
@@ -29,7 +18,6 @@
 
 <script>
 import axios from 'axios'
-import router from '@/router'
 import GroupForm from '@/components/group/GroupForm'
 import Toolbar from '@/components/layout/Toolbar'
 import ToolbarButton from '@/components/layout/ToolbarButton'
@@ -40,7 +28,6 @@ export default {
   data() {
     return {
       group: {},
-      valid: true,
       users: [],
       groups: [],
       loaded: false,
@@ -48,23 +35,6 @@ export default {
     }
   },
   methods: {
-    onValid (valid) {
-      this.valid = valid;
-    },
-    save: function () {
-      this.loading = true;
-      axios.post(this.$store.state.user.isAdmin?'/api/group/update':'/api/group/update/groupadmin', this.group)
-        .then(response => {
-          this.loading = false;
-          if (response.data.status === 'success') {
-            this.$snackbar.success(response.data.message)
-          } else {
-            this.$snackbar.warning(response.data.message)
-          }
-          router.push('/group/list')
-        })
-        .catch(errors => {this.loading=false;})
-    },
     getData: function () {
       return axios.get('/api/group/' +  this.$route.query.dn)
         .then(response => {

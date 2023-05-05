@@ -25,7 +25,7 @@
           <v-list-item-icon><v-icon>group</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Accounts</v-list-item-title></v-list-item-content>
         </v-list-item>
-        <v-list-item to="/group/list" v-if="$store.state.config.authenticated && $store.state.user.isAdmin">
+        <v-list-item to="/group/list" v-if="$store.state.config.authenticated">
           <v-list-item-icon><v-icon>groups</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Gruppen</v-list-item-title></v-list-item-content>
         </v-list-item>
