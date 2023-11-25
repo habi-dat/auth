@@ -10,7 +10,8 @@ client/node_modules
 client/.editorconfig
 client/.git
 client/.gitignore
-
+client/.yarn
+client/.yarnrc.yml
 
 # Compiled source #
 ###################

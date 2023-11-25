@@ -36,10 +36,6 @@
   display: block;
 }
 
-.habidat-dropdown-content a svg {
-
-}
-
 /* Change color of dropdown links on hover */
 .habidat-dropdown-content a:hover {background-color: #ddd;}
 

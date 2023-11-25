@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:16
 
 ENV HABIDAT_DOMAIN example.com
 ENV HABIDAT_TITLE habi*DAT
