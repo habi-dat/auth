@@ -1,1 +1,4 @@
 backend.env
+.env
+push.sh
+build.sh
