@@ -76,6 +76,7 @@
           itemText="o"
           itemValue="dn"
           tooltip="group"
+          :rules="[v => action !== 'createUser' || v.length > 0 || 'Mitgliedschaft in mindestens einer Gruppe notwendig']"          
           close
         />
         <MemberField

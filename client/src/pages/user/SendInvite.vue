@@ -18,8 +18,7 @@
         <v-col sm="12" md="4">
           <v-form
             ref="form"
-            v-model="valid"
-            lazy-validation>
+            v-model="valid">
             <EmailField
               v-model="email"
               checkAvailability
@@ -32,6 +31,7 @@
               itemText="o"
               itemValue="dn"
               tooltip="group"
+              :rules="[v => v.length > 0 || 'Mitgliedschaft in mindestens einer Gruppe notwendig']"      
               close
             />
             <MemberField

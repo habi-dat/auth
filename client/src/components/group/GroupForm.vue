@@ -275,7 +275,6 @@ export default {
     onSelectGroup: function(group, selected) {
       if (selected && !this.group.subGroups.find(g => g.dn === group.dn)) {
         this.group.subGroups.push(group);
-        console.log(group);
       } else if (!selected) {
         var index = this.group.subGroups.findIndex(g => g.dn === group.dn)
         if (index >= 0) {

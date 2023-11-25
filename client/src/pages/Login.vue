@@ -5,16 +5,6 @@
         <Toolbar
           :title="$store.state.config.title"
         >
-          <template #right>
-            <ToolbarButton
-              icon="login"
-              tooltip="Login"
-              color="success"
-              :loading="loading"
-              :disabled="!valid"
-              @click="login"
-            />
-          </template>
           <template #icon>
             <v-tooltip right>
               <template v-slot:activator="{ on, attrs }">
@@ -49,10 +39,18 @@
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-spacer />
           <v-btn text color="info" to="/user/password/reset">
             Passwort vergessen?
           </v-btn>
+          <v-spacer />
+          <ToolbarButton
+              icon="login"
+              tooltip="Login"
+              color="success"
+              :loading="loading"
+              :disabled="!valid"
+              @click="login"
+            />          
         </v-card-actions>
       </v-card>
     </v-row>
