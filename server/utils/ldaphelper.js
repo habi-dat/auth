@@ -810,49 +810,46 @@ exports.syncParentGroups = function (dn, parentGroups) {
 
 exports.updateGroup = function (dn, group) {
   var steps = [];
-  return (
-    exports
-      .fetchGroup(dn)
-      /*    .then(oldGroup => {
-          group.dn = exports.groupCnToDn(group.cn);
-          if ('cn' in group && oldGroup.cn !== group.cn) {
-            return exports.updateDN(dn, group.dn)
-              .then(() => exports.updateUserOu(dn, group.dn))
-              .then(() => oldGroup);
-          }
-          else {
-            return oldGroup;
-          }
-        })*/
-      .then((oldGroup) => {
-        group.dn = exports.groupCnToDn(group.cn);
-        var updateKeys = Object.keys(group).filter((key) => {
-          return (
-            ["o", "description", "member", "owner"].includes(key) &&
-            group[key] !== undefined
-          );
-        });
-        if (group.member && group.member.length === 0) {
-          group.member = "";
-        }
-        if (group.owner && group.owner.length === 0) {
-          group.owner = "";
-        }
-        return Promise.map(updateKeys, (key) => {
-          var modification = {};
-          modification[key] = group[key];
-          return exports.change(group.dn, "replace", modification);
-        })
-          .then(() => {
-            if ("o" in group && oldGroup.o !== group.o) {
-              return exports.updateUserTitle(group.dn, group.o);
-            }
-            return;
-          })
-          .then(() => exports.syncParentGroups(group.dn, group.parentGroups));
+  return exports
+    .fetchGroup(dn)
+    .then((oldGroup) => {
+      group.dn = exports.groupCnToDn(group.cn);
+      if ("cn" in group && oldGroup.cn !== group.cn) {
+        return exports
+          .updateDN(dn, group.dn)
+          .then(() => exports.updateUserOu(dn, group.dn))
+          .then(() => oldGroup);
+      } else {
+        return oldGroup;
+      }
+    })
+    .then((oldGroup) => {
+      var updateKeys = Object.keys(group).filter((key) => {
+        return (
+          ["o", "description", "member", "owner"].includes(key) &&
+          group[key] !== undefined
+        );
+      });
+      if (group.member && group.member.length === 0) {
+        group.member = "";
+      }
+      if (group.owner && group.owner.length === 0) {
+        group.owner = "";
+      }
+      return Promise.map(updateKeys, (key) => {
+        var modification = {};
+        modification[key] = group[key];
+        return exports.change(group.dn, "replace", modification);
       })
-      .then(() => exports.fetchGroup(group.dn))
-  );
+        .then(() => {
+          if ("o" in group && oldGroup.o !== group.o) {
+            return exports.updateUserTitle(group.dn, group.o);
+          }
+          return;
+        })
+        .then(() => exports.syncParentGroups(group.dn, group.parentGroups));
+    })
+    .then(() => exports.fetchGroup(group.dn));
 };
 
 var passwordValid = function (password) {

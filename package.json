@@ -1,0 +1,11 @@
+{
+  "name": "habidat-auth",
+  "version": "1.1.1",
+  "description": "backend for user module for habi*DAT platform",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker compose -p habidat-auth -f docker-compose.dev.yml"
+  },
+  "author": "",
+  "license": "ISC"
+}

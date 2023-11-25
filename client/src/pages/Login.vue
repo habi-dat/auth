@@ -132,6 +132,9 @@ export default {
     }
   },
   created () {
+    if (this.$route.query.logout) {
+      this.$store.state.config.authenticated = false;
+    }
     this.checkLoggedIn()
   }
 }

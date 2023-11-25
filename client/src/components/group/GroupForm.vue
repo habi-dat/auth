@@ -315,6 +315,7 @@ export default {
               .replaceAll('ß', 'ss')
               .replaceAll(' ', '_')
               .replaceAll(/[\W]+/g,"")
+              .replaceAll('_', this.$store.state.config.groupIdDelimiter)
               .substr(0,20);
       }
     },

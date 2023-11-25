@@ -6,10 +6,11 @@ module.exports = {
       plugins: [new VuetifyLoaderPlugin()]
   },
   devServer: {
+    allowedHosts: "all",
     proxy: {
       '^/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
+        target: 'http://auth-backend:3000',
+        changeOrigin: true,
       },
     }
   },

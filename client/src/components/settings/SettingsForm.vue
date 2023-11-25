@@ -23,6 +23,15 @@
           label="Einstiegspunkt nach Accounterstellung"
           required
         />
+        <v-text-field
+          prepend-icon="space_bar"
+          v-model="settings.groupIdDelimiter"
+          @input="onInput"
+          :rules="[v => /^[_-]{1}$/.test(v) || '- oder _', v => !!v || 'darf nicht leer sein']"
+          hint="- oder _"
+          label="Trennzeichen für Gruppen IDs"
+          required
+        />        
         <v-checkbox
           v-model="settings.customTheme"
           label="Farbeinstellungen"

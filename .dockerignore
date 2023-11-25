@@ -2,8 +2,8 @@ server/node_modules
 server/config/*
 server/data/*
 server/public
-docker-compose.yml
-user.env
+docker-compose.*.yml
+backend.env
 
 client/dist
 client/node_modules

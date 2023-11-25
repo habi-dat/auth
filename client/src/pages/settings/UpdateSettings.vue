@@ -52,6 +52,7 @@ export default {
       axios.post('/api/settings', post)
         .then(response => {
           this.loading = false;
+          this.$store.state.config.groupIdDelimiter = post.groupIdDelimiter;         
           this.$snackbar.success('Einstellungen geändert')
         })
         .catch(error => {this.loading=false;})

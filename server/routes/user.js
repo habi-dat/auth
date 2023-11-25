@@ -161,6 +161,7 @@ router.post("/api/user/profile", auth.isLoggedIn, function (req, res, next) {
     .then(() => validateCn(user.cn, req.user.dn))
     .then(() => ldaphelper.populateUserTitle(user))
     .then((user) => ldaphelper.updateUser(req.user.dn, user))
+    .then((user) => ldaphelper.populateUserGroups(user, true, true))
     .then(discoursehelper.syncUser)
     .then((user) => res.send({ user: user }))
     .catch(next);

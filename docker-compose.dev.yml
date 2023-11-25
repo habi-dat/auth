@@ -1,0 +1,43 @@
+version: "3.5"
+
+networks:
+  habidat-proxy:
+    external:
+      name: habidat-proxy
+  habidat-back:
+    external:
+      name: habidat-backend
+
+services:
+  auth-frontend:
+    build:
+      context: ./
+      dockerfile: node.Dockerfile
+    env_file:
+      - ./frontend.env
+    volumes:
+      - ./client:/app
+    ports:
+      - 8080
+    command: yarn serve
+    networks:
+      habidat-back:
+      habidat-proxy:
+
+  auth-backend:
+    build:
+      context: ./
+      dockerfile: node.Dockerfile
+    env_file:
+      - ./backend.env
+    volumes:
+      - ./server:/app
+    ports:
+      - 3000:3000
+    networks:
+      habidat-proxy:
+      habidat-back:
+        aliases:
+          - "backend.dev.user.habidat.local"
+    command: "nodemon --legacy-watch index.js --ignore './data/' --ignore './public/' --ignore './views/'"
+    entrypoint: docker-entrypoint.sh

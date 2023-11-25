@@ -171,7 +171,7 @@ router.beforeEach(async (to, from, next) => {
           axios.get('/api/config')
             .then(response => {
               if (!response.data.config.authenticated) {
-                next({name: 'Login'})
+                next({name: 'Login', query: {logout: true}})
               } else {
                 next();
               }
