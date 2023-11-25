@@ -3,6 +3,7 @@ const ldaphelper = require("../utils/ldaphelper");
 const discoursehelper = require("../utils/discoursehelper");
 const activation = require("../utils/activation");
 const mailhelper = require("../utils/mailhelper");
+const validation = require("../utils/validation");
 const config = require("../config/config.json");
 const express = require("express");
 const Promise = require("bluebird");
@@ -48,16 +49,11 @@ const validateUser = async (user, member) => {
     }
 
     if ("mail" in user) {
-      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/.test(user.mail)) {
+      if (!validation.isValidEmail(user.mail)) {
         errors.push("E-Mailadresse: keine gültige E-Mailadresse");
       }
     }
 
-    if ("userPassword" in user) {
-      if (user.userPassword == "") {
-        errors.push("Passwort: darf nicht leer sein");
-      }
-    }
     if (errors.length > 0) {
       throw { status: 400, message: errors.join("\n") };
     } else {
