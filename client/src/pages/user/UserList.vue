@@ -99,10 +99,10 @@ export default {
       }
     },
     updateUser() {
-      router.push('/user/update?dn=' + this.selectedUsers[0].dn)
+      router.push(encodeURI('/user/update?dn=' + encodeURIComponent(this.selectedUsers[0].dn)))
     },
     changePassword() {
-      router.push('/user/password?dn=' + this.selectedUsers[0].dn)
+      router.push(encodeURI('/user/password?dn=' + encodeURIComponent(this.selectedUsers[0].dn)))
     },
     getData: function () {
       axios.get('/api/users')

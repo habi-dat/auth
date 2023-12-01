@@ -14,8 +14,8 @@ const validateUser = async (user, member) => {
   return Promise.resolve().then(() => {
     var errors = [];
     if ("cn" in user) {
-      if (!/^[A-Za-z0-9 ]{2,}[A-Za-z0-9]+$/.test(user.cn)) {
-        errors.push("Anzeigename: mindestens 3 Zeichen, keine Sonderzeichen");
+      if (!/^[^"(),=`<> ]{2,}[^"(),=`<> ]+$/.test(user.cn)) {
+        errors.push('Anzeigename: mindestens 3 Zeichen, kein "(),=<>');
       }
     }
 
@@ -41,7 +41,7 @@ const validateUser = async (user, member) => {
     }
 
     if ("uid" in user) {
-      if (!/^[A-Za-z0-9_]{2,}[A-Za-z0-9]+$/.test(user.uid)) {
+      if (!/^[A-Za-z0-9_]{2,}[A-Za-z0-9_]+$/.test(user.uid)) {
         errors.push(
           "User ID: mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen"
         );

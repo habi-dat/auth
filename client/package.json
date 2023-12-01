@@ -1,5 +1,7 @@
 {
-  "name": "client2",
+  "name": "habidat-auth-frontend",
+  "version": "1.1.2",
+  "description": "frontend for user module for habi*DAT platform",
   "packageManager": "yarn@3.2.3",
   "scripts": {
     "serve": "vue-cli-service serve",

@@ -8,20 +8,20 @@
           prepend-icon="face"
           :disabled="onlyGroups"
           v-model="user.cn"
-          :rules="[v => /^[A-Za-z0-9 äüöÄÜÖß]{2,}[A-Za-z0-9äüöÄÜÖß]+$/.test(v) || 'mindestens 3 Zeichen, keine Sonderzeichen']"
+          :rules='[v => /^[^\"(),=`<> ]{2,}[^\"(),=`<> ]+$/.test(v) || "mindestens 3 Zeichen, kein \"(),=<>"]'
           :error-messages="errors.cn"
           autocomplete="username"
           @change="checkCnAvailability"
           @input="updateUid"
           required
-          hint="mindestens 3 Zeichen, keine Sonderzeichen"
+          hint='mindestens 3 Zeichen, kein \"(),=<>'
           label="Anzeigename">
         </v-text-field>
         <v-text-field
           prepend-icon="person"
           :disabled="onlyGroups || !allowUid"
           v-model="user.uid"
-          :rules="[v => /^[A-Za-z0-9_]{2,}[A-Za-z0-9]+$/.test(v) || 'mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen']"
+          :rules="[v => /^[A-Za-z0-9_]{2,}[A-Za-z0-9_]+$/.test(v) || 'mindestens 3 Zeichen, keine Sonderzeichen, keine Umlaute, keine Leerzeichen']"
           :error-messages="errors.uid"
           @change="checkUidAvailability"
           label="User ID">

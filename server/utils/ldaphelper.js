@@ -178,10 +178,14 @@ exports.populateUserGroups = function (
   return new Promise((resolve, reject) => {
     var opts = {
       scope: "sub",
-      filter: "(|(owner=" + user.dn + ")(member=" + user.dn + "))",
+      filter: new ldap.OrFilter({
+        filters: [
+          new ldap.EqualityFilter({ attribute: "member", value: user.dn }),
+          new ldap.EqualityFilter({ attribute: "owner", value: user.dn }),
+        ],
+      }),
       attributes: groupAttributes,
     };
-
     var entries = [];
 
     client.search("ou=groups," + config.server.base, opts, function (err, res) {
@@ -201,11 +205,12 @@ exports.populateUserGroups = function (
         entries.forEach((group) => {
           group.member = exports.ldapAttributeToArray(group.member);
           group.owner = exports.ldapAttributeToArray(group.owner);
-          if (group.owner && group.owner.includes(user.dn)) {
+          if (group.owner && group.owner.includes(user.dn.toString())) {
             user.owner.push(group.dn);
             if (fetchGroupDetails) user.ownerGroups.push(group);
           }
-          if (group.member && group.member.includes(user.dn)) {
+          console.log(group.member, user.dn);
+          if (group.member && group.member.includes(user.dn.toString())) {
             user.member.push(group.dn);
             if (fetchGroupDetails) user.memberGroups.push(group);
           }
@@ -874,7 +879,8 @@ exports.ldapAttributeToArray = function (ldapAttribute) {
   }
 };
 
-exports.dnToCn = function (dn) {
+exports.dnToCn = function (dnObject) {
+  const dn = dnObject.toString();
   if (dn && dn.includes(",") && dn.includes("=")) {
     return dn.split(",")[0].split("=")[1];
   } else {
@@ -883,11 +889,11 @@ exports.dnToCn = function (dn) {
 };
 
 exports.userCnToDn = function (cn) {
-  return "cn=" + cn + ",ou=users," + config.server.base;
+  return `cn=${cn},ou=users,${config.server.base}`;
 };
 
 exports.groupCnToDn = function (cn) {
-  return "cn=" + cn + ",ou=groups," + config.server.base;
+  return `cn=${cn},ou=groups,${config.server.base}`;
 };
 
 exports.dnToUid = function (dns) {
