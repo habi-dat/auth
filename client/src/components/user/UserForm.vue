@@ -8,7 +8,7 @@
           prepend-icon="face"
           :disabled="onlyGroups"
           v-model="user.cn"
-          :rules='[v => /^[^\"(),=`<> ]{2,}[^\"(),=`<> ]+$/.test(v) || "mindestens 3 Zeichen, kein \"(),=<>"]'
+          :rules='[v => /^[^\"(),=`<>]{2,}[^\"(),=`<> ]+$/.test(v) || "mindestens 3 Zeichen, kein \"(),=<>"]'
           :error-messages="errors.cn"
           autocomplete="username"
           @change="checkCnAvailability"
