@@ -8,9 +8,9 @@ const SessionFileStore = require("session-file-store")(session);
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const config = require("./config/config.json");
-const auth = require("./utils/auth");
 const moment = require("moment");
 const Promise = require("bluebird");
+const crypto = require("crypto");
 
 if (config.debug) {
   Promise.config({
@@ -43,17 +43,18 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 
+app.set("trust proxy", 1);
+
 var fileStoreOptions = {
   path: "./data/sessions",
-  ttl: 3600,
+  ttl: 3600 * 12,
 };
 app.use(
   session({
     store: new SessionFileStore(fileStoreOptions),
-    secret: "somethingsecretgoeshere",
-    resave: false,
+    secret: config.sessionSecret || crypto.randomBytes(16).toString("hex"),
     saveUninitialized: false,
-    cookie: { secure: false }, // CHANGE TO TRUE FOR PRODUCTION
+    cookie: { secure: true },
   })
 );
 

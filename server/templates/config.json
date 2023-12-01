@@ -1,5 +1,6 @@
 {
   "debug": false,
+  "sessionSecret": "$HABIDAT_USER_SESSION_SECRET",
   "settings":
   { 
     "general": {
