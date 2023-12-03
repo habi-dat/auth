@@ -14,7 +14,7 @@ const validateUser = async (user, member) => {
   return Promise.resolve().then(() => {
     var errors = [];
     if ("cn" in user) {
-      if (!/^[^"(),=`<> ]{2,}[^"(),=`<> ]+$/.test(user.cn)) {
+      if (!/^[^"(),=`<>]{2,}[^"(),=`<> ]+$/.test(user.cn)) {
         errors.push('Anzeigename: mindestens 3 Zeichen, kein "(),=<>');
       }
     }
