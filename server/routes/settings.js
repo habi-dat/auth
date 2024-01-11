@@ -3,6 +3,7 @@ const settings = require("../utils/settings");
 const mailhelper = require("../utils/mailhelper");
 const auth = require("../utils/auth");
 const express = require("express");
+const apps = require("../utils/apps");
 const Promise = require("bluebird");
 
 const router = express.Router();
@@ -13,16 +14,27 @@ router.get("/api/config", (req, res, next) => {
   return settings
     .getSettings()
     .then((settings) => {
-      res.send({
-        config: {
-          saml: config.saml.enabled,
-          title: settings.title || config.settings.general.title,
-          authenticated: req.isAuthenticated(),
-          settings: settings || { theme: {} },
-          groupIdDelimiter: settings.groupIdDelimiter,
-        },
-        user: req.user,
-      });
+      return apps.getApps().then((apps) =>
+        res.send({
+          apps: apps
+            .filter((app) => {
+              return (
+                app.groups.length === 0 ||
+                (req.user &&
+                  app.groups.find((group) => req.user.member.includes(group)))
+              );
+            })
+            .map((app) => ({ label: app.label, url: app.url, icon: app.icon })),
+          config: {
+            saml: config.saml.enabled,
+            title: settings.title || config.settings.general.title,
+            authenticated: req.isAuthenticated(),
+            settings: settings || { theme: {} },
+            groupIdDelimiter: settings.groupIdDelimiter,
+          },
+          user: req.user,
+        })
+      );
     })
     .catch(next);
 });

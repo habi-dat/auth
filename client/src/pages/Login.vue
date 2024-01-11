@@ -58,10 +58,10 @@
 </template>
 
 <script>
-import router from '../router'
-import axios from 'axios'
 import Toolbar from '@/components/layout/Toolbar'
 import ToolbarButton from '@/components/layout/ToolbarButton'
+import axios from 'axios'
+import router from '../router'
 export default {
   name: 'Login',
   components: { Toolbar, ToolbarButton },
@@ -99,10 +99,11 @@ export default {
             this.loading = false;
             this.$store.state.config.authenticated = true
             this.$store.state.user = response.data.user
+            this.$store.state.myApps = response.data.apps
             if (response.data.redirect) {
               document.body.innerHTML=response.data.redirect;
               document.forms[0].submit();
-            } else {
+            } else {              
               this.$snackbar.success('Eingeloggt als ' + response.data.user.cn)
               if (this.$route.query.returnTo && this.$route.query.returnTo !== '/login' && this.$route.query.returnTo !== '/logout') {
                 router.replace({path: this.$route.query.returnTo, query: {dn: this.$route.query.returnToDn}})

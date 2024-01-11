@@ -45,6 +45,12 @@
           <v-list-item-icon><v-icon>email</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>E-Mail Vorlagen</v-list-item-title></v-list-item-content>
         </v-list-item>
+        <v-divider  v-if="!isIframe() && $store.state.myApps && $store.state.myApps.length > 0"></v-divider>
+        <v-list-item  v-if="!isIframe() && $store.state.myApps && $store.state.myApps.length > 0" :href="app.url" target="_blank" v-for="app in $store.state.myApps">
+          <v-list-item-icon><v-icon >open_in_new</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>{{ app.label }}</v-list-item-title></v-list-item-content>
+        </v-list-item>
+        <v-divider v-if="!isIframe() && $store.state.myApps && $store.state.myApps.length > 0"></v-divider>
         <v-list-item to="/login" v-if="!$store.state.config.authenticated">
           <v-list-item-icon><v-icon>login</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>Login</v-list-item-title></v-list-item-content>
@@ -65,10 +71,9 @@
 </template>
 
 <script>
+import Snackbar from '@/components/Snackbar.vue'
 import axios from 'axios'
 import router from './router'
-import Snackbar from '@/components/Snackbar.vue'
-import customcss from '@/assets/css/custom.css'
 
 export default {
   components: { Snackbar },
@@ -98,6 +103,7 @@ export default {
         .then(response => {
           self.$store.state.config.authenticated = false;
           self.$store.state.user = {};
+          self.$store.state.myApps = [];
           if (response.data.redirect) {
             window.location.href=response.data.redirect;
           } else {
@@ -112,6 +118,9 @@ export default {
           self.$store.state.config = response.data.config
           document.title = response.data.config.title;
           self.$store.state.user = response.data.user || {}
+          if (response.data.config.authenticated) {
+            self.$store.state.myApps = response.data.apps
+          }
           /*if (!response.data.config.authenticated && router.currentRoute.path !== '/login') {
             router.push('/login')
           }*/
@@ -122,10 +131,11 @@ export default {
               this.$vuetify.theme.themes.light[color] = response.data.config.settings.theme[color] || this.$vuetify.theme.themes.light[color];
               });
           }
-          this.initialized = true;
+          this.initialized = true;    
+          
         })
         .catch(() => {})
-    },
+    },   
     setupInterceptor: function () {
       var self = this;
       axios.interceptors.response.use(function (response) {
