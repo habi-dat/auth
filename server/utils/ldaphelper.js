@@ -209,7 +209,6 @@ exports.populateUserGroups = function (
             user.owner.push(group.dn);
             if (fetchGroupDetails) user.ownerGroups.push(group);
           }
-          console.log(group.member, user.dn);
           if (group.member && group.member.includes(user.dn.toString())) {
             user.member.push(group.dn);
             if (fetchGroupDetails) user.memberGroups.push(group);
