@@ -7,6 +7,7 @@ const validation = require("../utils/validation");
 const config = require("../config/config.json");
 const express = require("express");
 const Promise = require("bluebird");
+const { logAction } = require("../utils/audit");
 
 const router = express.Router();
 
@@ -145,23 +146,38 @@ const validateEmail = (mail, dn = undefined) => {
 
 // UPDATE USER PROFILE (SELF)
 
-router.post("/api/user/profile", auth.isLoggedIn, function (req, res, next) {
-  var user = {
-    cn: req.body.cn,
-    ou: req.body.ou,
-    l: req.body.l,
-    preferredLanguage: req.body.preferredLanguage,
-  };
-
-  return validateUser(user, req.user.member)
-    .then(() => validateCn(user.cn, req.user.dn))
-    .then(() => ldaphelper.populateUserTitle(user))
-    .then((user) => ldaphelper.updateUser(req.user.dn, user))
-    .then((user) => ldaphelper.populateUserGroups(user, true, true))
-    .then(discoursehelper.syncUser)
-    .then((user) => res.send({ user: user }))
-    .catch(next);
-});
+router.post(
+  "/api/user/profile",
+  auth.isLoggedIn,
+  async function (req, res, next) {
+    try {
+      var user = {
+        cn: req.body.cn,
+        ou: req.body.ou,
+        l: req.body.l,
+        preferredLanguage: req.body.preferredLanguage,
+      };
+      await validateUser(user, req.user.member);
+      await validateCn(user.cn, req.user.dn);
+      const oldUser = await ldaphelper.fetchUser(req.user.dn, true, true);
+      user = await ldaphelper.populateUserTitle(user);
+      user = await ldaphelper.updateUser(req.user.dn, user);
+      user = await ldaphelper.populateUserGroups(user, true, true);
+      await logAction(
+        req.user.dn,
+        "UPDATE",
+        "USER",
+        req.user.dn,
+        oldUser,
+        user
+      );
+      user = await discoursehelper.syncUser(user);
+      res.send({ user: user });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // CREATE USER
 
@@ -197,6 +213,9 @@ router.post(
           )
           .then(() => ldaphelper.populateUserGroups(user, true, true));
       })
+      .then((user) =>
+        logAction(req.user.dn, "CREATE", "USER", user.dn, "", user)
+      )
       .then(discoursehelper.syncUser)
       .then((user) => res.send({ user: user }))
       .catch(next);
@@ -238,6 +257,7 @@ router.post("/api/user/acceptinvite/:token", function (req, res, next) {
         .then(() => ldaphelper.addUserToGroups(user.dn, "owner", owner))
         .then(() => ldaphelper.populateUserGroups(user, true, true));
     })
+    .then((user) => logAction(user.dn, "CREATE", "USER", user.dn, "", user))
     .then(discoursehelper.syncUser)
     .then(() => activation.deleteToken(req.params.token))
     .then(() => res.send({}))
@@ -249,48 +269,49 @@ router.post("/api/user/acceptinvite/:token", function (req, res, next) {
 router.post(
   "/api/user/update",
   auth.isLoggedInAdmin,
-  function (req, res, next) {
-    var user = {
-      cn: req.body.cn,
-      ou: req.body.ou ? req.body.ou : "",
-      l: req.body.l,
-      sn: "none",
-      givenName: "none",
-      mail: req.body.mail,
-      preferredLanguage: req.body.preferredLanguage,
-      description:
-        req.body.description || config.nextcloud.defaultQuota || "1 GB",
-    };
-    return validateUser(user, req.body.member)
-      .then(() => validateEmail(user.mail, req.body.dn))
-      .then(() => validateCn(user.cn, req.body.dn))
-      .then(() => validateUserGroups(req.body.member, req.body.owner, req.user))
-      .then(() => ldaphelper.populateUserTitle(user))
-      .then((user) => ldaphelper.updateUser(req.body.dn, user))
-      .then((user) => ldaphelper.populateUserGroups(user, false, true))
-      .then((user) => {
-        return ldaphelper
-          .syncUserGroups(
-            user.dn,
-            "member",
-            user.member,
-            req.body.member,
-            req.user
-          )
-          .then(() =>
-            ldaphelper.syncUserGroups(
-              user.dn,
-              "owner",
-              user.owner,
-              req.body.owner,
-              req.user
-            )
-          )
-          .then(() => ldaphelper.fetchUser(user.dn, true, true));
-      })
-      .then(discoursehelper.syncUser)
-      .then((user) => res.send({ user: user }))
-      .catch(next);
+  async function (req, res, next) {
+    try {
+      var user = {
+        cn: req.body.cn,
+        ou: req.body.ou ? req.body.ou : "",
+        l: req.body.l,
+        sn: "none",
+        givenName: "none",
+        mail: req.body.mail,
+        preferredLanguage: req.body.preferredLanguage,
+        description:
+          req.body.description || config.nextcloud.defaultQuota || "1 GB",
+      };
+
+      await validateUser(user, req.body.member);
+      await validateEmail(user.mail, req.body.dn);
+      await validateCn(user.cn, req.body.dn);
+      await validateUserGroups(req.body.member, req.body.owner, req.user);
+      const oldUser = await ldaphelper.fetchUser(req.body.dn, true, true);
+      user = await ldaphelper.populateUserTitle(user);
+      user = await ldaphelper.updateUser(req.body.dn, user);
+      user = await ldaphelper.populateUserGroups(user, false, true);
+      await ldaphelper.syncUserGroups(
+        user.dn,
+        "member",
+        user.member,
+        req.body.member,
+        req.user
+      );
+      await ldaphelper.syncUserGroups(
+        user.dn,
+        "owner",
+        user.owner,
+        req.body.owner,
+        req.user
+      );
+      user = await ldaphelper.fetchUser(user.dn, true, true);
+      await logAction(req.user.dn, "UPDATE", "USER", user.dn, oldUser, user);
+      user = await discoursehelper.syncUser(user);
+      res.send({ user });
+    } catch (error) {
+      next(error);
+    }
   }
 );
 
@@ -299,38 +320,36 @@ router.post(
 router.post(
   "/api/user/updategroups",
   auth.isLoggedInGroupAdmin,
-  function (req, res, next) {
-    var user = {
-      dn: req.body.dn,
-      ou: req.body.ou,
-    };
-    return validateUserGroups(req.body.member, req.body.owner, req.user)
-      .then(() => ldaphelper.populateUserTitle(user))
-      .then((user) => ldaphelper.updateUser(req.body.dn, user))
-      .then((user) => ldaphelper.populateUserGroups(user, false, true))
-      .then((user) => {
-        return ldaphelper
-          .syncUserGroups(
-            user.dn,
-            "member",
-            user.member,
-            req.body.member,
-            req.user
-          )
-          .then(() =>
-            ldaphelper.syncUserGroups(
-              user.dn,
-              "owner",
-              user.owner,
-              req.body.owner,
-              req.user
-            )
-          )
-          .then(() => ldaphelper.fetchUser(user.dn, true, true));
-      })
-      .then(discoursehelper.syncUser)
-      .then((user) => res.send({ user: user }))
-      .catch(next);
+  async function (req, res, next) {
+    try {
+      var user = {
+        dn: req.body.dn,
+        ou: req.body.ou,
+      };
+      await validateUserGroups(req.body.member, req.body.owner, req.user);
+      const oldUser = await ldaphelper.fetchUser(user.dn, true, true);
+      user = await ldaphelper.populateUserGroups(user, false, true);
+      await ldaphelper.syncUserGroups(
+        user.dn,
+        "member",
+        user.member,
+        req.body.member,
+        req.user
+      );
+      await ldaphelper.syncUserGroups(
+        user.dn,
+        "owner",
+        user.owner,
+        req.body.owner,
+        req.user
+      );
+      user = await ldaphelper.fetchUser(user.dn, true, true);
+      await logAction(req.user.dn, "UPDATE", "USER", user.dn, oldUser, user);
+      user = await discoursehelper.syncUser(user);
+      res.send({ user });
+    } catch (error) {
+      next(error);
+    }
   }
 );
 
@@ -365,6 +384,9 @@ router.delete(
             ldaphelper.removeUserFromGroups(user.dn, "owner", user.owner)
           )
           .then(() => ldaphelper.remove(user.dn))
+          .then(() =>
+            logAction(req.user.dn, "DELETE", "USER", user.dn, user, "")
+          )
           .then(() => {
             return discoursehelper
               .deleteOrSuspendUser(user.uid)
@@ -521,6 +543,13 @@ router.post(
           })
           .then((token) => mailhelper.sendActivationEmail(token));
       })
+      .then(() =>
+        logAction(req.user.dn, "CREATE", "INVITE", req.body.email, "", {
+          mail: req.body.email.toLowerCase(),
+          member: member,
+          owner: owner,
+        })
+      )
       .then(() => {
         res.send({ success: true });
       })
@@ -558,7 +587,11 @@ router.delete(
     )
       .then(() => {
         return Promise.map(req.body.tokens, (token) =>
-          activation.deleteToken(token)
+          activation
+            .deleteToken(token)
+            .then((data) =>
+              logAction(req.user.dn, "DELETE", "INVITE", data.mail, data, "")
+            )
         ).then(() => res.send({ success: true }));
       })
       .catch(next);

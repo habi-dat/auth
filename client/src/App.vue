@@ -45,6 +45,10 @@
           <v-list-item-icon><v-icon>email</v-icon></v-list-item-icon>
           <v-list-item-content><v-list-item-title>E-Mail Vorlagen</v-list-item-title></v-list-item-content>
         </v-list-item>
+        <v-list-item to="/audit" v-if="$store.state.config.authenticated && $store.state.user.isAdmin">
+          <v-list-item-icon><v-icon>history</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>Logbuch</v-list-item-title></v-list-item-content>
+        </v-list-item>        
         <v-divider  v-if="!isIframe() && $store.state.myApps && $store.state.myApps.length > 0"></v-divider>
         <v-list-item  v-if="!isIframe() && $store.state.myApps && $store.state.myApps.length > 0" :href="app.url" target="_blank" v-for="app in $store.state.myApps">
           <v-list-item-icon><v-icon >open_in_new</v-icon></v-list-item-icon>

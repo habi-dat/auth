@@ -12,7 +12,7 @@ services:
   auth-frontend:
     build:
       context: ./
-      dockerfile: node.Dockerfile
+      dockerfile: frontend.Dockerfile
     env_file:
       - ./frontend.env
     volumes:
@@ -27,7 +27,7 @@ services:
   auth-backend:
     build:
       context: ./
-      dockerfile: node.Dockerfile
+      dockerfile: backend.Dockerfile
     env_file:
       - ./backend.env
     volumes:

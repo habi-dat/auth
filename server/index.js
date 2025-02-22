@@ -85,6 +85,7 @@ app.use("/", require("./routes/category"));
 app.use("/", require("./routes/saml"));
 app.use("/", require("./routes/apps"));
 app.use("/", require("./routes/settings"));
+app.use("/", require("./routes/audit"));
 
 app.get("/", (req, res, next) => {
   res.sendFile("index.html", { root: publicRoot });

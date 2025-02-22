@@ -20,6 +20,7 @@ import UpdateCategory from '@/pages/category/UpdateCategory'
 import AppList from '@/pages/app/AppList'
 import CreateApp from '@/pages/app/CreateApp'
 import UpdateApp from '@/pages/app/UpdateApp'
+import AuditList from '@/pages/audit/AuditList'
 import UpdateSettings from '@/pages/settings/UpdateSettings'
 const TemplateEditor = () => import('@/pages/settings/TemplateEditor')
 import Login from '@/pages/Login'
@@ -30,6 +31,11 @@ Vue.use(Router)
 
 var router = new Router({
   routes: [
+    {
+      path: '/audit',
+      name: 'AuditList',
+      component: AuditList
+    },
     {
       path: '/',
       name: 'Profile',
