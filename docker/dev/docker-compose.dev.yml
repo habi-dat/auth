@@ -16,7 +16,7 @@ services:
     env_file:
       - ./frontend.env
     volumes:
-      - ./client:/app
+      - ../../client:/app
     ports:
       - 8080
     command: yarn serve
@@ -31,7 +31,7 @@ services:
     env_file:
       - ./backend.env
     volumes:
-      - ./server:/app
+      - ../../server:/app
     ports:
       - 3000:3000
     networks:
@@ -39,5 +39,5 @@ services:
       habidat-back:
         aliases:
           - "backend.dev.user.habidat.local"
-    command: "nodemon --legacy-watch index.js --ignore './data/' --ignore './public/' --ignore './views/'"
+    command: "yarn run dev"
     entrypoint: docker-entrypoint.sh

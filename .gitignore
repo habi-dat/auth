@@ -1,4 +1,4 @@
-backend.env
-.env
+*.env
+**/*.env
 push.sh
 build.sh

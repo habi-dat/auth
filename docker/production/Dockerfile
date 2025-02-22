@@ -44,8 +44,8 @@ RUN \
 
 RUN mkdir /app
 
-ADD server /app
-ADD client /app/client
+ADD ../../server /app
+ADD ../../client /app/client
 
 WORKDIR /app/client
 
@@ -57,7 +57,7 @@ WORKDIR /app
 
 RUN npm install && npm install pm2 -g
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY ../docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
 ENTRYPOINT ["docker-entrypoint.sh"]

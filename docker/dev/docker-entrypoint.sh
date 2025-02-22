@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+yarn install
+
 if [ -f templates/config.json ]
 then
 
