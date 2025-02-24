@@ -34,7 +34,7 @@
           />
         </v-tooltip>
         <v-icon
-          v-if="!readonly && ($store.state.user.isAdmin || tooltip === 'user' || $store.state.user.owner.includes(item[itemValue]))"
+          v-if="!readonly && (tooltip !=='group' || item.editable) && ($store.state.user.isAdmin || tooltip === 'user' || $store.state.user.owner.includes(item[itemValue]))"
           small
           @click="parent.selectItem(item)"
         >

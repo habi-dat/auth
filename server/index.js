@@ -11,6 +11,7 @@ const config = require("./config/config.json");
 const moment = require("moment");
 const Promise = require("bluebird");
 const crypto = require("crypto");
+const migrate = require("migrate");
 
 if (config.debug) {
   Promise.config({
@@ -105,6 +106,25 @@ app.use((err, req, res, next) => {
     res.status(500).send({ error: "Serverfehler" });
   }
 });
+
+migrate.load(
+  {
+    stateStore: "data/.migrate",
+  },
+  function (err, set) {
+    if (err) {
+      console.log("migration error:", err.stack);
+      throw err;
+    }
+    set.up(function (err) {
+      if (err) {
+        console.log("migration error:", err.stack);
+        throw err;
+      }
+      console.log("migrations successfully ran");
+    });
+  }
+);
 
 app.listen(3000, () => {
   console.log("Example app listening on port 3000");

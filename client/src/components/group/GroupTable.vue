@@ -45,7 +45,8 @@ export default {
     comboSelect: Boolean,
     heightOffset: Number,
     rowSelection: String,
-    selection: String
+    selection: String,
+    allowSelectAll: Boolean
   },
   data () {
     return {
@@ -56,7 +57,8 @@ export default {
       collapsedNodes: [],
       aggridLocale: aggridLocale,
       gridApi: null,
-      columnApi: null
+      columnApi: null,
+      allowSelectAll: false
     }
   },
   watch: {
@@ -83,7 +85,7 @@ export default {
   },
   methods: {
     isRowSelectable(params) {
-      return this.$store.state.user.isAdmin || this.selection === 'member' && this.$store.state.user.member.includes(params.data.dn) || this.selection === 'owner' && this.$store.state.user.owner.includes(params.data.dn)
+      return (params.data.editable || this.allowSelectAll) && (this.$store.state.user.isAdmin || this.selection === 'member' && this.$store.state.user.member.includes(params.data.dn) || this.selection === 'owner' && this.$store.state.user.owner.includes(params.data.dn))
     },
     onGridReady(params) {
         this.gridApi = params.api;
@@ -138,6 +140,7 @@ export default {
         o: group.o,
         description: group.description,
         owner: group.owner,
+        editable: group.editable,
         admins: group.owner.map(owner => { return {
           dn: owner,
           cn: owner.split(',')[0].split('=')[1]

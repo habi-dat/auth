@@ -8,6 +8,7 @@ const config = require("../config/config.json");
 const express = require("express");
 const Promise = require("bluebird");
 const { logAction } = require("../utils/audit");
+const { groupAdminCn } = require("../utils/constants");
 
 const router = express.Router();
 
@@ -207,7 +208,12 @@ router.post(
       .then(ldaphelper.createUser)
       .then((user) => {
         return ldaphelper
-          .addUserToGroups(user.dn, "member", req.body.member)
+          .addUserToGroups(user.dn, "member", [
+            ...req.body.member,
+            ...(req.body.owner.length > 0
+              ? [ldaphelper.groupCnToDn(groupAdminCn)]
+              : []),
+          ])
           .then(() =>
             ldaphelper.addUserToGroups(user.dn, "owner", req.body.owner)
           )
@@ -253,7 +259,10 @@ router.post("/api/user/acceptinvite/:token", function (req, res, next) {
     .then(ldaphelper.createUser)
     .then((user) => {
       return ldaphelper
-        .addUserToGroups(user.dn, "member", member)
+        .addUserToGroups(user.dn, "member", [
+          ...member,
+          ...(owner.length > 0 ? [ldaphelper.groupCnToDn(groupAdminCn)] : []),
+        ])
         .then(() => ldaphelper.addUserToGroups(user.dn, "owner", owner))
         .then(() => ldaphelper.populateUserGroups(user, true, true));
     })
@@ -305,6 +314,7 @@ router.post(
         req.body.owner,
         req.user
       );
+      await ldaphelper.syncUsersGroupAdminMembership([user.dn]);
       user = await ldaphelper.fetchUser(user.dn, true, true);
       await logAction(req.user.dn, "UPDATE", "USER", user.dn, oldUser, user);
       user = await discoursehelper.syncUser(user);
@@ -343,6 +353,7 @@ router.post(
         req.body.owner,
         req.user
       );
+      await ldaphelper.syncUsersGroupAdminMembership([user.dn]);
       user = await ldaphelper.fetchUser(user.dn, true, true);
       await logAction(req.user.dn, "UPDATE", "USER", user.dn, oldUser, user);
       user = await discoursehelper.syncUser(user);
@@ -379,7 +390,12 @@ router.delete(
           }
         }
         return ldaphelper
-          .removeUserFromGroups(user.dn, "member", user.member)
+          .removeUserFromGroups(user.dn, "member", [
+            ...user.member,
+            ...(user.owner.length > 0
+              ? [ldaphelper.groupCnToDn(groupAdminCn)]
+              : []),
+          ])
           .then(() =>
             ldaphelper.removeUserFromGroups(user.dn, "owner", user.owner)
           )

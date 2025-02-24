@@ -15,7 +15,7 @@
           tooltip="Gruppe bearbeiten"
           color="info"
           @click="updateGroup"
-          :disabled="selectedGroups.length === 0 || !$store.state.user.isAdmin && !selectedGroups[0].owner.includes($store.state.user.dn)"
+          :disabled="selectedGroups.length === 0 || !$store.state.user.isAdmin && !selectedGroups[0].owner.includes($store.state.user.dn) || !selectedGroups[0].editable"
         />
         <ToolbarButton
           v-if="$store.state.user.isAdmin"
@@ -24,7 +24,7 @@
           color="error"
           :loading="loading"
           @click="deleteGroup"
-          :disabled="selectedGroups.length === 0"
+          :disabled="selectedGroups.length === 0 || !selectedGroups[0].editable"
         />
         <ToolbarButton
           v-if="$store.state.user.isAdmin"
@@ -44,6 +44,7 @@
         @selectionChanged="onSelectGroup"
         @onGridReady="onGridReadyHandler"
         showMembers
+        allowSelectAll
         rowSelection="single"
         selection="member"/>
     </v-card-text>

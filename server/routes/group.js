@@ -4,6 +4,7 @@ const discoursehelper = require("../utils/discoursehelper");
 const express = require("express");
 const Promise = require("bluebird");
 const { logAction } = require("../utils/audit");
+const { groupAdminCn } = require("../utils/constants");
 
 const router = express.Router();
 
@@ -133,6 +134,7 @@ router.post(
     return validateGroup(group)
       .then(() => validateCn(group.cn))
       .then(() => ldaphelper.createGroup(group))
+      .then(() => ldaphelper.syncUsersGroupAdminMembership(group.owner))
       .then(() =>
         discoursehelper.createGroup({
           ...group,
@@ -180,6 +182,9 @@ router.post(
       await validateCn(req.body.cn, req.body.dn);
       const oldGroup = await ldaphelper.fetchGroup(req.body.dn);
       await ldaphelper.updateGroup(req.body.dn, group);
+      await ldaphelper.syncUsersGroupAdminMembership([
+        ...new Set([...oldGroup.owner.map((user) => user.dn), ...group.owner]),
+      ]);
       await logAction(
         req.user.dn,
         "UPDATE",
@@ -240,6 +245,14 @@ router.post(
           .then(() => validateCn(req.body.cn, req.body.dn))
           .then(() => ldaphelper.updateGroup(req.body.dn, group))
           .then(() =>
+            ldaphelper.syncUsersGroupAdminMembership(
+              new Set([
+                ...oldGroup.owner.map((user) => user.dn),
+                ...group.owner,
+              ])
+            )
+          )
+          .then(() =>
             logAction(req.user.dn, "UPDATE", "GROUP", group.dn, oldGroup, group)
           )
           .then(() =>
@@ -276,26 +289,40 @@ router.delete(
     return ldaphelper
       .fetchGroup(req.params.dn)
       .then((group) => {
-        return ldaphelper.remove(group.dn).then(() => {
-          return logAction(req.user.dn, "DELETE", "GROUP", group.dn, group, "")
-            .then(() => discoursehelper.deleteGroup(group))
-            .then(() => {
-              res.send({
-                status: "success",
-                message: "Gruppe " + group.cn + " wurde gelöscht.",
+        return ldaphelper
+          .remove(group.dn)
+          .then(() =>
+            ldaphelper.syncUsersGroupAdminMembership(
+              group.owner.map((g) => g.dn)
+            )
+          )
+          .then(() => {
+            return logAction(
+              req.user.dn,
+              "DELETE",
+              "GROUP",
+              group.dn,
+              group,
+              ""
+            )
+              .then(() => discoursehelper.deleteGroup(group))
+              .then(() => {
+                res.send({
+                  status: "success",
+                  message: "Gruppe " + group.cn + " wurde gelöscht.",
+                });
+              })
+              .catch((error) => {
+                res.send({
+                  status: "notFound",
+                  message:
+                    "Gruppe " +
+                    group.cn +
+                    " wurde gelöscht. Discourse Gruppe konnte nicht gelöscht werden: " +
+                    error,
+                });
               });
-            })
-            .catch((error) => {
-              res.send({
-                status: "notFound",
-                message:
-                  "Gruppe " +
-                  group.cn +
-                  " wurde gelöscht. Discourse Gruppe konnte nicht gelöscht werden: " +
-                  error,
-              });
-            });
-        });
+          });
       })
       .catch(next);
   }

@@ -49,7 +49,7 @@ export default {
     this.items = this.params.items;
     this.readonly = this.params.readonly;
     if (this.params.selection) {
-      this.selectable = this.$store.state.user.isAdmin || this.node.data[this.params.selection].includes(this.$store.state.user.dn)
+      this.selectable = (this.$store.state.user.isAdmin || this.node.data[this.params.selection].includes(this.$store.state.user.dn)) && this.node.data.editable;
     }
   },
 };

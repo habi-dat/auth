@@ -5,6 +5,7 @@ const discourse = require("./discoursehelper");
 const mail = require("./mailhelper");
 const zxcvbn = require("./zxcvbn");
 const Promise = require("bluebird");
+const { groupAdminCn } = require("./constants");
 
 var client = ldap.createClient({
   url: config.server.url,
@@ -190,7 +191,10 @@ exports.populateUserGroups = function (
 
     client.search("ou=groups," + config.server.base, opts, function (err, res) {
       res.on("searchEntry", function (entry) {
-        entries.push(entry.object);
+        entries.push({
+          ...entry.object,
+          editable: entry.object.cn !== groupAdminCn,
+        });
       });
       res.on("error", function (err) {
         reject("Error populating user groups: " + err.message);
@@ -358,6 +362,7 @@ exports.fetchGroups = function (ownedGroups, noAdminGroups = false) {
             group.member = exports.ldapAttributeToArray(group.member);
             group.owner = exports.ldapAttributeToArray(group.owner);
             group.parentGroups = [];
+            group.editable = group.cn !== groupAdminCn;
             return group;
           })
         );
@@ -394,6 +399,7 @@ exports.fetchGroup = function (dn) {
         group.member = member;
         group.owner = owner;
         group.parentGroups = parentGroups;
+        group.editable = group.cn !== groupAdminCn;
         return group;
       }
     );
@@ -434,6 +440,7 @@ var populateSubGroups = function (
         description: subGroup.description,
         owner: subGroup.owner,
         member: subGroup.member,
+        editable: subGroup.editable,
         subGroups: [],
       };
       group.subGroups.push(subGroupCopy);
@@ -704,6 +711,35 @@ exports.updateUser = function (dn, user) {
       });
     })
     .then(() => exports.fetchUser(user.dn));
+};
+
+exports.syncUsersGroupAdminMembership = async function (userDns) {
+  if (userDns.length === 0) {
+    return;
+  }
+  const users = await exports.fetchUsers(userDns);
+  for (const user of users) {
+    const userPopulated = await exports.populateUserGroups(user, false, false);
+    if (
+      userPopulated.owner.length > 0 &&
+      !userPopulated.member.find(
+        (memberDn) => memberDn === exports.groupCnToDn(groupAdminCn)
+      )
+    ) {
+      await exports.addUserToGroups(userPopulated.dn, "member", [
+        exports.groupCnToDn(groupAdminCn),
+      ]);
+    } else if (
+      userPopulated.owner.length === 0 &&
+      userPopulated.member.find(
+        (memberDn) => memberDn === exports.groupCnToDn(groupAdminCn)
+      )
+    ) {
+      await exports.removeUserFromGroups(userPopulated.dn, "member", [
+        exports.groupCnToDn(groupAdminCn),
+      ]);
+    }
+  }
 };
 
 exports.addUserToGroups = function (userDn, attribute, groupDns) {
