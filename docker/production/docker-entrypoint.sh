@@ -2,6 +2,8 @@
 set -e
 
 yarn install
+yarn db:generate
+yarn db:push
 
 if [ -f templates/config.json ]
 then
