@@ -158,6 +158,7 @@ exports.deleteOrSuspendUser = function (uid) {
     });
 };
 
+// resolve group members recursively (include members of subgroups)
 var resolveGroupMembers = function (
   groups,
   users,
@@ -189,9 +190,9 @@ var getGroupId = function (name) {
   });
 };
 
-exports.syncGroups = function () {
+exports.syncGroups = function (groupsToSync) {
   return Promise.join(
-    ldaphelper.fetchGroups("all"),
+    ldaphelper.fetchGroups(groupsToSync),
     ldaphelper.fetchUsers(),
     (groups, users) => {
       return Promise.all(
@@ -229,6 +230,12 @@ exports.syncGroups = function () {
                 });
               })
               .catch((error) => {
+                console.log(
+                  "Error syncing group members for group " +
+                    group.cn +
+                    ": " +
+                    error
+                );
                 // catch errors if group does not exist in discourse
                 return;
               });
@@ -259,7 +266,6 @@ exports.createGroup = function (group) {
       "group[bio_raw]": group.description,
       "group[usernames]": group.member.join(","),
     })
-    .then(exports.syncGroups)
     .catch((error) => {
       throw (
         "Fehler beim Erstellen der Discourse Gruppe " + group.cn + ": " + error
@@ -267,27 +273,34 @@ exports.createGroup = function (group) {
     });
 };
 
-exports.updateGroup = function (cn, group) {
-  return getGroupId(cn)
-    .then((id) =>
-      exports.put("groups/" + id + ".json", {
-        "group[name]": group.cn,
-        "group[full_name]": group.o,
-        "group[bio_raw]": group.description,
-      })
-    )
-    .then(exports.syncGroups)
-    .catch((error) => {
-      throw (
-        "Fehler beim Ändern der Discourse Gruppe " + group.cn + ": " + error
-      );
+exports.updateGroup = async function (cn, group, oldGroup) {
+  try {
+    const id = await getGroupId(cn);
+    await exports.put("groups/" + id + ".json", {
+      "group[name]": group.cn,
+      "group[full_name]": group.o,
+      "group[bio_raw]": group.description,
     });
+    const newGroup = await ldaphelper.fetchGroup(group.dn);
+    const groupsToSync = [
+      ...new Set([
+        newGroup.dn,
+        ...oldGroup.subGroups.map((subGroup) => subGroup.dn),
+        ...newGroup.subGroups.map((subGroup) => subGroup.dn),
+        ...oldGroup.parentGroups.map((parentGroup) => parentGroup.dn),
+        ...newGroup.parentGroups.map((parentGroup) => parentGroup.dn),
+      ]),
+    ];
+    await exports.syncGroups(groupsToSync);
+  } catch (error) {
+    throw "Fehler beim Ändern der Discourse Gruppe " + group.cn + ": " + error;
+  }
 };
 
 exports.deleteGroup = function (group) {
-  return getGroupId(group.cn)
-    .then((id) => exports.del("admin/groups/" + id + ".json", {}))
-    .then(exports.syncGroups);
+  return getGroupId(group.cn).then((id) =>
+    exports.del("admin/groups/" + id + ".json", {})
+  );
 };
 
 exports.createUser = function (name, email, password, username, title) {

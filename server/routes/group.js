@@ -197,7 +197,8 @@ router.post(
       try {
         await discoursehelper.updateGroup(
           ldaphelper.dnToCn(req.body.dn),
-          group
+          group,
+          oldGroup
         );
         return res.send({
           status: "success",
@@ -257,7 +258,7 @@ router.post(
           )
           .then(() =>
             discoursehelper
-              .updateGroup(ldaphelper.dnToCn(req.body.dn), group)
+              .updateGroup(ldaphelper.dnToCn(req.body.dn), group, oldGroup)
               .then(() =>
                 res.send({
                   status: "success",

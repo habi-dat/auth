@@ -18,7 +18,6 @@ const sanitizeArray = (arr) => {
 
 const sanitize = (type, obj) => {
   if (type === "GROUP" && typeof obj !== "string") {
-    console.log(obj);
     return {
       ...obj,
       member: sanitizeArray(obj.member),

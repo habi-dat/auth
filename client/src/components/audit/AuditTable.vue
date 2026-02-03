@@ -66,7 +66,6 @@ export default {
     },
     onRowClicked(event) {
       const row = event.data;
-      console.log(row);
       this.$emit('onRowClicked', row);
     }
   },

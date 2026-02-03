@@ -65,7 +65,6 @@
         this.gridApi = params.api;
       },
       onRowClicked: async function(row) {
-        console.log(row, row.oldValue)
         await this.$refs.recordDetails.open(row.text,row.oldValue, row.newValue)        
       },
       getData: function () {
