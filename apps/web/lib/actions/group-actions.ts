@@ -118,12 +118,22 @@ export const createGroupAction = adminAction
       return newGroup
     })
 
+    const newValue = {
+      name: group.name,
+      slug: group.slug,
+      description: group.description,
+      memberUserIds: [...(parsedInput.memberUserIds ?? [])],
+      ownerUserIds: [...(parsedInput.ownerUserIds ?? [])],
+      parentGroupIds: [...(parsedInput.parentGroupIds ?? [])],
+      childGroupIds: [...(parsedInput.childGroupIds ?? [])],
+    }
     await createAuditLog({
       actorId: session.user.id,
       action: 'CREATE',
       entityType: 'GROUP',
       entityId: group.id,
-      newValue: { name: group.name, slug: group.slug },
+      newValue,
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -142,6 +152,12 @@ export const updateGroupAction = groupAdminAction
 
     const existingGroup = await prisma.group.findUniqueOrThrow({
       where: { id: parsedInput.id },
+      include: {
+        memberships: true,
+        ownerships: true,
+        parentGroups: true,
+        childGroups: true,
+      },
     })
 
     // Prevent updating system groups (except by admin)
@@ -222,13 +238,39 @@ export const updateGroupAction = groupAdminAction
       return updated
     })
 
+    const updatedWithRels = await prisma.group.findUniqueOrThrow({
+      where: { id: group.id },
+      include: {
+        memberships: true,
+        ownerships: true,
+        parentGroups: true,
+        childGroups: true,
+      },
+    })
+    const oldValue = {
+      name: existingGroup.name,
+      description: existingGroup.description,
+      memberUserIds: existingGroup.memberships.map((m) => m.userId),
+      ownerUserIds: existingGroup.ownerships.map((o) => o.userId),
+      parentGroupIds: existingGroup.parentGroups.map((p) => p.parentGroupId),
+      childGroupIds: existingGroup.childGroups.map((c) => c.childGroupId),
+    }
+    const newValue = {
+      name: updatedWithRels.name,
+      description: updatedWithRels.description,
+      memberUserIds: updatedWithRels.memberships.map((m) => m.userId),
+      ownerUserIds: updatedWithRels.ownerships.map((o) => o.userId),
+      parentGroupIds: updatedWithRels.parentGroups.map((p) => p.parentGroupId),
+      childGroupIds: updatedWithRels.childGroups.map((c) => c.childGroupId),
+    }
     await createAuditLog({
       actorId: session.user.id,
       action: 'UPDATE',
       entityType: 'GROUP',
       entityId: group.id,
-      oldValue: { name: existingGroup.name },
-      newValue: { name: group.name },
+      oldValue,
+      newValue,
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -244,6 +286,12 @@ export const deleteGroupAction = adminAction
 
     const group = await prisma.group.findUniqueOrThrow({
       where: { id: parsedInput.groupId },
+      include: {
+        memberships: true,
+        ownerships: true,
+        parentGroups: true,
+        childGroups: true,
+      },
     })
 
     // Prevent deleting system groups
@@ -251,6 +299,15 @@ export const deleteGroupAction = adminAction
       throw new Error('System groups cannot be deleted')
     }
 
+    const oldValue = {
+      name: group.name,
+      slug: group.slug,
+      description: group.description,
+      memberUserIds: group.memberships.map((m) => m.userId),
+      ownerUserIds: group.ownerships.map((o) => o.userId),
+      parentGroupIds: group.parentGroups.map((p) => p.parentGroupId),
+      childGroupIds: group.childGroups.map((c) => c.childGroupId),
+    }
     await prisma.group.delete({ where: { id: group.id } })
 
     await createAuditLog({
@@ -258,7 +315,8 @@ export const deleteGroupAction = adminAction
       action: 'DELETE',
       entityType: 'GROUP',
       entityId: group.id,
-      oldValue: { name: group.name, slug: group.slug },
+      oldValue,
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -271,11 +329,13 @@ export const addMemberAction = groupAdminAction
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
 
+    const group = await prisma.group.findUniqueOrThrow({
+      where: { id: parsedInput.groupId },
+      include: { memberships: true },
+    })
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
     }
-
-    // Check if already a member
     const existing = await prisma.groupMembership.findUnique({
       where: {
         userId_groupId: {
@@ -289,6 +349,7 @@ export const addMemberAction = groupAdminAction
       throw new Error('User is already a member of this group')
     }
 
+    const oldMemberIds = group.memberships.map((m) => m.userId)
     await prisma.groupMembership.create({
       data: {
         userId: parsedInput.userId,
@@ -301,7 +362,9 @@ export const addMemberAction = groupAdminAction
       action: 'UPDATE',
       entityType: 'GROUP',
       entityId: parsedInput.groupId,
-      metadata: { action: 'addMember', userId: parsedInput.userId },
+      oldValue: { memberUserIds: oldMemberIds },
+      newValue: { memberUserIds: [...oldMemberIds, parsedInput.userId] },
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -315,10 +378,15 @@ export const removeMemberAction = groupAdminAction
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
 
+    const group = await prisma.group.findUniqueOrThrow({
+      where: { id: parsedInput.groupId },
+      include: { memberships: true },
+    })
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
     }
 
+    const oldMemberIds = group.memberships.map((m) => m.userId)
     await prisma.groupMembership.delete({
       where: {
         userId_groupId: {
@@ -328,12 +396,15 @@ export const removeMemberAction = groupAdminAction
       },
     })
 
+    const newMemberIds = oldMemberIds.filter((id) => id !== parsedInput.userId)
     await createAuditLog({
       actorId: session.user.id,
       action: 'UPDATE',
       entityType: 'GROUP',
       entityId: parsedInput.groupId,
-      metadata: { action: 'removeMember', userId: parsedInput.userId },
+      oldValue: { memberUserIds: oldMemberIds },
+      newValue: { memberUserIds: newMemberIds },
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -351,7 +422,10 @@ export const addOwnerAction = groupAdminAction
       throw new Error('You do not have permission to manage this group')
     }
 
-    // Check if already an owner
+    const group = await prisma.group.findUniqueOrThrow({
+      where: { id: parsedInput.groupId },
+      include: { ownerships: true },
+    })
     const existingOwner = await prisma.groupOwnership.findUnique({
       where: {
         userId_groupId: {
@@ -365,6 +439,7 @@ export const addOwnerAction = groupAdminAction
       throw new Error('User is already an owner of this group')
     }
 
+    const oldOwnerIds = group.ownerships.map((o) => o.userId)
     // Ensure user is a member (owners are always members)
     const existingMember = await prisma.groupMembership.findUnique({
       where: {
@@ -396,7 +471,9 @@ export const addOwnerAction = groupAdminAction
       action: 'UPDATE',
       entityType: 'GROUP',
       entityId: parsedInput.groupId,
-      metadata: { action: 'addOwner', userId: parsedInput.userId },
+      oldValue: { ownerUserIds: oldOwnerIds },
+      newValue: { ownerUserIds: [...oldOwnerIds, parsedInput.userId] },
+      entityName: group.name,
     })
 
     revalidatePath('/groups')
@@ -410,10 +487,15 @@ export const removeOwnerAction = groupAdminAction
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
 
+    const group = await prisma.group.findUniqueOrThrow({
+      where: { id: parsedInput.groupId },
+      include: { ownerships: true },
+    })
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
     }
 
+    const oldOwnerIds = group.ownerships.map((o) => o.userId)
     await prisma.groupOwnership.delete({
       where: {
         userId_groupId: {
@@ -423,12 +505,15 @@ export const removeOwnerAction = groupAdminAction
       },
     })
 
+    const newOwnerIds = oldOwnerIds.filter((id) => id !== parsedInput.userId)
     await createAuditLog({
       actorId: session.user.id,
       action: 'UPDATE',
       entityType: 'GROUP',
       entityId: parsedInput.groupId,
-      metadata: { action: 'removeOwner', userId: parsedInput.userId },
+      oldValue: { ownerUserIds: oldOwnerIds },
+      newValue: { ownerUserIds: newOwnerIds },
+      entityName: group.name,
     })
 
     revalidatePath('/groups')

@@ -130,12 +130,23 @@ export const createUserAction = groupAdminAction
       return newUser
     })
 
+    const newValue = {
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      location: user.location ?? undefined,
+      preferredLanguage: user.preferredLanguage,
+      storageQuota: user.storageQuota,
+      memberGroupIds: [...parsedInput.memberGroupIds],
+      ownerGroupIds: [...(parsedInput.ownerGroupIds ?? [])],
+    }
     await createAuditLog({
       actorId: session.user.id,
       action: 'CREATE',
       entityType: 'USER',
       entityId: user.id,
-      newValue: { name: user.name, username: user.username, email: user.email },
+      newValue,
+      entityName: user.name,
     })
 
     revalidatePath('/users')
@@ -150,7 +161,7 @@ export const updateUserAction = groupAdminAction
 
     const existingUser = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.id },
-      include: { memberships: true },
+      include: { memberships: true, ownerships: true },
     })
 
     if (!canManageUser(session, existingUser.memberships)) {
@@ -206,13 +217,36 @@ export const updateUserAction = groupAdminAction
       return updated
     })
 
+    const updatedWithRels = await prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+      include: { memberships: true, ownerships: true },
+    })
+    const oldValue = {
+      name: existingUser.name,
+      email: existingUser.email,
+      location: existingUser.location ?? undefined,
+      preferredLanguage: existingUser.preferredLanguage,
+      storageQuota: existingUser.storageQuota,
+      memberGroupIds: existingUser.memberships.map((m) => m.groupId),
+      ownerGroupIds: existingUser.ownerships.map((o) => o.groupId),
+    }
+    const newValue = {
+      name: updatedWithRels.name,
+      email: updatedWithRels.email,
+      location: updatedWithRels.location ?? undefined,
+      preferredLanguage: updatedWithRels.preferredLanguage,
+      storageQuota: updatedWithRels.storageQuota,
+      memberGroupIds: updatedWithRels.memberships.map((m) => m.groupId),
+      ownerGroupIds: updatedWithRels.ownerships.map((o) => o.groupId),
+    }
     await createAuditLog({
       actorId: session.user.id,
       action: 'UPDATE',
       entityType: 'USER',
       entityId: user.id,
-      oldValue: { name: existingUser.name, email: existingUser.email },
-      newValue: { name: user.name, email: user.email },
+      oldValue,
+      newValue,
+      entityName: user.name,
     })
 
     revalidatePath('/users')
@@ -240,13 +274,26 @@ export const updateProfileAction = userAction
       },
     })
 
+    const oldValue = {
+      name: oldUser.name,
+      location: oldUser.location ?? undefined,
+      preferredLanguage: oldUser.preferredLanguage,
+      primaryGroupId: oldUser.primaryGroupId ?? undefined,
+    }
+    const newValue = {
+      name: user.name,
+      location: user.location ?? undefined,
+      preferredLanguage: user.preferredLanguage,
+      primaryGroupId: user.primaryGroupId ?? undefined,
+    }
     await createAuditLog({
       actorId: session.user.id,
       action: 'UPDATE',
       entityType: 'USER',
       entityId: user.id,
-      oldValue: { name: oldUser.name, location: oldUser.location },
-      newValue: { name: user.name, location: user.location },
+      oldValue,
+      newValue,
+      entityName: user.name,
     })
 
     revalidatePath('/')
@@ -261,7 +308,7 @@ export const deleteUserAction = groupAdminAction
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.userId },
-      include: { memberships: true },
+      include: { memberships: true, ownerships: true },
     })
 
     if (!canManageUser(session, user.memberships)) {
@@ -273,6 +320,17 @@ export const deleteUserAction = groupAdminAction
       throw new Error('You cannot delete your own account')
     }
 
+    const oldValue = {
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      location: user.location ?? undefined,
+      preferredLanguage: user.preferredLanguage,
+      storageQuota: user.storageQuota,
+      primaryGroupId: user.primaryGroupId ?? undefined,
+      memberGroupIds: user.memberships.map((m) => m.groupId),
+      ownerGroupIds: user.ownerships.map((o) => o.groupId),
+    }
     await prisma.user.delete({ where: { id: user.id } })
 
     await createAuditLog({
@@ -280,7 +338,8 @@ export const deleteUserAction = groupAdminAction
       action: 'DELETE',
       entityType: 'USER',
       entityId: user.id,
-      oldValue: { name: user.name, username: user.username, email: user.email },
+      oldValue,
+      entityName: user.name,
     })
 
     revalidatePath('/users')
