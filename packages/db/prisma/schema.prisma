@@ -1,0 +1,377 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// AUTHENTICATION (better-auth managed)
+// ============================================================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  emailVerified     Boolean   @default(false)
+  name              String
+  username          String    @unique
+  image             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Profile fields
+  location          String?
+  preferredLanguage String    @default("de")
+  storageQuota      String    @default("1 GB")
+
+  // Primary affiliation
+  primaryGroupId    String?
+  primaryGroup      Group?    @relation("PrimaryGroup", fields: [primaryGroupId], references: [id])
+
+  // LDAP sync fields
+  ldapDn            String?   @unique
+  ldapUidNumber     Int?      @unique
+  ldapSynced        Boolean   @default(false)
+  ldapSyncedAt      DateTime?
+
+  // Relations
+  sessions          Session[]
+  accounts          Account[]
+  memberships       GroupMembership[]
+  ownerships        GroupOwnership[]
+  auditLogs         AuditLog[]        @relation("AuditActor")
+  invitesCreated    Invite[]          @relation("InviteCreator")
+
+  @@index([email])
+  @@index([username])
+  @@index([ldapDn])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  // SAML session tracking
+  samlApps  SamlSessionApp[]
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// ============================================================================
+// GROUPS (Hierarchical with M:N relationships)
+// ============================================================================
+
+model Group {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // LDAP sync fields
+  ldapDn       String?   @unique
+  ldapSynced   Boolean   @default(false)
+  ldapSyncedAt DateTime?
+
+  // Discourse sync fields
+  discourseId       Int?      @unique
+  discourseSynced   Boolean   @default(false)
+  discourseSyncedAt DateTime?
+
+  // Relations
+  memberships  GroupMembership[]
+  ownerships   GroupOwnership[]
+  primaryUsers User[]            @relation("PrimaryGroup")
+
+  // Hierarchical relationships (M:N)
+  parentGroups GroupHierarchy[] @relation("ChildGroup")
+  childGroups  GroupHierarchy[] @relation("ParentGroup")
+
+  // App access
+  appAccess AppGroupAccess[]
+
+  // Category access
+  categoryAccess CategoryGroupAccess[]
+
+  @@index([slug])
+  @@index([ldapDn])
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+model GroupOwnership {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+model GroupHierarchy {
+  id            String   @id @default(cuid())
+  parentGroupId String
+  parentGroup   Group    @relation("ParentGroup", fields: [parentGroupId], references: [id], onDelete: Cascade)
+  childGroupId  String
+  childGroup    Group    @relation("ChildGroup", fields: [childGroupId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([parentGroupId, childGroupId])
+  @@index([parentGroupId])
+  @@index([childGroupId])
+}
+
+// ============================================================================
+// INVITATIONS
+// ============================================================================
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Inviter info
+  createdById String
+  createdBy   User   @relation("InviteCreator", fields: [createdById], references: [id])
+
+  // Pre-assigned groups
+  memberGroups InviteGroupMembership[]
+  ownerGroups  InviteGroupOwnership[]
+
+  @@index([token])
+  @@index([email])
+}
+
+model InviteGroupMembership {
+  id       String @id @default(cuid())
+  inviteId String
+  invite   Invite @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  groupId  String
+
+  @@unique([inviteId, groupId])
+  @@index([inviteId])
+}
+
+model InviteGroupOwnership {
+  id       String @id @default(cuid())
+  inviteId String
+  invite   Invite @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  groupId  String
+
+  @@unique([inviteId, groupId])
+  @@index([inviteId])
+}
+
+// ============================================================================
+// APPLICATIONS
+// ============================================================================
+
+model App {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  url       String
+  iconUrl   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // SAML configuration
+  samlEnabled     Boolean @default(false)
+  samlEntityId    String?
+  samlAcsUrl      String?
+  samlSloUrl      String?
+  samlCertificate String?
+
+  // Access control
+  groupAccess AppGroupAccess[]
+
+  // SAML sessions
+  samlSessions SamlSessionApp[]
+
+  @@index([slug])
+}
+
+model AppGroupAccess {
+  id      String @id @default(cuid())
+  appId   String
+  app     App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, groupId])
+  @@index([appId])
+  @@index([groupId])
+}
+
+model SamlSessionApp {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  appId     String
+  app       App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  nameId    String
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, appId])
+  @@index([sessionId])
+}
+
+// ============================================================================
+// DISCOURSE CATEGORIES
+// ============================================================================
+
+model DiscourseCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  color     String   @default("0088cc")
+  textColor String   @default("ffffff")
+  parentId  String?
+  parent    DiscourseCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  DiscourseCategory[] @relation("CategoryHierarchy")
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  // Discourse sync
+  discourseId       Int?      @unique
+  discourseSynced   Boolean   @default(false)
+  discourseSyncedAt DateTime?
+
+  // Group access
+  groupAccess CategoryGroupAccess[]
+
+  @@index([slug])
+  @@index([discourseId])
+}
+
+model CategoryGroupAccess {
+  id         String            @id @default(cuid())
+  categoryId String
+  category   DiscourseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  groupId    String
+  group      Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, groupId])
+  @@index([categoryId])
+  @@index([groupId])
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  subject   String
+  body      String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum AuditEntityType {
+  USER
+  GROUP
+  INVITE
+  APP
+  CATEGORY
+  SETTING
+}
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  actorId    String?
+  actor      User?           @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     AuditAction
+  entityType AuditEntityType
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

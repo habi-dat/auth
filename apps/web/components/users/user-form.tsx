@@ -1,0 +1,346 @@
+'use client'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useToast } from '@/components/ui/use-toast'
+import { createUserAction, updateUserAction } from '@/lib/actions/user-actions'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import zxcvbn from 'zxcvbn'
+
+interface Group {
+  id: string
+  name: string
+  slug: string
+}
+
+interface UserFormProps {
+  user?: {
+    id: string
+    name: string
+    email: string
+    username: string
+    location: string | null
+    preferredLanguage: string
+    storageQuota: string
+    memberships: Array<{ group: Group }>
+    ownerships: Array<{ group: Group }>
+  }
+  groups: Group[]
+}
+
+export function UserForm({ user, groups }: UserFormProps) {
+  const t = useTranslations('users')
+  const tVal = useTranslations('auth.validation')
+  const tCommon = useTranslations('common')
+  const tReg = useTranslations('auth.register')
+  const router = useRouter()
+  const { toast } = useToast()
+  const [passwordStrength, setPasswordStrength] = useState(0)
+  const isEditing = !!user
+
+  const createUserSchema = z.object({
+    name: z.string().min(2, tVal('nameMin')),
+    username: z
+      .string()
+      .min(3, tVal('usernameMin'))
+      .regex(/^[a-zA-Z0-9_-]+$/, tVal('usernameRegex')),
+    email: z.string().email(tVal('emailInvalid')),
+    password: z.string().min(8, tVal('passwordMin')),
+    location: z.string().optional(),
+    preferredLanguage: z.string().default('de'),
+    storageQuota: z.string().default('1 GB'),
+    memberGroupIds: z.array(z.string()),
+    ownerGroupIds: z.array(z.string()).optional(),
+  })
+
+  const updateUserSchema = z.object({
+    id: z.string(),
+    name: z.string().min(2, tVal('nameMin')),
+    email: z.string().email(tVal('emailInvalid')),
+    location: z.string().optional().nullable(),
+    preferredLanguage: z.string(),
+    storageQuota: z.string(),
+    memberGroupIds: z.array(z.string()),
+    ownerGroupIds: z.array(z.string()).optional(),
+  })
+
+  type CreateUserForm = z.infer<typeof createUserSchema>
+  type UpdateUserForm = z.infer<typeof updateUserSchema>
+
+  const createAction = useAction(createUserAction, {
+    onSuccess: () => {
+      toast({ title: t('created'), description: t('createdDescription') })
+      router.push('/users')
+    },
+    onError: ({ error }) => {
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: error.serverError || tCommon('errorGeneric'),
+      })
+    },
+  })
+
+  const updateAction = useAction(updateUserAction, {
+    onSuccess: () => {
+      toast({ title: t('updated'), description: t('updatedDescription') })
+      router.push('/users')
+    },
+    onError: ({ error }) => {
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: error.serverError || tCommon('errorGeneric'),
+      })
+    },
+  })
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CreateUserForm | UpdateUserForm>({
+    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema),
+    defaultValues: isEditing
+      ? {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          location: user.location || '',
+          preferredLanguage: user.preferredLanguage,
+          storageQuota: user.storageQuota,
+          memberGroupIds: user.memberships.map((m) => m.group.id),
+          ownerGroupIds: user.ownerships.map((o) => o.group.id),
+        }
+      : {
+          name: '',
+          username: '',
+          email: '',
+          password: '',
+          location: '',
+          preferredLanguage: 'de',
+          storageQuota: '1 GB',
+          memberGroupIds: [],
+          ownerGroupIds: [],
+        },
+  })
+
+  const password = watch('password' as keyof (CreateUserForm | UpdateUserForm))
+  const preferredLanguage = watch('preferredLanguage')
+  const storageQuota = watch('storageQuota')
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const result = zxcvbn(e.target.value)
+    setPasswordStrength(result.score)
+  }
+
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return 'bg-destructive'
+      case 2:
+        return 'bg-yellow-500'
+      case 3:
+        return 'bg-blue-500'
+      case 4:
+        return 'bg-green-500'
+      default:
+        return 'bg-muted'
+    }
+  }
+
+  const onSubmit = async (data: CreateUserForm | UpdateUserForm) => {
+    if (!isEditing && 'password' in data && passwordStrength < 3) {
+      toast({
+        variant: 'destructive',
+        title: tReg('passwordTooWeak'),
+        description: tReg('passwordTooWeakDescription'),
+      })
+      return
+    }
+
+    if (isEditing) {
+      updateAction.execute(data as UpdateUserForm)
+    } else {
+      createAction.execute(data as CreateUserForm)
+    }
+  }
+
+  const isLoading = createAction.isPending || updateAction.isPending
+
+  return (
+    <Card>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardHeader>
+          <CardTitle>{isEditing ? t('userFormEditTitle') : t('userFormTitle')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t('name')}</Label>
+              <Input id="name" {...register('name')} disabled={isLoading} />
+              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            </div>
+
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="username">{t('username')}</Label>
+                <Input
+                  id="username"
+                  {...register('username' as keyof (CreateUserForm | UpdateUserForm))}
+                  disabled={isLoading}
+                />
+                {'username' in errors && errors.username && (
+                  <p className="text-sm text-destructive">{errors.username.message}</p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">{t('email')}</Label>
+              <Input id="email" type="email" {...register('email')} disabled={isLoading} />
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            </div>
+
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="password">{tReg('password')}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register('password' as keyof (CreateUserForm | UpdateUserForm), {
+                    onChange: handlePasswordChange,
+                  })}
+                  disabled={isLoading}
+                />
+                {password && (
+                  <div className="space-y-1">
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 flex-1 rounded ${
+                            i < passwordStrength ? getPasswordStrengthColor() : 'bg-muted'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {'password' in errors && errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="location">{t('location')}</Label>
+              <Input id="location" {...register('location')} disabled={isLoading} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="preferredLanguage">{t('language')}</Label>
+              <Select
+                value={preferredLanguage}
+                onValueChange={(v) => setValue('preferredLanguage', v)}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="de">Deutsch</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="storageQuota">{t('storageQuota')}</Label>
+              <Select
+                value={storageQuota}
+                onValueChange={(v) => setValue('storageQuota', v)}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 GB">1 GB</SelectItem>
+                  <SelectItem value="5 GB">5 GB</SelectItem>
+                  <SelectItem value="10 GB">10 GB</SelectItem>
+                  <SelectItem value="50 GB">50 GB</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('groupMemberships')}</Label>
+            <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
+              {groups.map((group) => {
+                const memberGroupIds = watch('memberGroupIds') || []
+                const isSelected = memberGroupIds.includes(group.id)
+                return (
+                  <Button
+                    key={group.id}
+                    type="button"
+                    variant={isSelected ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      const current = memberGroupIds
+                      if (isSelected) {
+                        setValue(
+                          'memberGroupIds',
+                          current.filter((id) => id !== group.id)
+                        )
+                      } else {
+                        setValue('memberGroupIds', [...current, group.id])
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {group.name}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isLoading}
+          >
+            {tCommon('cancel')}
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEditing ? tCommon('save') : tCommon('create')}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  )
+}

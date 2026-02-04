@@ -1,0 +1,12 @@
+{
+  "extends": "@habidat/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "paths": {
+      "@habidat/db": ["./src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "generated/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

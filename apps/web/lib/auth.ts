@@ -1,0 +1,70 @@
+import { prisma } from '@habidat/db'
+import { betterAuth } from 'better-auth'
+import { prismaAdapter } from 'better-auth/adapters/prisma'
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: 'postgresql',
+  }),
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+    minPasswordLength: 8,
+  },
+  session: {
+    expiresIn: 60 * 60 * 12, // 12 hours
+    updateAge: 60 * 60, // Update session every hour
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 minutes
+    },
+  },
+  user: {
+    additionalFields: {
+      username: {
+        type: 'string',
+        required: true,
+        unique: true,
+      },
+      location: {
+        type: 'string',
+        required: false,
+      },
+      preferredLanguage: {
+        type: 'string',
+        required: false,
+        defaultValue: 'de',
+      },
+      storageQuota: {
+        type: 'string',
+        required: false,
+        defaultValue: '1 GB',
+      },
+      primaryGroupId: {
+        type: 'string',
+        required: false,
+      },
+      ldapDn: {
+        type: 'string',
+        required: false,
+      },
+      ldapUidNumber: {
+        type: 'number',
+        required: false,
+      },
+      ldapSynced: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+      },
+      ldapSyncedAt: {
+        type: 'date',
+        required: false,
+      },
+    },
+  },
+  trustedOrigins: [process.env.APP_URL || 'http://localhost:3000'],
+})
+
+export type Session = typeof auth.$Infer.Session
+export type User = typeof auth.$Infer.Session.user

@@ -1,0 +1,30 @@
+{
+  "name": "habidat-auth",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@habidat/web",
+    "dev:worker": "turbo dev --filter=@habidat/worker",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@habidat/web",
+    "build:worker": "turbo build --filter=@habidat/worker",
+    "lint": "turbo lint",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "turbo typecheck",
+    "db:generate": "pnpm --filter @habidat/db generate",
+    "db:migrate": "pnpm --filter @habidat/db migrate",
+    "db:push": "pnpm --filter @habidat/db push",
+    "db:studio": "pnpm --filter @habidat/db studio",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

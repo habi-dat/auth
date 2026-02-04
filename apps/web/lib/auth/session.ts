@@ -1,0 +1,114 @@
+import { auth } from '@/lib/auth'
+import { prisma } from '@habidat/db'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { cache } from 'react'
+
+export type SessionUser = {
+  id: string
+  email: string
+  name: string
+  username: string
+  image: string | null
+  location: string | null
+  preferredLanguage: string
+  storageQuota: string
+  primaryGroupId: string | null
+  ldapDn: string | null
+  ldapUidNumber: number | null
+  createdAt: Date
+}
+
+export type SessionWithGroups = {
+  user: SessionUser
+  memberships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
+  ownerships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
+  isAdmin: boolean
+  isGroupAdmin: boolean
+}
+
+// Cached session getter - only runs once per request
+export const getSession = cache(async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+  return session
+})
+
+// Get current user or redirect to login
+export async function requireUser(): Promise<SessionUser> {
+  const session = await getSession()
+  if (!session?.user) {
+    redirect('/login')
+  }
+  return session.user as SessionUser
+}
+
+// Get current user with group memberships
+export const getCurrentUserWithGroups = cache(async (): Promise<SessionWithGroups | null> => {
+  const session = await getSession()
+  if (!session?.user) {
+    return null
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      memberships: {
+        include: {
+          group: { select: { id: true, slug: true, name: true, isSystem: true } },
+        },
+      },
+      ownerships: {
+        include: {
+          group: { select: { id: true, slug: true, name: true } },
+        },
+      },
+    },
+  })
+
+  if (!user) {
+    return null
+  }
+
+  // Check if user is in admin group
+  const isAdmin = user.memberships.some((m) => m.group.slug === 'admin' && m.group.isSystem)
+
+  // Check if user owns any groups
+  const isGroupAdmin = user.ownerships.length > 0 || isAdmin
+
+  return {
+    user: user as SessionUser,
+    memberships: user.memberships,
+    ownerships: user.ownerships,
+    isAdmin,
+    isGroupAdmin,
+  }
+})
+
+// Require user to be logged in and return user with groups
+export async function requireUserWithGroups(): Promise<SessionWithGroups> {
+  const sessionWithGroups = await getCurrentUserWithGroups()
+  if (!sessionWithGroups) {
+    redirect('/login')
+  }
+  return sessionWithGroups
+}
+
+// Require user to be an admin
+export async function requireAdmin(): Promise<SessionWithGroups> {
+  const sessionWithGroups = await requireUserWithGroups()
+  if (!sessionWithGroups.isAdmin) {
+    throw new Error('Admin access required')
+  }
+  return sessionWithGroups
+}
+
+// Require user to be a group admin (owns at least one group) or admin
+export async function requireGroupAdmin(): Promise<SessionWithGroups> {
+  const sessionWithGroups = await requireUserWithGroups()
+  if (!sessionWithGroups.isGroupAdmin) {
+    throw new Error('Group admin access required')
+  }
+  return sessionWithGroups
+}
