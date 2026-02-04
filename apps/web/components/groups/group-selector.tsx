@@ -88,29 +88,27 @@ export function GroupSelector({
             )}
           >
             <span className="flex flex-1 flex-wrap items-center gap-1.5">
-              {selectedGroups.length > 0 ? (
-                selectedGroups.map((g) => (
-                  <Badge
-                    key={g.id}
-                    variant="secondary"
-                    className="gap-0.5 pr-1 font-normal"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {g.name}
-                    <button
-                      type="button"
-                      className="rounded-full p-0.5 outline-none ring-offset-background hover:bg-muted-foreground/20 focus:ring-2 focus:ring-ring"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => removeGroup(e, g.id)}
-                      aria-label={`Remove ${g.name}`}
+              {selectedGroups.length > 0
+                ? selectedGroups.map((g) => (
+                    <Badge
+                      key={g.id}
+                      variant="secondary"
+                      className="gap-0.5 pr-1 font-normal"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))
-              ) : (
-                placeholder
-              )}
+                      {g.name}
+                      <button
+                        type="button"
+                        className="rounded-full p-0.5 outline-none ring-offset-background hover:bg-muted-foreground/20 focus:ring-2 focus:ring-ring"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={(e) => removeGroup(e, g.id)}
+                        aria-label={`Remove ${g.name}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </button>
