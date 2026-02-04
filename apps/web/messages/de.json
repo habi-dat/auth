@@ -157,11 +157,15 @@
     "updated": "Benutzer aktualisiert",
     "updatedDescription": "Die Änderungen wurden gespeichert.",
     "groupMemberships": "Gruppenmitgliedschaften",
+    "selectGroupsPlaceholder": "Gruppen auswählen...",
+    "searchGroups": "Gruppen suchen...",
+    "noGroupsFound": "Keine Gruppen gefunden.",
     "storageQuota": "Speicherplatz",
     "language": "Sprache",
     "location": "Ort",
     "slugLabel": "Slug (URL-freundlicher Name)",
-    "slugPlaceholder": "z.B. meine-gruppe"
+    "slugPlaceholder": "z.B. meine-gruppe",
+    "edit": "Bearbeiten"
   },
   "groups": {
     "title": "Gruppen",
@@ -190,6 +194,9 @@
     "parentGroupsHint": "Wählen Sie Gruppen, die diese Gruppe enthalten sollen",
     "childGroups": "Untergeordnete Gruppen",
     "childGroupsHint": "Wählen Sie Gruppen, die von dieser Gruppe enthalten werden sollen",
+    "selectGroupsPlaceholder": "Gruppen auswählen...",
+    "searchGroups": "Gruppen suchen...",
+    "noGroupsFound": "Keine Gruppen gefunden.",
     "membersTab": "Mitglieder",
     "settingsTab": "Einstellungen",
     "membersCount": "Mitglieder ({count})",

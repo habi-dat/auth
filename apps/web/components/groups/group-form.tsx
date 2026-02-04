@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { GroupSelector } from '@/components/groups/group-selector'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -174,71 +175,31 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
 
           {isAdmin && availableGroups.length > 0 && (
             <>
-              <div className="space-y-2">
-                <Label>{t('parentGroups')}</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
-                  {availableGroups.map((g) => {
-                    const parentGroupIds = watch('parentGroupIds') || []
-                    const isSelected = parentGroupIds.includes(g.id)
-                    return (
-                      <Button
-                        key={g.id}
-                        type="button"
-                        variant={isSelected ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => {
-                          const current = parentGroupIds
-                          if (isSelected) {
-                            setValue(
-                              'parentGroupIds',
-                              current.filter((id) => id !== g.id)
-                            )
-                          } else {
-                            setValue('parentGroupIds', [...current, g.id])
-                          }
-                        }}
-                        disabled={isLoading}
-                      >
-                        {g.name}
-                      </Button>
-                    )
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">{t('parentGroupsHint')}</p>
-              </div>
+              <GroupSelector
+                groups={allGroups}
+                value={watch('parentGroupIds') || []}
+                onChange={(ids) => setValue('parentGroupIds', ids)}
+                label={t('parentGroups')}
+                placeholder={t('selectGroupsPlaceholder')}
+                searchPlaceholder={t('searchGroups')}
+                emptyText={t('noGroupsFound')}
+                disabled={isLoading}
+                excludeGroupIds={group ? [group.id] : []}
+              />
+              <p className="text-xs text-muted-foreground -mt-1">{t('parentGroupsHint')}</p>
 
-              <div className="space-y-2">
-                <Label>{t('childGroups')}</Label>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
-                  {availableGroups.map((g) => {
-                    const childGroupIds = watch('childGroupIds') || []
-                    const isSelected = childGroupIds.includes(g.id)
-                    return (
-                      <Button
-                        key={g.id}
-                        type="button"
-                        variant={isSelected ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => {
-                          const current = childGroupIds
-                          if (isSelected) {
-                            setValue(
-                              'childGroupIds',
-                              current.filter((id) => id !== g.id)
-                            )
-                          } else {
-                            setValue('childGroupIds', [...current, g.id])
-                          }
-                        }}
-                        disabled={isLoading}
-                      >
-                        {g.name}
-                      </Button>
-                    )
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">{t('childGroupsHint')}</p>
-              </div>
+              <GroupSelector
+                groups={allGroups}
+                value={watch('childGroupIds') || []}
+                onChange={(ids) => setValue('childGroupIds', ids)}
+                label={t('childGroups')}
+                placeholder={t('selectGroupsPlaceholder')}
+                searchPlaceholder={t('searchGroups')}
+                emptyText={t('noGroupsFound')}
+                disabled={isLoading}
+                excludeGroupIds={group ? [group.id] : []}
+              />
+              <p className="text-xs text-muted-foreground -mt-1">{t('childGroupsHint')}</p>
             </>
           )}
         </CardContent>

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { GroupSelector } from '@/components/groups/group-selector'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -294,37 +295,16 @@ export function UserForm({ user, groups }: UserFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>{t('groupMemberships')}</Label>
-            <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
-              {groups.map((group) => {
-                const memberGroupIds = watch('memberGroupIds') || []
-                const isSelected = memberGroupIds.includes(group.id)
-                return (
-                  <Button
-                    key={group.id}
-                    type="button"
-                    variant={isSelected ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => {
-                      const current = memberGroupIds
-                      if (isSelected) {
-                        setValue(
-                          'memberGroupIds',
-                          current.filter((id) => id !== group.id)
-                        )
-                      } else {
-                        setValue('memberGroupIds', [...current, group.id])
-                      }
-                    }}
-                    disabled={isLoading}
-                  >
-                    {group.name}
-                  </Button>
-                )
-              })}
-            </div>
-          </div>
+          <GroupSelector
+            groups={groups}
+            value={watch('memberGroupIds') || []}
+            onChange={(ids) => setValue('memberGroupIds', ids)}
+            label={t('groupMemberships')}
+            placeholder={t('selectGroupsPlaceholder')}
+            searchPlaceholder={t('searchGroups')}
+            emptyText={t('noGroupsFound')}
+            disabled={isLoading}
+          />
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
