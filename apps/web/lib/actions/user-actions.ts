@@ -1,21 +1,12 @@
 'use server'
 
-import { createHash, randomBytes } from 'node:crypto'
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup, canManageUser } from '@/lib/auth/roles'
+import { hashPassword } from 'better-auth/crypto'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { groupAdminAction, userAction } from './client'
-
-// Simple password hashing (bcrypt-like for better-auth compatibility)
-async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex')
-  const hash = createHash('sha256')
-    .update(password + salt)
-    .digest('hex')
-  return `${salt}:${hash}`
-}
 
 // Schema definitions
 const createUserSchema = z.object({

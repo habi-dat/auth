@@ -16,6 +16,7 @@
     "db:generate": "pnpm --filter @habidat/db generate",
     "db:migrate": "pnpm --filter @habidat/db migrate",
     "db:push": "pnpm --filter @habidat/db push",
+    "db:seed": "pnpm --filter @habidat/db seed",
     "db:studio": "pnpm --filter @habidat/db studio",
     "clean": "turbo clean && rm -rf node_modules"
   },
