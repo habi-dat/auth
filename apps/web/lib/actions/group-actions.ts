@@ -341,14 +341,18 @@ export const removeMemberAction = groupAdminAction
     return { success: true }
   })
 
-// Add owner to group (admin only)
-export const addOwnerAction = adminAction
+// Add owner to group (group admin or system admin); auto-add as member if not already
+export const addOwnerAction = groupAdminAction
   .schema(addOwnerSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
 
+    if (!canManageGroup(session, parsedInput.groupId)) {
+      throw new Error('You do not have permission to manage this group')
+    }
+
     // Check if already an owner
-    const existing = await prisma.groupOwnership.findUnique({
+    const existingOwner = await prisma.groupOwnership.findUnique({
       where: {
         userId_groupId: {
           userId: parsedInput.userId,
@@ -357,8 +361,27 @@ export const addOwnerAction = adminAction
       },
     })
 
-    if (existing) {
+    if (existingOwner) {
       throw new Error('User is already an owner of this group')
+    }
+
+    // Ensure user is a member (owners are always members)
+    const existingMember = await prisma.groupMembership.findUnique({
+      where: {
+        userId_groupId: {
+          userId: parsedInput.userId,
+          groupId: parsedInput.groupId,
+        },
+      },
+    })
+
+    if (!existingMember) {
+      await prisma.groupMembership.create({
+        data: {
+          userId: parsedInput.userId,
+          groupId: parsedInput.groupId,
+        },
+      })
     }
 
     await prisma.groupOwnership.create({
@@ -381,11 +404,15 @@ export const addOwnerAction = adminAction
     return { success: true }
   })
 
-// Remove owner from group (admin only)
-export const removeOwnerAction = adminAction
+// Remove owner from group (group admin or system admin)
+export const removeOwnerAction = groupAdminAction
   .schema(removeOwnerSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
+
+    if (!canManageGroup(session, parsedInput.groupId)) {
+      throw new Error('You do not have permission to manage this group')
+    }
 
     await prisma.groupOwnership.delete({
       where: {

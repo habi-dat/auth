@@ -305,6 +305,17 @@ export function UserForm({ user, groups }: UserFormProps) {
             emptyText={t('noGroupsFound')}
             disabled={isLoading}
           />
+          <GroupSelector
+            groups={groups}
+            value={watch('ownerGroupIds') || []}
+            onChange={(ids) => setValue('ownerGroupIds', ids)}
+            label={t('groupOwnership')}
+            placeholder={t('selectGroupsPlaceholder')}
+            searchPlaceholder={t('searchGroups')}
+            emptyText={t('noGroupsFound')}
+            disabled={isLoading}
+          />
+          <p className="text-xs text-muted-foreground -mt-2">{t('groupOwnershipHint')}</p>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button

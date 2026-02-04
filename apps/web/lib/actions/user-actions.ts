@@ -90,7 +90,7 @@ export const createUserAction = groupAdminAction
           preferredLanguage: parsedInput.preferredLanguage,
           storageQuota: parsedInput.storageQuota,
           ldapUidNumber,
-          primaryGroupId: parsedInput.memberGroupIds[0] || null,
+          primaryGroupId: parsedInput.memberGroupIds[0] ?? parsedInput.ownerGroupIds?.[0] ?? null,
         },
       })
 
@@ -104,10 +104,13 @@ export const createUserAction = groupAdminAction
         },
       })
 
-      // Create memberships
-      if (parsedInput.memberGroupIds.length > 0) {
+      // Create memberships: include all member groups + owner groups (owners are always members)
+      const effectiveMemberGroupIds = [
+        ...new Set([...parsedInput.memberGroupIds, ...(parsedInput.ownerGroupIds ?? [])]),
+      ]
+      if (effectiveMemberGroupIds.length > 0) {
         await tx.groupMembership.createMany({
-          data: parsedInput.memberGroupIds.map((groupId) => ({
+          data: effectiveMemberGroupIds.map((groupId) => ({
             userId: newUser.id,
             groupId,
           })),
@@ -167,14 +170,17 @@ export const updateUserAction = groupAdminAction
         },
       })
 
-      // Update memberships if provided
+      // Update memberships if provided: include owner groups (owners are always members)
       if (parsedInput.memberGroupIds) {
+        const effectiveMemberGroupIds = [
+          ...new Set([...parsedInput.memberGroupIds, ...(parsedInput.ownerGroupIds ?? [])]),
+        ]
         await tx.groupMembership.deleteMany({
           where: { userId: parsedInput.id },
         })
-        if (parsedInput.memberGroupIds.length > 0) {
+        if (effectiveMemberGroupIds.length > 0) {
           await tx.groupMembership.createMany({
-            data: parsedInput.memberGroupIds.map((groupId) => ({
+            data: effectiveMemberGroupIds.map((groupId) => ({
               userId: parsedInput.id,
               groupId,
             })),
@@ -306,6 +312,14 @@ export async function getUsers(search?: string) {
       },
       primaryGroup: { select: { id: true, name: true, slug: true } },
     },
+    orderBy: { name: 'asc' },
+  })
+}
+
+// Get users for select/dropdown (minimal fields)
+export async function getUsersForSelect() {
+  return prisma.user.findMany({
+    select: { id: true, name: true, email: true },
     orderBy: { name: 'asc' },
   })
 }

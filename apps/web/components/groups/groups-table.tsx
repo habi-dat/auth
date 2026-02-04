@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import type { getGroups } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { FolderTree, Users } from 'lucide-react'
+import { Crown, FolderTree, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
@@ -55,6 +55,27 @@ export function GroupsTable({
           <span>{row.original._count.memberships}</span>
         </div>
       ),
+    },
+    {
+      id: 'admins',
+      header: t('admins'),
+      cell: ({ row }) => {
+        const ownerships = row.original.ownerships
+        if (ownerships.length === 0) {
+          return <span className="text-muted-foreground text-sm">—</span>
+        }
+        return (
+          <div className="flex flex-wrap gap-1 items-center">
+            {ownerships.slice(0, 2).map((o) => (
+              <Badge key={o.user.id} variant="secondary" className="gap-0.5 font-normal">
+                <Crown className="h-3 w-3 text-yellow-600" />
+                {o.user.name}
+              </Badge>
+            ))}
+            {ownerships.length > 2 && <Badge variant="outline">+{ownerships.length - 2}</Badge>}
+          </div>
+        )
+      },
     },
     {
       id: 'hierarchy',

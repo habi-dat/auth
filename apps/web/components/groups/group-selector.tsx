@@ -77,14 +77,17 @@ export function GroupSelector({
       {label && <Label>{label}</Label>}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button
-            type="button"
-            disabled={disabled}
+          {/* div used instead of button so inner remove buttons don't create invalid nested <button> */}
+          {/* biome-ignore lint/a11y/useSemanticElements: div required to avoid nested buttons (remove X is a button) */}
+          <div
+            role="button"
+            tabIndex={disabled ? -1 : 0}
+            aria-disabled={disabled}
             className={cn(
-              'flex h-auto min-h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
+              'flex h-auto min-h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
               'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              !selectedGroups.length && 'text-muted-foreground'
+              disabled && 'cursor-not-allowed opacity-50 pointer-events-none',
+              !selectedGroups.length && !disabled && 'text-muted-foreground'
             )}
           >
             <span className="flex flex-1 flex-wrap items-center gap-1.5">
@@ -111,7 +114,7 @@ export function GroupSelector({
                 : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </button>
+          </div>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command shouldFilter={true}>

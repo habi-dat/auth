@@ -3,6 +3,7 @@ import { GroupMembers } from '@/components/groups/group-members'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getGroup, getGroupsForSelect } from '@/lib/actions/group-actions'
+import { getUsersForSelect } from '@/lib/actions/user-actions'
 import { canManageGroup } from '@/lib/auth/roles'
 import { requireUserWithGroups } from '@/lib/auth/session'
 import { ArrowLeft } from 'lucide-react'
@@ -18,7 +19,11 @@ export default async function EditGroupPage({ params }: PageProps) {
   const t = await getTranslations('groups')
   const { id } = await params
   const session = await requireUserWithGroups()
-  const [group, allGroups] = await Promise.all([getGroup(id), getGroupsForSelect()])
+  const [group, allGroups, allUsers] = await Promise.all([
+    getGroup(id),
+    getGroupsForSelect(),
+    getUsersForSelect(),
+  ])
 
   if (!group) {
     notFound()
@@ -46,7 +51,7 @@ export default async function EditGroupPage({ params }: PageProps) {
           {canManage && <TabsTrigger value="settings">{t('settingsTab')}</TabsTrigger>}
         </TabsList>
         <TabsContent value="members" className="mt-6">
-          <GroupMembers group={group} canManage={canManage} />
+          <GroupMembers group={group} users={allUsers} canManage={canManage} />
         </TabsContent>
         {canManage && (
           <TabsContent value="settings" className="mt-6">
