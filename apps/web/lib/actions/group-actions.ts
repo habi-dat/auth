@@ -2,6 +2,7 @@
 
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@/lib/auth/roles'
+import { createSyncEvent, dispatchLdapSyncAfterCommit } from '@/lib/sync/create-sync-event'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -65,8 +66,7 @@ export const createGroupAction = adminAction
       throw new Error('Group slug already exists')
     }
 
-    const group = await prisma.$transaction(async (tx) => {
-      // Create group
+    const { group, ldapSyncEventId } = await prisma.$transaction(async (tx) => {
       const newGroup = await tx.group.create({
         data: {
           name: parsedInput.name,
@@ -75,7 +75,6 @@ export const createGroupAction = adminAction
         },
       })
 
-      // Add members
       if (parsedInput.memberUserIds?.length) {
         await tx.groupMembership.createMany({
           data: parsedInput.memberUserIds.map((userId) => ({
@@ -85,7 +84,6 @@ export const createGroupAction = adminAction
         })
       }
 
-      // Add owners
       if (parsedInput.ownerUserIds?.length) {
         await tx.groupOwnership.createMany({
           data: parsedInput.ownerUserIds.map((userId) => ({
@@ -95,7 +93,6 @@ export const createGroupAction = adminAction
         })
       }
 
-      // Add parent relationships
       if (parsedInput.parentGroupIds?.length) {
         await tx.groupHierarchy.createMany({
           data: parsedInput.parentGroupIds.map((parentGroupId) => ({
@@ -105,7 +102,6 @@ export const createGroupAction = adminAction
         })
       }
 
-      // Add child relationships
       if (parsedInput.childGroupIds?.length) {
         await tx.groupHierarchy.createMany({
           data: parsedInput.childGroupIds.map((childGroupId) => ({
@@ -115,8 +111,17 @@ export const createGroupAction = adminAction
         })
       }
 
-      return newGroup
+      const syncEvent = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'CREATE',
+        entityType: 'GROUP',
+        entityId: newGroup.id,
+        payload: { groupId: newGroup.id },
+      })
+      return { group: newGroup, ldapSyncEventId: syncEvent.id }
     })
+
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     const newValue = {
       name: group.name,
@@ -165,8 +170,7 @@ export const updateGroupAction = groupAdminAction
       throw new Error('System groups can only be modified by admins')
     }
 
-    const group = await prisma.$transaction(async (tx) => {
-      // Update group fields
+    const { group, ldapSyncEventId } = await prisma.$transaction(async (tx) => {
       const updated = await tx.group.update({
         where: { id: parsedInput.id },
         data: {
@@ -175,7 +179,6 @@ export const updateGroupAction = groupAdminAction
         },
       })
 
-      // Update members if provided
       if (parsedInput.memberUserIds) {
         await tx.groupMembership.deleteMany({
           where: { groupId: parsedInput.id },
@@ -190,7 +193,6 @@ export const updateGroupAction = groupAdminAction
         }
       }
 
-      // Update owners if provided (admin only)
       if (parsedInput.ownerUserIds && session.isAdmin) {
         await tx.groupOwnership.deleteMany({
           where: { groupId: parsedInput.id },
@@ -205,7 +207,6 @@ export const updateGroupAction = groupAdminAction
         }
       }
 
-      // Update parent relationships if provided
       if (parsedInput.parentGroupIds) {
         await tx.groupHierarchy.deleteMany({
           where: { childGroupId: parsedInput.id },
@@ -220,7 +221,6 @@ export const updateGroupAction = groupAdminAction
         }
       }
 
-      // Update child relationships if provided
       if (parsedInput.childGroupIds) {
         await tx.groupHierarchy.deleteMany({
           where: { parentGroupId: parsedInput.id },
@@ -235,8 +235,17 @@ export const updateGroupAction = groupAdminAction
         }
       }
 
-      return updated
+      const syncEvent = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'GROUP',
+        entityId: updated.id,
+        payload: { groupId: updated.id },
+      })
+      return { group: updated, ldapSyncEventId: syncEvent.id }
     })
+
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     const updatedWithRels = await prisma.group.findUniqueOrThrow({
       where: { id: group.id },
@@ -308,7 +317,19 @@ export const deleteGroupAction = adminAction
       parentGroupIds: group.parentGroups.map((p) => p.parentGroupId),
       childGroupIds: group.childGroups.map((c) => c.childGroupId),
     }
-    await prisma.group.delete({ where: { id: group.id } })
+
+    const { ldapSyncEventId } = await prisma.$transaction(async (tx) => {
+      const syncEvent = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'DELETE',
+        entityType: 'GROUP',
+        entityId: group.id,
+        payload: { ldapDn: group.ldapDn ?? '', slug: group.slug },
+      })
+      await tx.group.delete({ where: { id: group.id } })
+      return { ldapSyncEventId: syncEvent.id }
+    })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     await createAuditLog({
       actorId: session.user.id,
@@ -350,12 +371,23 @@ export const addMemberAction = groupAdminAction
     }
 
     const oldMemberIds = group.memberships.map((m) => m.userId)
-    await prisma.groupMembership.create({
-      data: {
-        userId: parsedInput.userId,
-        groupId: parsedInput.groupId,
-      },
+    const { ldapSyncEventId } = await prisma.$transaction(async (tx) => {
+      await tx.groupMembership.create({
+        data: {
+          userId: parsedInput.userId,
+          groupId: parsedInput.groupId,
+        },
+      })
+      const ev = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'GROUP',
+        entityId: parsedInput.groupId,
+        payload: { groupId: parsedInput.groupId },
+      })
+      return { ldapSyncEventId: ev.id }
     })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     await createAuditLog({
       actorId: session.user.id,
@@ -387,14 +419,25 @@ export const removeMemberAction = groupAdminAction
     }
 
     const oldMemberIds = group.memberships.map((m) => m.userId)
-    await prisma.groupMembership.delete({
-      where: {
-        userId_groupId: {
-          userId: parsedInput.userId,
-          groupId: parsedInput.groupId,
+    const { ldapSyncEventId } = await prisma.$transaction(async (tx) => {
+      await tx.groupMembership.delete({
+        where: {
+          userId_groupId: {
+            userId: parsedInput.userId,
+            groupId: parsedInput.groupId,
+          },
         },
-      },
+      })
+      const ev = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'GROUP',
+        entityId: parsedInput.groupId,
+        payload: { groupId: parsedInput.groupId },
+      })
+      return { ldapSyncEventId: ev.id }
     })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     const newMemberIds = oldMemberIds.filter((id) => id !== parsedInput.userId)
     await createAuditLog({
@@ -450,21 +493,31 @@ export const addOwnerAction = groupAdminAction
       },
     })
 
-    if (!existingMember) {
-      await prisma.groupMembership.create({
+    const { ldapSyncEventId } = await prisma.$transaction(async (tx) => {
+      if (!existingMember) {
+        await tx.groupMembership.create({
+          data: {
+            userId: parsedInput.userId,
+            groupId: parsedInput.groupId,
+          },
+        })
+      }
+      await tx.groupOwnership.create({
         data: {
           userId: parsedInput.userId,
           groupId: parsedInput.groupId,
         },
       })
-    }
-
-    await prisma.groupOwnership.create({
-      data: {
-        userId: parsedInput.userId,
-        groupId: parsedInput.groupId,
-      },
+      const ev = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'GROUP',
+        entityId: parsedInput.groupId,
+        payload: { groupId: parsedInput.groupId },
+      })
+      return { ldapSyncEventId: ev.id }
     })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     await createAuditLog({
       actorId: session.user.id,
@@ -496,14 +549,25 @@ export const removeOwnerAction = groupAdminAction
     }
 
     const oldOwnerIds = group.ownerships.map((o) => o.userId)
-    await prisma.groupOwnership.delete({
-      where: {
-        userId_groupId: {
-          userId: parsedInput.userId,
-          groupId: parsedInput.groupId,
+    const { ldapSyncEventId } = await prisma.$transaction(async (tx) => {
+      await tx.groupOwnership.delete({
+        where: {
+          userId_groupId: {
+            userId: parsedInput.userId,
+            groupId: parsedInput.groupId,
+          },
         },
-      },
+      })
+      const ev = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'GROUP',
+        entityId: parsedInput.groupId,
+        payload: { groupId: parsedInput.groupId },
+      })
+      return { ldapSyncEventId: ev.id }
     })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
 
     const newOwnerIds = oldOwnerIds.filter((id) => id !== parsedInput.userId)
     await createAuditLog({

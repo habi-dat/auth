@@ -69,6 +69,7 @@ export const ModelName = {
   CategoryGroupAccess: 'CategoryGroupAccess',
   Setting: 'Setting',
   EmailTemplate: 'EmailTemplate',
+  SyncEvent: 'SyncEvent',
   AuditLog: 'AuditLog'
 } as const
 
@@ -319,6 +320,24 @@ export const EmailTemplateScalarFieldEnum = {
 } as const
 
 export type EmailTemplateScalarFieldEnum = (typeof EmailTemplateScalarFieldEnum)[keyof typeof EmailTemplateScalarFieldEnum]
+
+
+export const SyncEventScalarFieldEnum = {
+  id: 'id',
+  target: 'target',
+  operation: 'operation',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt'
+} as const
+
+export type SyncEventScalarFieldEnum = (typeof SyncEventScalarFieldEnum)[keyof typeof SyncEventScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {

@@ -359,6 +359,49 @@ enum AuditEntityType {
   SETTING
 }
 
+// ============================================================================
+// SYNC QUEUE (Outbox pattern)
+// ============================================================================
+
+enum SyncTarget {
+  LDAP
+  DISCOURSE
+}
+
+enum SyncOperation {
+  CREATE
+  UPDATE
+  DELETE
+  SYNC_GROUPS
+}
+
+enum SyncStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+}
+
+model SyncEvent {
+  id           String        @id @default(cuid())
+  target       SyncTarget
+  operation    SyncOperation
+  entityType   AuditEntityType
+  entityId     String
+  payload      Json
+  status       SyncStatus    @default(PENDING)
+  attempts     Int           @default(0)
+  maxAttempts  Int           @default(5)
+  lastError    String?
+  createdAt    DateTime      @default(now())
+  processedAt  DateTime?
+
+  @@index([status, target])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
 model AuditLog {
   id         String          @id @default(cuid())
   actorId    String?

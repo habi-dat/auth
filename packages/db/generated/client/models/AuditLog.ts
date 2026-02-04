@@ -433,10 +433,6 @@ export type EnumAuditActionFieldUpdateOperationsInput = {
   set?: $Enums.AuditAction
 }
 
-export type EnumAuditEntityTypeFieldUpdateOperationsInput = {
-  set?: $Enums.AuditEntityType
-}
-
 export type AuditLogCreateWithoutActorInput = {
   id?: string
   action: $Enums.AuditAction

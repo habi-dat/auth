@@ -28,3 +28,32 @@ export const AuditEntityType = {
 } as const
 
 export type AuditEntityType = (typeof AuditEntityType)[keyof typeof AuditEntityType]
+
+
+export const SyncTarget = {
+  LDAP: 'LDAP',
+  DISCOURSE: 'DISCOURSE'
+} as const
+
+export type SyncTarget = (typeof SyncTarget)[keyof typeof SyncTarget]
+
+
+export const SyncOperation = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  SYNC_GROUPS: 'SYNC_GROUPS'
+} as const
+
+export type SyncOperation = (typeof SyncOperation)[keyof typeof SyncOperation]
+
+
+export const SyncStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING'
+} as const
+
+export type SyncStatus = (typeof SyncStatus)[keyof typeof SyncStatus]

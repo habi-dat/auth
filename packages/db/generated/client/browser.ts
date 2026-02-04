@@ -108,6 +108,11 @@ export type Setting = Prisma.SettingModel
  */
 export type EmailTemplate = Prisma.EmailTemplateModel
 /**
+ * Model SyncEvent
+ * 
+ */
+export type SyncEvent = Prisma.SyncEventModel
+/**
  * Model AuditLog
  * 
  */

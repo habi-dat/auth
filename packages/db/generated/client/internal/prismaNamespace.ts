@@ -402,6 +402,7 @@ export const ModelName = {
   CategoryGroupAccess: 'CategoryGroupAccess',
   Setting: 'Setting',
   EmailTemplate: 'EmailTemplate',
+  SyncEvent: 'SyncEvent',
   AuditLog: 'AuditLog'
 } as const
 
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "group" | "groupMembership" | "groupOwnership" | "groupHierarchy" | "invite" | "inviteGroupMembership" | "inviteGroupOwnership" | "app" | "appGroupAccess" | "samlSessionApp" | "discourseCategory" | "categoryGroupAccess" | "setting" | "emailTemplate" | "auditLog"
+    modelProps: "user" | "session" | "account" | "verification" | "group" | "groupMembership" | "groupOwnership" | "groupHierarchy" | "invite" | "inviteGroupMembership" | "inviteGroupOwnership" | "app" | "appGroupAccess" | "samlSessionApp" | "discourseCategory" | "categoryGroupAccess" | "setting" | "emailTemplate" | "syncEvent" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1754,6 +1755,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SyncEvent: {
+      payload: Prisma.$SyncEventPayload<ExtArgs>
+      fields: Prisma.SyncEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SyncEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SyncEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        findFirst: {
+          args: Prisma.SyncEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SyncEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        findMany: {
+          args: Prisma.SyncEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>[]
+        }
+        create: {
+          args: Prisma.SyncEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        createMany: {
+          args: Prisma.SyncEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SyncEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>[]
+        }
+        delete: {
+          args: Prisma.SyncEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        update: {
+          args: Prisma.SyncEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.SyncEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SyncEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SyncEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.SyncEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SyncEventPayload>
+        }
+        aggregate: {
+          args: Prisma.SyncEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSyncEvent>
+        }
+        groupBy: {
+          args: Prisma.SyncEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SyncEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SyncEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SyncEventCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>
       fields: Prisma.AuditLogFieldRefs
@@ -2100,6 +2175,24 @@ export const EmailTemplateScalarFieldEnum = {
 export type EmailTemplateScalarFieldEnum = (typeof EmailTemplateScalarFieldEnum)[keyof typeof EmailTemplateScalarFieldEnum]
 
 
+export const SyncEventScalarFieldEnum = {
+  id: 'id',
+  target: 'target',
+  operation: 'operation',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt'
+} as const
+
+export type SyncEventScalarFieldEnum = (typeof SyncEventScalarFieldEnum)[keyof typeof SyncEventScalarFieldEnum]
+
+
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   actorId: 'actorId',
@@ -2233,16 +2326,30 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
- * Reference to a field of type 'AuditAction'
+ * Reference to a field of type 'SyncTarget'
  */
-export type EnumAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditAction'>
+export type EnumSyncTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncTarget'>
     
 
 
 /**
- * Reference to a field of type 'AuditAction[]'
+ * Reference to a field of type 'SyncTarget[]'
  */
-export type ListEnumAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditAction[]'>
+export type ListEnumSyncTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncTarget[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SyncOperation'
+ */
+export type EnumSyncOperationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncOperation'>
+    
+
+
+/**
+ * Reference to a field of type 'SyncOperation[]'
+ */
+export type ListEnumSyncOperationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncOperation[]'>
     
 
 
@@ -2257,6 +2364,34 @@ export type EnumAuditEntityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'AuditEntityType[]'
  */
 export type ListEnumAuditEntityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditEntityType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SyncStatus'
+ */
+export type EnumSyncStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SyncStatus[]'
+ */
+export type ListEnumSyncStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SyncStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditAction'
+ */
+export type EnumAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditAction'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditAction[]'
+ */
+export type ListEnumAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditAction[]'>
     
 
 
@@ -2386,6 +2521,7 @@ export type GlobalOmitConfig = {
   categoryGroupAccess?: Prisma.CategoryGroupAccessOmit
   setting?: Prisma.SettingOmit
   emailTemplate?: Prisma.EmailTemplateOmit
+  syncEvent?: Prisma.SyncEventOmit
   auditLog?: Prisma.AuditLogOmit
 }
 
