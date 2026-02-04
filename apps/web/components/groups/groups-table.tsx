@@ -8,6 +8,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Crown, FolderTree, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type GroupRow = Awaited<ReturnType<typeof getGroups>>[number]
 
@@ -19,6 +20,7 @@ export function GroupsTable({
   isAdmin: boolean
 }) {
   const t = useTranslations('groups')
+  const router = useRouter()
 
   const columns: ColumnDef<GroupRow>[] = [
     {
@@ -119,5 +121,12 @@ export function GroupsTable({
     },
   ]
 
-  return <DataTable columns={columns} data={groups} emptyMessage={t('noGroups')} />
+  return (
+    <DataTable
+      columns={columns}
+      data={groups}
+      emptyMessage={t('noGroups')}
+      onRowClick={(row) => router.push(`/groups/${row.id}`)}
+    />
+  )
 }

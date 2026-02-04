@@ -8,11 +8,13 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Crown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type UserRow = Awaited<ReturnType<typeof getUsers>>[number]
 
 export function UsersTable({ users }: { users: UserRow[] }) {
   const t = useTranslations('users')
+  const router = useRouter()
 
   const columns: ColumnDef<UserRow>[] = [
     {
@@ -82,5 +84,12 @@ export function UsersTable({ users }: { users: UserRow[] }) {
     },
   ]
 
-  return <DataTable columns={columns} data={users} emptyMessage={t('noUsers')} />
+  return (
+    <DataTable
+      columns={columns}
+      data={users}
+      emptyMessage={t('noUsers')}
+      onRowClick={(row) => router.push(`/users/${row.id}`)}
+    />
+  )
 }

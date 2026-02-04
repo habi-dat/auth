@@ -27,6 +27,8 @@ export interface DataTableProps<TData, TValue> {
   globalFilter?: string
   /** Optional class for the table wrapper */
   className?: string
+  /** When set, rows are clickable and trigger this callback (clicks on links/buttons are ignored) */
+  onRowClick?: (row: TData) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -35,6 +37,7 @@ export function DataTable<TData, TValue>({
   emptyMessage = 'No results.',
   globalFilter,
   className,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -83,7 +86,20 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ) : (
             rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+                className={onRowClick ? 'cursor-pointer' : undefined}
+                onClick={
+                  onRowClick
+                    ? (e) => {
+                        const target = e.target as HTMLElement
+                        if (target.closest('a, button')) return
+                        onRowClick(row.original)
+                      }
+                    : undefined
+                }
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
