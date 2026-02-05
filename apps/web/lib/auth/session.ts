@@ -25,6 +25,7 @@ export type SessionWithGroups = {
   user: SessionUser
   memberships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
   ownerships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
+  primaryGroup: { name: string } | null
   isAdmin: boolean
   isGroupAdmin: boolean
 }
@@ -39,14 +40,19 @@ export const getSession = cache(async () => {
 
 /** Theme preferences from DB for the current user (used by root layout so theme reflects saved profile). */
 export const getCurrentUserThemePreferences = cache(
-  async (): Promise<{ preferredTheme: string | null; preferredColorMode: string | null } | null> => {
+  async (): Promise<{
+    preferredTheme: string | null
+    preferredColorMode: string | null
+  } | null> => {
     const session = await getSession()
     if (!session?.user?.id) return null
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { preferredTheme: true, preferredColorMode: true },
     })
-    return user ? { preferredTheme: user.preferredTheme, preferredColorMode: user.preferredColorMode } : null
+    return user
+      ? { preferredTheme: user.preferredTheme, preferredColorMode: user.preferredColorMode }
+      : null
   }
 )
 
@@ -79,6 +85,7 @@ export const getCurrentUserWithGroups = cache(async (): Promise<SessionWithGroup
           group: { select: { id: true, slug: true, name: true } },
         },
       },
+      primaryGroup: { select: { name: true } },
     },
   })
 
@@ -96,6 +103,7 @@ export const getCurrentUserWithGroups = cache(async (): Promise<SessionWithGroup
     user: user as SessionUser,
     memberships: user.memberships,
     ownerships: user.ownerships,
+    primaryGroup: user.primaryGroup,
     isAdmin,
     isGroupAdmin,
   }

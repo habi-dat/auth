@@ -4,7 +4,12 @@ import type { AppSaml } from './config'
 export type SamlUser = {
   id: string
   email: string
-  name: string
+  username: string
+  uid: string
+  location: string | null
+  title: string | null
+  /** Group slugs (member groups + ancestor groups). Included in SAML attribute "groups". */
+  groups?: string[]
 }
 
 export interface SamlLoginRequest {
@@ -12,7 +17,9 @@ export interface SamlLoginRequest {
 }
 
 /** Result of parsing a SAML AuthnRequest; pass to createLoginResponse. */
-export type ParsedLoginRequest = Awaited<ReturnType<ReturnType<typeof getIdentityProvider>['parseLoginRequest']>>
+export type ParsedLoginRequest = Awaited<
+  ReturnType<ReturnType<typeof getIdentityProvider>['parseLoginRequest']>
+>
 
 /**
  * Parse incoming SAML AuthnRequest (GET redirect binding).
@@ -41,7 +48,24 @@ export async function createLoginResponse(
   const idp = getIdentityProvider()
   const sp = getServiceProvider(app)
   const binding = 'post'
-  return idp.createLoginResponse(sp, requestInfo, binding, { email: user.email, name: user.name }, undefined, undefined, relayState ?? undefined)
+  const attributes: Record<string, string | string[]> = {
+    email: user.email,
+    username: user.username,
+    place: user.location,
+    title: user.title,
+    uid: user.uid,
+  }
+  if (user.groups?.length) attributes.groups = user.groups
+
+  return idp.createLoginResponse(
+    sp,
+    requestInfo,
+    binding,
+    attributes,
+    undefined,
+    undefined,
+    relayState ?? undefined
+  )
 }
 
 function escapeHtml(s: string): string {
@@ -62,7 +86,9 @@ export function generateSamlPostForm(
   samlResponseBase64: string,
   relayState: string | null
 ): string {
-  const state = relayState ? `\n    <input type="hidden" name="RelayState" value="${escapeHtml(relayState)}"/>` : ''
+  const state = relayState
+    ? `\n    <input type="hidden" name="RelayState" value="${escapeHtml(relayState)}"/>`
+    : ''
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"/><title>Redirecting...</title></head>
