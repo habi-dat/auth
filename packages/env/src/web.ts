@@ -11,6 +11,11 @@ export const webEnv = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
     SAML_PRIVATE_KEY: z.string().optional(),
     SAML_CERTIFICATE: z.string().optional(),
+    // Discourse (for category management via API)
+    DISCOURSE_URL: z.string().url().optional(),
+    DISCOURSE_API_KEY: z.string().optional(),
+    DISCOURSE_API_USERNAME: z.string().optional(),
+    DISCOURSE_SSO_SECRET: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
@@ -24,6 +29,10 @@ export const webEnv = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     SAML_PRIVATE_KEY: process.env.SAML_PRIVATE_KEY,
     SAML_CERTIFICATE: process.env.SAML_CERTIFICATE,
+    DISCOURSE_URL: process.env.DISCOURSE_URL,
+    DISCOURSE_API_KEY: process.env.DISCOURSE_API_KEY,
+    DISCOURSE_API_USERNAME: process.env.DISCOURSE_API_USERNAME,
+    DISCOURSE_SSO_SECRET: process.env.DISCOURSE_SSO_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   emptyStringAsUndefined: true,

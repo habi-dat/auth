@@ -1,5 +1,15 @@
 import { createHmac } from 'node:crypto'
-import type { CreateGroupData, DiscourseConfig, SsoUserData, UpdateGroupData } from './types.js'
+import type {
+  CreateCategoryData,
+  CreateGroupData,
+  DiscourseConfig,
+  DiscourseCategoryApi,
+  ListCategoriesResponse,
+  ShowCategoryResponse,
+  SsoUserData,
+  UpdateCategoryData,
+  UpdateGroupData,
+} from './types'
 
 export class DiscourseService {
   private config: DiscourseConfig
@@ -150,6 +160,80 @@ export class DiscourseService {
 
   async deleteGroup(discourseId: number): Promise<void> {
     await this.request(`/admin/groups/${discourseId}.json`, {
+      method: 'DELETE',
+    })
+  }
+
+  // -------------------------------------------------------------------------
+  // Categories (full CRUD via Discourse API; no DB)
+  // -------------------------------------------------------------------------
+
+  /**
+   * List categories (and subcategories if include_subcategories=true).
+   * GET /categories.json
+   */
+  async listCategories(includeSubcategories = true): Promise<DiscourseCategoryApi[]> {
+    const q = includeSubcategories ? '?include_subcategories=true' : ''
+    const result = await this.request<ListCategoriesResponse>(`/categories.json${q}`)
+    return result?.category_list?.categories ?? []
+  }
+
+  /**
+   * Get a single category by id.
+   * GET /c/{id}/show.json
+   */
+  async getCategory(id: number): Promise<DiscourseCategoryApi> {
+    const result = await this.request<ShowCategoryResponse>(`/c/${id}/show.json`)
+    if (!result?.category) throw new Error('Category not found')
+    return result.category
+  }
+
+  /**
+   * Create a category.
+   * POST /categories.json
+   */
+  async createCategory(data: CreateCategoryData): Promise<number> {
+    const body: Record<string, unknown> = {
+      name: data.name,
+      color: data.color ?? '0088cc',
+      text_color: data.text_color ?? 'ffffff',
+    }
+    if (data.slug != null) body.slug = data.slug
+    if (data.parent_category_id != null) body.parent_category_id = data.parent_category_id
+    if (data.permissions != null && Object.keys(data.permissions).length > 0) {
+      body.permissions = data.permissions
+    }
+    const result = await this.request<{ category: { id: number } }>('/categories.json', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    return result.category.id
+  }
+
+  /**
+   * Update a category.
+   * PUT /categories/{id}.json
+   */
+  async updateCategory(id: number, data: UpdateCategoryData): Promise<void> {
+    const body: Record<string, unknown> = {}
+    if (data.name != null) body.name = data.name
+    if (data.slug != null) body.slug = data.slug
+    if (data.color != null) body.color = data.color
+    if (data.text_color != null) body.text_color = data.text_color
+    if (data.parent_category_id !== undefined) body.parent_category_id = data.parent_category_id
+    if (data.permissions != null) body.permissions = data.permissions
+    await this.request(`/categories/${id}.json`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    })
+  }
+
+  /**
+   * Delete a category. Requires admin. May not be available on all Discourse versions.
+   * DELETE /categories/{id}.json
+   */
+  async deleteCategory(id: number): Promise<void> {
+    await this.request(`/categories/${id}.json`, {
       method: 'DELETE',
     })
   }

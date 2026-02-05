@@ -112,5 +112,50 @@
       "localeDe": "German",
       "localeEn": "English"
     }
+  },
+  "categories": {
+    "title": "Categories",
+    "description": "Manage Discourse categories (read/write via API)",
+    "create": "Create category",
+    "name": "Name",
+    "namePlaceholder": "Category name",
+    "slug": "Slug",
+    "slugPlaceholder": "e.g. my-category",
+    "color": "Color",
+    "textColor": "Text color",
+    "parent": "Parent category",
+    "noParent": "None",
+    "topics": "Topics",
+    "empty": "No categories",
+    "notConfigured": "Discourse is not configured. Set DISCOURSE_URL and API credentials in environment.",
+    "fetchError": "Failed to load categories from Discourse.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "newCategory": "New category",
+    "editCategory": "Edit category",
+    "groupPermissions": "Group access",
+    "groupPermissionsHint": "Groups that can see this category; empty = everyone",
+    "selectGroupsPlaceholder": "Select groups…",
+    "searchGroups": "Search groups…",
+    "noGroupsFound": "No groups found",
+    "created": "Category created",
+    "updated": "Category updated",
+    "deleted": "Category deleted",
+    "deleteTitle": "Delete category?",
+    "deleteDescription": "Category \"{name}\" and its subcategories will be removed from Discourse. This cannot be undone."
+  },
+  "sidebar": {
+    "brand": "habidat",
+    "nav": {
+      "profile": "Profile",
+      "users": "Users",
+      "groups": "Groups",
+      "categories": "Categories",
+      "invites": "Invites",
+      "apps": "Apps",
+      "settings": "Settings",
+      "audit": "Audit",
+      "sync": "Sync"
+    }
   }
 }

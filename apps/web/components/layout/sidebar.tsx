@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { FileText, FolderTree, History, Mail, RefreshCw, Settings, User, Users } from 'lucide-react'
+import { FileText, FolderTree, History, Layers, Mail, RefreshCw, Settings, User, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -32,6 +32,7 @@ export function Sidebar({
     { href: '/', labelKey: 'nav.profile', icon: User },
     { href: '/users', labelKey: 'nav.users', icon: Users, adminOnly: true },
     { href: '/groups', labelKey: 'nav.groups', icon: FolderTree },
+    { href: '/categories', labelKey: 'nav.categories', icon: Layers, adminOnly: true },
     { href: '/invites', labelKey: 'nav.invites', icon: Mail, groupAdminOnly: true },
     { href: '/apps', labelKey: 'nav.apps', icon: FileText, adminOnly: true },
     { href: '/settings', labelKey: 'nav.settings', icon: Settings, adminOnly: true },
