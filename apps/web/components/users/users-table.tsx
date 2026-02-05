@@ -1,8 +1,8 @@
 'use client'
 
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { deleteUserAction, type getUsers } from '@/lib/actions/user-actions'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -86,10 +86,8 @@ export function UsersTable({ users }: { users: UserRow[] }) {
       id: 'actions',
       header: () => <span className="sr-only">{t('actions')}</span>,
       cell: ({ row }) => (
-        <div
-          className="flex items-center justify-end gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
+        // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
           <Link href={`/users/${row.original.id}`}>
             <Button variant="ghost" size="icon" title={t('edit')}>
               <Pencil className="h-4 w-4" />
@@ -112,26 +110,22 @@ export function UsersTable({ users }: { users: UserRow[] }) {
 
   return (
     <>
-    <DataTable
-      columns={columns}
-      data={users}
-      emptyMessage={t('noUsers')}
-      onRowClick={(row) => router.push(`/users/${row.id}`)}
-    />
-    <ConfirmDialog
-      open={!!deleteTarget}
-      onOpenChange={(open) => !open && setDeleteTarget(null)}
-      title={t('deleteTitle')}
-      description={
-        deleteTarget ? t('deleteDescription', { name: deleteTarget.name }) : ''
-      }
-      confirmLabel={t('delete')}
-      cancelLabel={tCommon('cancel')}
-      onConfirm={() =>
-        deleteTarget && deleteAction.execute({ userId: deleteTarget.id })
-      }
-      isPending={deleteAction.isPending}
-    />
+      <DataTable
+        columns={columns}
+        data={users}
+        emptyMessage={t('noUsers')}
+        onRowClick={(row) => router.push(`/users/${row.id}`)}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t('deleteTitle')}
+        description={deleteTarget ? t('deleteDescription', { name: deleteTarget.name }) : ''}
+        confirmLabel={t('delete')}
+        cancelLabel={tCommon('cancel')}
+        onConfirm={() => deleteTarget && deleteAction.execute({ userId: deleteTarget.id })}
+        isPending={deleteAction.isPending}
+      />
     </>
   )
 }

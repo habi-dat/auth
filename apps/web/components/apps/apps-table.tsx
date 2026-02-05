@@ -1,8 +1,8 @@
 'use client'
 
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { deleteAppAction, type getApps } from '@/lib/actions/app-actions'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -97,7 +97,10 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
         if (count === 0) return <span className="text-muted-foreground text-sm">Alle</span>
         return (
           <span className="text-sm">
-            {row.original.groupAccess.slice(0, 2).map((a) => a.group.name).join(', ')}
+            {row.original.groupAccess
+              .slice(0, 2)
+              .map((a) => a.group.name)
+              .join(', ')}
             {count > 2 ? ` +${count - 2}` : ''}
           </span>
         )
@@ -107,10 +110,8 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
       id: 'actions',
       header: () => <span className="sr-only">{t('actions')}</span>,
       cell: ({ row }) => (
-        <div
-          className="flex items-center justify-end gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
+        // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
           <Link href={`/apps/${row.original.slug}/edit`}>
             <Button variant="ghost" size="icon" title={t('edit')}>
               <Pencil className="h-4 w-4" />
@@ -143,16 +144,10 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t('deleteTitle')}
-        description={
-          deleteTarget
-            ? t('deleteDescription', { name: deleteTarget.name })
-            : ''
-        }
+        description={deleteTarget ? t('deleteDescription', { name: deleteTarget.name }) : ''}
         confirmLabel={t('delete')}
         cancelLabel={tCommon('cancel')}
-        onConfirm={() =>
-          deleteTarget && deleteAction.execute({ id: deleteTarget.id })
-        }
+        onConfirm={() => deleteTarget && deleteAction.execute({ id: deleteTarget.id })}
         isPending={deleteAction.isPending}
       />
     </>

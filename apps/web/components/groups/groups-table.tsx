@@ -1,8 +1,8 @@
 'use client'
 
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { deleteGroupAction, type getGroups } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -123,21 +123,11 @@ export function GroupsTable({
         const g = row.original
         const canEdit = isAdmin || g.ownerships.length > 0
         return (
-          <div
-            className="flex items-center justify-end gap-1"
-            onClick={(e) => e.stopPropagation()}
-          >
+          // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
             <Link href={`/groups/${g.id}`}>
-              <Button
-                variant="ghost"
-                size="icon"
-                title={canEdit ? t('edit') : t('view')}
-              >
-                {canEdit ? (
-                  <Pencil className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+              <Button variant="ghost" size="icon" title={canEdit ? t('edit') : t('view')}>
+                {canEdit ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </Link>
             {!g.isSystem && (
@@ -170,17 +160,10 @@ export function GroupsTable({
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t('deleteTitle')}
-        description={
-          deleteTarget
-            ? t('deleteDescription', { name: deleteTarget.name })
-            : ''
-        }
+        description={deleteTarget ? t('deleteDescription', { name: deleteTarget.name }) : ''}
         confirmLabel={t('delete')}
         cancelLabel={tCommon('cancel')}
-        onConfirm={() =>
-          deleteTarget &&
-          deleteAction.execute({ groupId: deleteTarget.id })
-        }
+        onConfirm={() => deleteTarget && deleteAction.execute({ groupId: deleteTarget.id })}
         isPending={deleteAction.isPending}
       />
     </>
