@@ -16,17 +16,10 @@ import { z } from 'zod'
 
 interface LoginFormProps {
   platformName?: string
-  logoUrl?: string
-  logoUpdatedAt?: string
   loginPageText?: string
 }
 
-export function LoginForm({
-  platformName,
-  logoUrl,
-  logoUpdatedAt,
-  loginPageText,
-}: LoginFormProps) {
+export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
   const t = useTranslations('auth.login')
   const tVal = useTranslations('auth.validation')
   const tCommon = useTranslations('common')
@@ -96,24 +89,10 @@ export function LoginForm({
     }
   }
 
-  const logoSrc = logoUrl && logoUpdatedAt ? `${logoUrl}?v=${logoUpdatedAt}` : logoUrl
-
   return (
     <div className="relative w-full space-y-8">
-      {/* Branding */}
+      {/* Title / intro inside card */}
       <div className="flex flex-col items-center gap-5 text-center">
-        {logoSrc ? (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-muted/60 shadow-inner ring-1 ring-black/5 dark:ring-white/5 p-1.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logoSrc}
-              alt=""
-              className="h-full w-full object-contain"
-              width={64}
-              height={64}
-            />
-          </div>
-        ) : null}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {displayName}
@@ -129,9 +108,11 @@ export function LoginForm({
       <div className="border-t border-border/60" role="presentation" />
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-foreground/90">{t('email')}</Label>
+          <Label htmlFor="email" className="text-foreground/90">
+            {t('email')}
+          </Label>
           <Input
             id="email"
             type="email"
@@ -141,20 +122,12 @@ export function LoginForm({
             disabled={isLoading}
             className="h-11"
           />
-          {errors.email && (
-            <p className="text-destructive text-sm">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-foreground/90">{t('password')}</Label>
-            <Link
-              href="/forgot-password"
-              className="text-muted-foreground text-sm hover:text-primary hover:underline transition-colors"
-            >
-              {t('forgotPassword')}
-            </Link>
-          </div>
+          <Label htmlFor="password" className="text-foreground/90">
+            {t('password')}
+          </Label>
           <Input
             id="password"
             type="password"
@@ -163,15 +136,17 @@ export function LoginForm({
             disabled={isLoading}
             className="h-11"
           />
-          {errors.password && (
-            <p className="text-destructive text-sm">{errors.password.message}</p>
-          )}
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground text-sm hover:text-primary hover:underline transition-colors"
+            >
+              {t('forgotPassword')}
+            </Link>
+          </div>
+          {errors.password && <p className="text-destructive text-sm">{errors.password.message}</p>}
         </div>
-        <Button
-          type="submit"
-          className="w-full h-11 font-semibold shadow-sm"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="w-full h-11 font-semibold shadow-sm" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {t('submit')}
         </Button>

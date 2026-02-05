@@ -176,12 +176,21 @@ export class DiscourseService {
 
   /**
    * List categories (and subcategories if include_subcategories=true).
+   * Returns a flat list: top-level categories plus all subcategories from each category's subcategory_list.
    * GET /categories.json
    */
   async listCategories(includeSubcategories = true): Promise<DiscourseCategoryApi[]> {
     const q = includeSubcategories ? '?include_subcategories=true' : ''
     const result = await this.request<ListCategoriesResponse>(`/categories.json${q}`)
-    return result?.category_list?.categories ?? []
+    const topLevel = result?.category_list?.categories ?? []
+    if (!includeSubcategories) return topLevel
+    const flat: DiscourseCategoryApi[] = []
+    for (const cat of topLevel) {
+      flat.push(cat)
+      const subs = cat.subcategory_list ?? []
+      for (const sub of subs) flat.push(sub)
+    }
+    return flat
   }
 
   /**

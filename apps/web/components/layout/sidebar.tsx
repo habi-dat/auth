@@ -1,7 +1,17 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { FileText, FolderTree, History, Layers, Mail, RefreshCw, Settings, User, Users } from 'lucide-react'
+import {
+  FileText,
+  FolderTree,
+  History,
+  Layers,
+  Mail,
+  RefreshCw,
+  Settings,
+  User,
+  Users,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -51,7 +61,7 @@ export function Sidebar({
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+            <div className="flex h-16 w-16 p-2 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={logoUpdatedAt ? `${logoUrl}?v=${logoUpdatedAt}` : logoUrl}
