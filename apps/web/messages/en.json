@@ -41,7 +41,10 @@
     "editApp": "Edit app",
     "created": "App created",
     "updated": "App updated",
-    "deleted": "App deleted"
+    "deleted": "App deleted",
+    "delete": "Delete",
+    "deleteTitle": "Delete app?",
+    "deleteDescription": "The app \"{name}\" will be permanently deleted. This cannot be undone."
   },
   "emailTemplates": {
     "invite": {
@@ -143,6 +146,39 @@
     "deleted": "Category deleted",
     "deleteTitle": "Delete category?",
     "deleteDescription": "Category \"{name}\" and its subcategories will be removed from Discourse. This cannot be undone."
+  },
+  "users": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete user?",
+    "deleteDescription": "The user \"{name}\" will be permanently deleted. This cannot be undone.",
+    "deleted": "User deleted",
+    "deletedDescription": "The user has been deleted.",
+    "actions": "Actions",
+    "name": "Name",
+    "email": "Email",
+    "username": "Username",
+    "groups": "Groups",
+    "groupAdmins": "Group admins",
+    "noUsers": "No users found"
+  },
+  "groups": {
+    "edit": "Edit",
+    "view": "View",
+    "delete": "Delete",
+    "deleteTitle": "Delete group?",
+    "deleteDescription": "The group \"{name}\" will be permanently deleted. This cannot be undone.",
+    "deleted": "Group deleted",
+    "deletedDescription": "The group has been deleted.",
+    "actions": "Actions",
+    "name": "Name",
+    "description": "Description",
+    "members": "Members",
+    "admins": "Admins",
+    "hierarchy": "Hierarchy",
+    "system": "System",
+    "subgroupsCount": "{count} subgroup(s)",
+    "noGroups": "No groups found"
   },
   "sidebar": {
     "brand": "habidat",

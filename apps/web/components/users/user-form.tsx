@@ -12,8 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
-import { createUserAction, updateUserAction } from '@/lib/actions/user-actions'
+import {
+  createUserAction,
+  deleteUserAction,
+  updateUserAction,
+} from '@/lib/actions/user-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
@@ -54,6 +59,7 @@ export function UserForm({ user, groups }: UserFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!user
 
   const createUserSchema = z.object({
@@ -102,6 +108,20 @@ export function UserForm({ user, groups }: UserFormProps) {
   const updateAction = useAction(updateUserAction, {
     onSuccess: () => {
       toast({ title: t('updated'), description: t('updatedDescription') })
+      router.push('/users')
+    },
+    onError: ({ error }) => {
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: error.serverError || tCommon('errorGeneric'),
+      })
+    },
+  })
+
+  const deleteAction = useAction(deleteUserAction, {
+    onSuccess: () => {
+      toast({ title: t('deleted'), description: t('deletedDescription') })
       router.push('/users')
     },
     onError: ({ error }) => {
@@ -191,7 +211,8 @@ export function UserForm({ user, groups }: UserFormProps) {
     }
   }
 
-  const isLoading = createAction.isPending || updateAction.isPending
+  const isLoading =
+    createAction.isPending || updateAction.isPending || deleteAction.isPending
   // groupadmin system group cannot be assigned/removed on user form (membership is automatic)
   const selectableGroups = groups.filter((g) => g.slug !== GROUPADMIN_GROUP_SLUG)
 
@@ -325,20 +346,46 @@ export function UserForm({ user, groups }: UserFormProps) {
           <p className="text-xs text-muted-foreground -mt-2">{t('groupOwnershipHint')}</p>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isLoading}
-          >
-            {tCommon('cancel')}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isLoading}
+            >
+              {tCommon('cancel')}
+            </Button>
+            {isEditing && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={isLoading}
+              >
+                {t('delete')}
+              </Button>
+            )}
+          </div>
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? tCommon('save') : tCommon('create')}
           </Button>
         </CardFooter>
       </form>
+      {isEditing && (
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title={t('deleteTitle')}
+          description={
+            user ? t('deleteDescription', { name: user.name }) : ''
+          }
+          confirmLabel={t('delete')}
+          cancelLabel={tCommon('cancel')}
+          onConfirm={() => deleteAction.execute({ userId: user!.id })}
+          isPending={deleteAction.isPending}
+        />
+      )}
     </Card>
   )
 }

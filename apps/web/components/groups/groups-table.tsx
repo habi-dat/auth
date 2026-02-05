@@ -1,14 +1,17 @@
 'use client'
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
-import type { getGroups } from '@/lib/actions/group-actions'
+import { deleteGroupAction, type getGroups } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { FolderTree, ShieldCheck, Users } from 'lucide-react'
+import { Eye, FolderTree, Pencil, ShieldCheck, Trash2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 type GroupRow = Awaited<ReturnType<typeof getGroups>>[number]
 
@@ -20,7 +23,16 @@ export function GroupsTable({
   isAdmin: boolean
 }) {
   const t = useTranslations('groups')
+  const tCommon = useTranslations('common')
   const router = useRouter()
+  const [deleteTarget, setDeleteTarget] = useState<GroupRow | null>(null)
+
+  const deleteAction = useAction(deleteGroupAction, {
+    onSuccess: () => {
+      setDeleteTarget(null)
+      router.refresh()
+    },
+  })
 
   const columns: ColumnDef<GroupRow>[] = [
     {
@@ -111,11 +123,35 @@ export function GroupsTable({
         const g = row.original
         const canEdit = isAdmin || g.ownerships.length > 0
         return (
-          <Link href={`/groups/${g.id}`}>
-            <Button variant="ghost" size="sm">
-              {canEdit ? t('edit') : t('view')}
-            </Button>
-          </Link>
+          <div
+            className="flex items-center justify-end gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Link href={`/groups/${g.id}`}>
+              <Button
+                variant="ghost"
+                size="icon"
+                title={canEdit ? t('edit') : t('view')}
+              >
+                {canEdit ? (
+                  <Pencil className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </Link>
+            {!g.isSystem && (
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('delete')}
+                onClick={() => setDeleteTarget(g)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         )
       },
       meta: { className: 'text-right' },
@@ -123,11 +159,30 @@ export function GroupsTable({
   ]
 
   return (
-    <DataTable
-      columns={columns}
-      data={groups}
-      emptyMessage={t('noGroups')}
-      onRowClick={(row) => router.push(`/groups/${row.id}`)}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={groups}
+        emptyMessage={t('noGroups')}
+        onRowClick={(row) => router.push(`/groups/${row.id}`)}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t('deleteTitle')}
+        description={
+          deleteTarget
+            ? t('deleteDescription', { name: deleteTarget.name })
+            : ''
+        }
+        confirmLabel={t('delete')}
+        cancelLabel={tCommon('cancel')}
+        onConfirm={() =>
+          deleteTarget &&
+          deleteAction.execute({ groupId: deleteTarget.id })
+        }
+        isPending={deleteAction.isPending}
+      />
+    </>
   )
 }

@@ -6,8 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
-import { createAppAction, updateAppAction } from '@/lib/actions/app-actions'
+import {
+  createAppAction,
+  deleteAppAction,
+  updateAppAction,
+} from '@/lib/actions/app-actions'
 import type { getApps } from '@/lib/actions/app-actions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
@@ -15,6 +20,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -50,6 +56,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const tCommon = useTranslations('common')
   const router = useRouter()
   const { toast } = useToast()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!app
 
   const createAction = useAction(createAppAction, {
@@ -70,6 +77,21 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const updateAction = useAction(updateAppAction, {
     onSuccess: () => {
       toast({ title: t('updated') })
+      router.push('/apps')
+      router.refresh()
+    },
+    onError: ({ error }) => {
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: error.serverError || tCommon('errorGeneric'),
+      })
+    },
+  })
+
+  const deleteAction = useAction(deleteAppAction, {
+    onSuccess: () => {
+      toast({ title: t('deleted') })
       router.push('/apps')
       router.refresh()
     },
@@ -131,7 +153,10 @@ export function AppForm({ app, allGroups }: AppFormProps) {
     }
   }
 
-  const isExecuting = createAction.status === 'executing' || updateAction.status === 'executing'
+  const isExecuting =
+    createAction.status === 'executing' ||
+    updateAction.status === 'executing' ||
+    deleteAction.status === 'executing'
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -340,16 +365,40 @@ export function AppForm({ app, allGroups }: AppFormProps) {
       </Card>
 
       <div className="flex gap-4">
-        <Link href="/apps">
-          <Button type="button" variant="outline" disabled={isExecuting}>
-            {tCommon('cancel')}
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/apps">
+            <Button type="button" variant="outline" disabled={isExecuting}>
+              {tCommon('cancel')}
+            </Button>
+          </Link>
+          {isEditing && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={isExecuting}
+            >
+              {t('delete')}
+            </Button>
+          )}
+        </div>
         <Button type="submit" disabled={isExecuting}>
           {isExecuting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {tCommon('save')}
         </Button>
       </div>
+      {isEditing && (
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title={t('deleteTitle')}
+          description={app ? t('deleteDescription', { name: app.name }) : ''}
+          confirmLabel={t('delete')}
+          cancelLabel={tCommon('cancel')}
+          onConfirm={() => deleteAction.execute({ id: app!.id })}
+          isPending={deleteAction.isPending}
+        />
+      )}
     </form>
   )
 }

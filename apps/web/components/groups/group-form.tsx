@@ -6,14 +6,20 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
-import { createGroupAction, updateGroupAction } from '@/lib/actions/group-actions'
+import {
+  createGroupAction,
+  deleteGroupAction,
+  updateGroupAction,
+} from '@/lib/actions/group-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -43,6 +49,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
   const tCommon = useTranslations('common')
   const router = useRouter()
   const { toast } = useToast()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!group
 
   const createGroupSchema = z.object({
@@ -100,6 +107,20 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
     },
   })
 
+  const deleteAction = useAction(deleteGroupAction, {
+    onSuccess: () => {
+      toast({ title: t('deleted'), description: t('deletedDescription') })
+      router.push('/groups')
+    },
+    onError: ({ error }) => {
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: error.serverError || tCommon('errorGeneric'),
+      })
+    },
+  })
+
   const {
     register,
     handleSubmit,
@@ -137,7 +158,10 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
     }
   }
 
-  const isLoading = createAction.isPending || updateAction.isPending
+  const isLoading =
+    createAction.isPending ||
+    updateAction.isPending ||
+    deleteAction.isPending
   const isSystemGroup = group?.isSystem
 
   return (
@@ -212,20 +236,46 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
           )}
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isLoading}
-          >
-            {tCommon('cancel')}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isLoading}
+            >
+              {tCommon('cancel')}
+            </Button>
+            {isEditing && !isSystemGroup && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={isLoading}
+              >
+                {t('delete')}
+              </Button>
+            )}
+          </div>
           <Button type="submit" disabled={isLoading || isSystemGroup}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? tCommon('save') : tCommon('create')}
           </Button>
         </CardFooter>
       </form>
+      {isEditing && !isSystemGroup && (
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title={t('deleteTitle')}
+          description={
+            group ? t('deleteDescription', { name: group.name }) : ''
+          }
+          confirmLabel={t('delete')}
+          cancelLabel={tCommon('cancel')}
+          onConfirm={() => deleteAction.execute({ groupId: group!.id })}
+          isPending={deleteAction.isPending}
+        />
+      )}
     </Card>
   )
 }
