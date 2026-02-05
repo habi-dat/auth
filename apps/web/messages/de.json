@@ -129,7 +129,7 @@
     "primaryGroup": "Primärgruppe",
     "primaryGroupPlaceholder": "Primärgruppe wählen",
     "primaryGroupNone": "Keine",
-    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Muss eine Ihrer Mitgliedsgruppen sein.",
+    "primaryGroupHint": "Muss eine Ihrer Mitgliedsgruppen sein.",
     "groups": "Gruppen",
     "groupAdmins": "Gruppenadmin von"
   },
@@ -383,7 +383,9 @@
     "primaryGroup": "Primärgruppe",
     "primaryGroupPlaceholder": "Primärgruppe wählen",
     "primaryGroupNone": "Keine",
-    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Muss eine Ihrer Mitgliedsgruppen sein.",
+    "primaryGroupHint": "Muss eine Ihrer Mitgliedsgruppen sein.",
+    "groups": "Gruppen",
+    "groupAdmins": "Admin von",
     "selectGroupsPlaceholder": "Gruppen auswählen...",
     "searchGroups": "Gruppen suchen...",
     "noGroupsFound": "Keine Gruppen gefunden.",
@@ -428,7 +430,7 @@
     "backToLogin": "Zurück zur Anmeldung",
     "primaryGroup": "Primärgruppe",
     "primaryGroupPlaceholder": "Primärgruppe wählen",
-    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Sie werden Mitglied aller eingeladenen Gruppen."
+    "primaryGroupHint": "Muss eine Ihrer Mitgliedsgruppen sein."
   },
   "groups": {
     "title": "Gruppen",

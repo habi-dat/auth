@@ -163,6 +163,29 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
               />
             </div>
 
+            {memberGroups.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="primaryGroupId">{t('primaryGroup')}</Label>
+                <Select
+                  value={primaryGroupId ?? ''}
+                  onValueChange={(value) => setValue('primaryGroupId', value || null)}
+                  disabled={isExecuting}
+                >
+                  <SelectTrigger id="primaryGroupId">
+                    <SelectValue placeholder={t('primaryGroupPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('primaryGroupNone')}</SelectItem>
+                    {memberGroups.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{t('primaryGroupHint')}</p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="preferredLanguage">{t('preferredLanguage')}</Label>
               <Select
@@ -220,30 +243,6 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
                 </SelectContent>
               </Select>
             </div>
-
-            {memberGroups.length > 0 && (
-              <div className="space-y-2">
-                <Label htmlFor="primaryGroupId">{t('primaryGroup')}</Label>
-                <Select
-                  value={primaryGroupId ?? ''}
-                  onValueChange={(value) => setValue('primaryGroupId', value || null)}
-                  disabled={isExecuting}
-                >
-                  <SelectTrigger id="primaryGroupId">
-                    <SelectValue placeholder={t('primaryGroupPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t('primaryGroupNone')}</SelectItem>
-                    {memberGroups.map((g) => (
-                      <SelectItem key={g.id} value={g.id}>
-                        {g.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">{t('primaryGroupHint')}</p>
-              </div>
-            )}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Link href="/">

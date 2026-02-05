@@ -3,18 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireUserWithGroups } from '@/lib/auth/session'
-import {
-  Globe,
-  HardDrive,
-  Key,
-  Mail,
-  MapPin,
-  Pencil,
-  Palette,
-  ShieldCheck,
-  Sun,
-  Users,
-} from 'lucide-react'
+import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
@@ -46,7 +35,9 @@ export default async function ProfilePage() {
     system: t('colorModeSystem'),
   }
   const colorModeLabel =
-    colorModeLabels[user.preferredColorMode ?? 'system'] ?? user.preferredColorMode ?? t('colorModeSystem')
+    colorModeLabels[user.preferredColorMode ?? 'system'] ??
+    user.preferredColorMode ??
+    t('colorModeSystem')
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -97,34 +88,7 @@ export default async function ProfilePage() {
                 <p className="font-medium">{user.location ?? '—'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('preferredLanguage')}</p>
-                <p className="font-medium">{langLabel}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Palette className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('preferredTheme')}</p>
-                <p className="font-medium">{themeLabel}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Sun className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('preferredColorMode')}</p>
-                <p className="font-medium">{colorModeLabel}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <HardDrive className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('storageQuota')}</p>
-                <p className="font-medium">{user.storageQuota}</p>
-              </div>
-            </div>
+
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-muted-foreground shrink-0" />
               <div>
@@ -164,6 +128,20 @@ export default async function ProfilePage() {
                 </div>
               </div>
             )}
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('preferredLanguage')}</p>
+                <p className="font-medium">{langLabel}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <HardDrive className="h-5 w-5 text-muted-foreground shrink-0" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('storageQuota')}</p>
+                <p className="font-medium">{user.storageQuota}</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

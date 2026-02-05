@@ -85,6 +85,7 @@ export function SyncTable({ events }: { events: SyncRow[] }) {
       id: 'entityId',
       header: t('entityId'),
       cell: ({ row }) => {
+        const displayName = row.original.entityName ?? row.original.entityId
         const href = getEntityHref(row.original)
         if (href) {
           return (
@@ -94,18 +95,16 @@ export function SyncTable({ events }: { events: SyncRow[] }) {
               onClick={(e) => e.stopPropagation()}
               title={row.original.entityId}
             >
-              <span className="truncate max-w-[120px] inline-block">
-                {row.original.entityId}
-              </span>
+              {displayName}
             </Link>
           )
         }
         return (
           <span
-            className="truncate max-w-[120px] inline-block text-muted-foreground"
+            className="text-muted-foreground"
             title={row.original.entityId}
           >
-            {row.original.entityId}
+            {displayName}
           </span>
         )
       },
