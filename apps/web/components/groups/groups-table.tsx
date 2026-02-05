@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import type { getGroups } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Crown, FolderTree, Users } from 'lucide-react'
+import { FolderTree, ShieldCheck, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -71,7 +71,7 @@ export function GroupsTable({
           <div className="flex flex-wrap gap-1 items-center">
             {ownerships.slice(0, 2).map((o) => (
               <Badge key={o.user.id} variant="secondary" className="gap-0.5 font-normal">
-                <Crown className="h-3 w-3 text-yellow-600" />
+                <ShieldCheck className="h-3 w-3 text-primary" />
                 {o.user.name}
               </Badge>
             ))}

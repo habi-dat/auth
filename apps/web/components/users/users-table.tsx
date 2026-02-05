@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import type { getUsers } from '@/lib/actions/user-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Crown } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -61,7 +61,7 @@ export function UsersTable({ users }: { users: UserRow[] }) {
           <div className="flex flex-wrap gap-1 items-center">
             {ownerships.slice(0, 3).map((o) => (
               <Badge key={o.group.id} variant="default" className="gap-0.5">
-                <Crown className="h-3 w-3" />
+                <ShieldCheck className="h-3 w-3" />
                 {o.group.name}
               </Badge>
             ))}

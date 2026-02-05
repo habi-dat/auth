@@ -13,7 +13,7 @@ import {
   removeOwnerAction,
 } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Crown, Loader2, UserMinus, UserPlus } from 'lucide-react'
+import { Loader2, ShieldCheck, UserMinus, UserPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
@@ -140,7 +140,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
           return (
             <div className="flex items-center gap-2 font-medium">
               {row.original.user.name}
-              {isOwner && <Crown className="h-4 w-4 text-yellow-500" />}
+              {isOwner && <ShieldCheck className="h-4 w-4 text-primary" />}
             </div>
           )
         },
@@ -184,7 +184,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
                   {removeOwner.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Crown className="h-4 w-4 text-yellow-500" />
+                    <ShieldCheck className="h-4 w-4 text-primary" />
                   )}
                 </Button>
               ) : (
@@ -198,7 +198,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
                   {addOwner.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Crown className="h-4 w-4 text-muted-foreground" />
+                    <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               )}
