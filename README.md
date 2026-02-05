@@ -59,12 +59,26 @@ pnpm dev:web
 
 Open [http://localhost:3000](http://localhost:3000)
 
+### Development with Docker (full stack)
+
+To run the whole dev environment in Docker (useful for connecting from other apps on the same host or network):
+
+```bash
+# Ensure .env exists with at least SESSION_SECRET and BETTER_AUTH_SECRET
+cp .env.example .env
+
+pnpm dev:docker
+```
+
+This starts PostgreSQL, Redis, Mailhog, the web app and the worker in one go. The app is at [http://localhost:3000](http://localhost:3000); Mailhog at [http://localhost:8025](http://localhost:8025). The schema is pushed to the DB on first start. The worker needs `LDAP_*` (and optionally `DISCOURSE_*`) in `.env`; SMTP is set to Mailhog automatically. Rebuild the image when you change dependencies (`docker compose -f docker/docker-compose.dev.yml up --build`).
+
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `pnpm dev` | Start all apps in development mode |
 | `pnpm dev:web` | Start web app only |
+| `pnpm dev:docker` | Run full dev stack in Docker (db, redis, mailhog, web) |
 | `pnpm build` | Build all packages and apps |
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm lint` | Run Biome linter |

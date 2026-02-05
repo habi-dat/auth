@@ -4,10 +4,27 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
 
+const baseURL = (process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')
+
 export const auth = betterAuth({
+  baseURL,
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  // Accept baseURL, habidat.local subdomains (wildcard), and the request's Origin (for proxy/Docker)
+  trustedOrigins: (request) => {
+    const origins = [
+      baseURL,
+      `${baseURL}/`,
+      'http://localhost:3000',
+      'http://localhost:3000/',
+      'https://*.habidat.local',
+      'http://*.habidat.local',
+    ]
+    const origin = request?.headers?.get?.('origin')
+    if (origin) origins.push(origin)
+    return origins
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -84,7 +101,6 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [process.env.APP_URL || 'http://localhost:3000'],
 })
 
 export type Session = typeof auth.$Infer.Session

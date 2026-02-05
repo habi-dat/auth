@@ -6,6 +6,7 @@
     "dev": "turbo dev",
     "dev:web": "turbo dev --filter=@habidat/web",
     "dev:worker": "turbo dev --filter=@habidat/worker",
+    "dev:docker": "docker compose -f docker/docker-compose.dev.yml --project-directory . -p habidat-auth ",
     "build": "turbo build",
     "build:web": "turbo build --filter=@habidat/web",
     "build:worker": "turbo build --filter=@habidat/worker",

@@ -353,6 +353,12 @@ async function main() {
   const adapter = new PrismaPg(pool)
   const prisma = new PrismaClient({ adapter })
 
+  const userCount = await prisma.user.count()
+  if (userCount > 0) {
+    console.log('User count is greater than 0 – skipping seed.')
+    return
+  }
+
   try {
     const ldapEnv = getLdapEnv()
     if (ldapEnv) {
@@ -484,7 +490,8 @@ async function main() {
     }
     const defaultPasswordResetConfig = {
       greeting: 'Hello,',
-      mainText: 'We received a request to reset your password. Click the button below to set a new password.',
+      mainText:
+        'We received a request to reset your password. Click the button below to set a new password.',
       ctaText: 'Reset password',
       footer: 'If you did not request a password reset, you can ignore this email.',
     }
