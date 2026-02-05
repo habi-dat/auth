@@ -24,8 +24,9 @@ export function GroupsTable({
 
   const columns: ColumnDef<GroupRow>[] = [
     {
-      id: 'name',
+      accessorKey: 'slug',
       accessorFn: (row) => row.name,
+      sortingFn: (rowA, rowB) => rowA.original.slug.localeCompare(rowB.original.slug),
       header: t('name'),
       cell: ({ row }) => (
         <div>

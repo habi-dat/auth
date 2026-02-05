@@ -1,4 +1,15 @@
 {
+  "dataTable": {
+    "noResults": "Keine Einträge.",
+    "searchPlaceholder": "Suchen...",
+    "searchAriaLabel": "Tabelle durchsuchen",
+    "of": "von",
+    "filteredFrom": "gefiltert von {count}",
+    "perPage": "pro Seite",
+    "pageOf": "Seite {current} von {total}",
+    "previousPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite"
+  },
   "common": {
     "cancel": "Abbrechen",
     "save": "Speichern",
