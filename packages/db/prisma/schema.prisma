@@ -339,9 +339,10 @@ model Setting {
 
 model EmailTemplate {
   id        String   @id @default(cuid())
-  key       String   @unique
+  key       String   @unique // "invite" | "passwordReset"
   subject   String
-  body      String
+  /** Customizable text fields for the fixed React Email template (e.g. greeting, mainText, ctaText, footer). */
+  config    Json     @default("{}")
   enabled   Boolean  @default(true)
   updatedAt DateTime @updatedAt
 

@@ -28,7 +28,6 @@ export type EmailTemplateMinAggregateOutputType = {
   id: string | null
   key: string | null
   subject: string | null
-  body: string | null
   enabled: boolean | null
   updatedAt: Date | null
 }
@@ -37,7 +36,6 @@ export type EmailTemplateMaxAggregateOutputType = {
   id: string | null
   key: string | null
   subject: string | null
-  body: string | null
   enabled: boolean | null
   updatedAt: Date | null
 }
@@ -46,7 +44,7 @@ export type EmailTemplateCountAggregateOutputType = {
   id: number
   key: number
   subject: number
-  body: number
+  config: number
   enabled: number
   updatedAt: number
   _all: number
@@ -57,7 +55,6 @@ export type EmailTemplateMinAggregateInputType = {
   id?: true
   key?: true
   subject?: true
-  body?: true
   enabled?: true
   updatedAt?: true
 }
@@ -66,7 +63,6 @@ export type EmailTemplateMaxAggregateInputType = {
   id?: true
   key?: true
   subject?: true
-  body?: true
   enabled?: true
   updatedAt?: true
 }
@@ -75,7 +71,7 @@ export type EmailTemplateCountAggregateInputType = {
   id?: true
   key?: true
   subject?: true
-  body?: true
+  config?: true
   enabled?: true
   updatedAt?: true
   _all?: true
@@ -157,7 +153,7 @@ export type EmailTemplateGroupByOutputType = {
   id: string
   key: string
   subject: string
-  body: string
+  config: runtime.JsonValue
   enabled: boolean
   updatedAt: Date
   _count: EmailTemplateCountAggregateOutputType | null
@@ -187,7 +183,7 @@ export type EmailTemplateWhereInput = {
   id?: Prisma.StringFilter<"EmailTemplate"> | string
   key?: Prisma.StringFilter<"EmailTemplate"> | string
   subject?: Prisma.StringFilter<"EmailTemplate"> | string
-  body?: Prisma.StringFilter<"EmailTemplate"> | string
+  config?: Prisma.JsonFilter<"EmailTemplate">
   enabled?: Prisma.BoolFilter<"EmailTemplate"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"EmailTemplate"> | Date | string
 }
@@ -196,7 +192,7 @@ export type EmailTemplateOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
   subject?: Prisma.SortOrder
-  body?: Prisma.SortOrder
+  config?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -208,7 +204,7 @@ export type EmailTemplateWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.EmailTemplateWhereInput[]
   NOT?: Prisma.EmailTemplateWhereInput | Prisma.EmailTemplateWhereInput[]
   subject?: Prisma.StringFilter<"EmailTemplate"> | string
-  body?: Prisma.StringFilter<"EmailTemplate"> | string
+  config?: Prisma.JsonFilter<"EmailTemplate">
   enabled?: Prisma.BoolFilter<"EmailTemplate"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"EmailTemplate"> | Date | string
 }, "id" | "key">
@@ -217,7 +213,7 @@ export type EmailTemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
   subject?: Prisma.SortOrder
-  body?: Prisma.SortOrder
+  config?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EmailTemplateCountOrderByAggregateInput
@@ -232,7 +228,7 @@ export type EmailTemplateScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"EmailTemplate"> | string
   key?: Prisma.StringWithAggregatesFilter<"EmailTemplate"> | string
   subject?: Prisma.StringWithAggregatesFilter<"EmailTemplate"> | string
-  body?: Prisma.StringWithAggregatesFilter<"EmailTemplate"> | string
+  config?: Prisma.JsonWithAggregatesFilter<"EmailTemplate">
   enabled?: Prisma.BoolWithAggregatesFilter<"EmailTemplate"> | boolean
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmailTemplate"> | Date | string
 }
@@ -241,7 +237,7 @@ export type EmailTemplateCreateInput = {
   id?: string
   key: string
   subject: string
-  body: string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: boolean
   updatedAt?: Date | string
 }
@@ -250,7 +246,7 @@ export type EmailTemplateUncheckedCreateInput = {
   id?: string
   key: string
   subject: string
-  body: string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: boolean
   updatedAt?: Date | string
 }
@@ -259,7 +255,7 @@ export type EmailTemplateUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.StringFieldUpdateOperationsInput | string
-  body?: Prisma.StringFieldUpdateOperationsInput | string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -268,7 +264,7 @@ export type EmailTemplateUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.StringFieldUpdateOperationsInput | string
-  body?: Prisma.StringFieldUpdateOperationsInput | string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -277,7 +273,7 @@ export type EmailTemplateCreateManyInput = {
   id?: string
   key: string
   subject: string
-  body: string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: boolean
   updatedAt?: Date | string
 }
@@ -286,7 +282,7 @@ export type EmailTemplateUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.StringFieldUpdateOperationsInput | string
-  body?: Prisma.StringFieldUpdateOperationsInput | string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -295,7 +291,7 @@ export type EmailTemplateUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.StringFieldUpdateOperationsInput | string
-  body?: Prisma.StringFieldUpdateOperationsInput | string
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -304,7 +300,7 @@ export type EmailTemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
   subject?: Prisma.SortOrder
-  body?: Prisma.SortOrder
+  config?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -313,7 +309,6 @@ export type EmailTemplateMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
   subject?: Prisma.SortOrder
-  body?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -322,7 +317,6 @@ export type EmailTemplateMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
   subject?: Prisma.SortOrder
-  body?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -333,7 +327,7 @@ export type EmailTemplateSelect<ExtArgs extends runtime.Types.Extensions.Interna
   id?: boolean
   key?: boolean
   subject?: boolean
-  body?: boolean
+  config?: boolean
   enabled?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["emailTemplate"]>
@@ -342,7 +336,7 @@ export type EmailTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   key?: boolean
   subject?: boolean
-  body?: boolean
+  config?: boolean
   enabled?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["emailTemplate"]>
@@ -351,7 +345,7 @@ export type EmailTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   key?: boolean
   subject?: boolean
-  body?: boolean
+  config?: boolean
   enabled?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["emailTemplate"]>
@@ -360,12 +354,12 @@ export type EmailTemplateSelectScalar = {
   id?: boolean
   key?: boolean
   subject?: boolean
-  body?: boolean
+  config?: boolean
   enabled?: boolean
   updatedAt?: boolean
 }
 
-export type EmailTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "subject" | "body" | "enabled" | "updatedAt", ExtArgs["result"]["emailTemplate"]>
+export type EmailTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "subject" | "config" | "enabled" | "updatedAt", ExtArgs["result"]["emailTemplate"]>
 
 export type $EmailTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmailTemplate"
@@ -374,7 +368,10 @@ export type $EmailTemplatePayload<ExtArgs extends runtime.Types.Extensions.Inter
     id: string
     key: string
     subject: string
-    body: string
+    /**
+     * * Customizable text fields for the fixed React Email template (e.g. greeting, mainText, ctaText, footer).
+     */
+    config: runtime.JsonValue
     enabled: boolean
     updatedAt: Date
   }, ExtArgs["result"]["emailTemplate"]>
@@ -803,7 +800,7 @@ export interface EmailTemplateFieldRefs {
   readonly id: Prisma.FieldRef<"EmailTemplate", 'String'>
   readonly key: Prisma.FieldRef<"EmailTemplate", 'String'>
   readonly subject: Prisma.FieldRef<"EmailTemplate", 'String'>
-  readonly body: Prisma.FieldRef<"EmailTemplate", 'String'>
+  readonly config: Prisma.FieldRef<"EmailTemplate", 'Json'>
   readonly enabled: Prisma.FieldRef<"EmailTemplate", 'Boolean'>
   readonly updatedAt: Prisma.FieldRef<"EmailTemplate", 'DateTime'>
 }

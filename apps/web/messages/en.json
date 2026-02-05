@@ -1,0 +1,44 @@
+{
+  "emailTemplates": {
+    "invite": {
+      "subject": "Invitation to {platformName}",
+      "greeting": "Welcome to {platformName}",
+      "mainText": "You have been invited to create an account for the {platformName} platform. Click the button below to accept the invitation.",
+      "ctaText": "Create account",
+      "footer": "If you did not expect this invitation, you can ignore this email.",
+      "footerHelp": "If you have questions about using the platform, check the help section or send us an email.",
+      "disclaimer": "This email was automatically generated via {appUrl}."
+    },
+    "passwordReset": {
+      "subject": "Reset your password – {platformName}",
+      "greeting": "Hello,",
+      "mainText": "We received a request to reset your password. Click the button below to set a new password.",
+      "ctaText": "Reset password",
+      "footer": "If you did not request a password reset, you can ignore this email.",
+      "footerHelp": "If you have questions, feel free to send us an email.",
+      "disclaimer": "This email was automatically generated via {appUrl}."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "templates": {
+      "title": "Email templates",
+      "description": "Customise texts for invite and password reset emails (per language)",
+      "invite": "Invitation",
+      "passwordReset": "Password reset",
+      "subject": "Subject",
+      "greeting": "Greeting",
+      "mainText": "Main text",
+      "ctaText": "Button text",
+      "footer": "Footer",
+      "footerHelp": "Help/support paragraph (optional)",
+      "disclaimer": "Auto-generated notice (optional, {appUrl} will be replaced)",
+      "preview": "Preview",
+      "save": "Save",
+      "saved": "Saved",
+      "enabled": "Enabled",
+      "localeDe": "German",
+      "localeEn": "English"
+    }
+  }
+}

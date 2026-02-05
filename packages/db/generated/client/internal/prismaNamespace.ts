@@ -2171,7 +2171,7 @@ export const EmailTemplateScalarFieldEnum = {
   id: 'id',
   key: 'key',
   subject: 'subject',
-  body: 'body',
+  config: 'config',
   enabled: 'enabled',
   updatedAt: 'updatedAt'
 } as const

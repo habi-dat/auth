@@ -474,6 +474,42 @@ async function main() {
       }
     }
 
+    // Ensure default email templates exist (invite, passwordReset)
+    const defaultInviteConfig = {
+      greeting: 'Hello,',
+      mainText:
+        'You have been invited to join. Click the button below to accept the invitation and create your account.',
+      ctaText: 'Accept invitation',
+      footer: 'If you did not expect this invitation, you can ignore this email.',
+    }
+    const defaultPasswordResetConfig = {
+      greeting: 'Hello,',
+      mainText: 'We received a request to reset your password. Click the button below to set a new password.',
+      ctaText: 'Reset password',
+      footer: 'If you did not request a password reset, you can ignore this email.',
+    }
+    await prisma.emailTemplate.upsert({
+      where: { key: 'invite' },
+      create: {
+        key: 'invite',
+        subject: 'You are invited',
+        config: defaultInviteConfig,
+        enabled: true,
+      },
+      update: {},
+    })
+    await prisma.emailTemplate.upsert({
+      where: { key: 'passwordReset' },
+      create: {
+        key: 'passwordReset',
+        subject: 'Reset your password',
+        config: defaultPasswordResetConfig,
+        enabled: true,
+      },
+      update: {},
+    })
+    console.log('Email templates (invite, passwordReset) ensured.')
+
     if (ldapEnv) {
       let adminUserForLdap = adminUser
       if (adminUser.ldapUidNumber == null) {
