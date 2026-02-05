@@ -89,7 +89,7 @@ services:
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
       SMTP_SECURE: "false"
-      SMTP_FROM: dev@localhost
+      SMTP_FROM: dev@habidat.local
       LDAP_URL: ldap://ldap:389
     depends_on:
       db: { condition: service_healthy }

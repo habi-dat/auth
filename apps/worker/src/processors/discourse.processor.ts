@@ -17,7 +17,9 @@ export function createDiscourseProcessor(
       return
     }
 
-    console.log(`[Discourse] Processing syncEvent ${syncEventId} ${event.entityType} ${event.operation}`)
+    console.log(
+      `[Discourse] Processing syncEvent ${syncEventId} ${event.entityType} ${event.operation}`
+    )
 
     await prisma.syncEvent.update({
       where: { id: syncEventId },
@@ -44,7 +46,11 @@ export function createDiscourseProcessor(
             }
           )
         } else {
-          await handleSyncGroup(discourse, prisma, event.payload as { groupId: string; oldSlug?: string })
+          await handleSyncGroup(
+            discourse,
+            prisma,
+            event.payload as { groupId: string; oldSlug?: string }
+          )
         }
       }
 
@@ -122,7 +128,6 @@ async function handleSyncUser(
 
   const groupSlugs = await getGroupSlugsForUser(prisma, user.id)
   const externalId = user.discourseId ?? user.username
-
   await discourse.syncUserViaSso({
     externalId,
     email: user.email,
@@ -203,8 +208,7 @@ async function handleDeleteGroup(
   payload: { groupId: string; discourseId?: number; slug: string; oldSlug?: string }
 ): Promise<void> {
   const lookupSlug = payload.oldSlug ?? payload.slug
-  const discourseId =
-    payload.discourseId ?? (await discourse.getGroupBySlug(lookupSlug))
+  const discourseId = payload.discourseId ?? (await discourse.getGroupBySlug(lookupSlug))
   if (discourseId != null) {
     await discourse.deleteGroup(discourseId)
   }

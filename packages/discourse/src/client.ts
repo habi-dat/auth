@@ -2,8 +2,8 @@ import { createHmac } from 'node:crypto'
 import type {
   CreateCategoryData,
   CreateGroupData,
-  DiscourseConfig,
   DiscourseCategoryApi,
+  DiscourseConfig,
   ListCategoriesResponse,
   ShowCategoryResponse,
   SsoUserData,
@@ -20,7 +20,9 @@ export class DiscourseService {
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const baseUrl = this.config.url.replace(/\/$/, '')
-    const url = path.startsWith('http') ? path : `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`
+    const url = path.startsWith('http')
+      ? path
+      : `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -79,7 +81,7 @@ export class DiscourseService {
       username: user.username,
       name: user.name,
       ...(user.title != null && user.title !== '' && { title: user.title }),
-      ...(user.groups != null && user.groups.length > 0 && { add_groups: user.groups.join(',') }),
+      ...(user.groups != null && user.groups.length > 0 && { groups: user.groups.join(',') }),
     })
     return Buffer.from(params.toString()).toString('base64')
   }
@@ -90,7 +92,9 @@ export class DiscourseService {
 
   async deleteUser(username: string): Promise<void> {
     try {
-      const user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
+      const user = await this.request<{ user: { id: number } }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
       await this.request(`/admin/users/${user.user.id}.json`, {
         method: 'DELETE',
         body: JSON.stringify({
@@ -110,7 +114,9 @@ export class DiscourseService {
   }
 
   private async suspendUser(username: string): Promise<void> {
-    const user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
+    const user = await this.request<{ user: { id: number } }>(
+      `/u/${encodeURIComponent(username)}.json`
+    )
     await this.request(`/admin/users/${user.user.id}/suspend.json`, {
       method: 'PUT',
       body: JSON.stringify({
