@@ -252,6 +252,10 @@ model App {
   samlSloUrl      String?
   samlCertificate String?
 
+  // OAuth / OpenID Connect configuration (client_id from better-auth OAuth provider)
+  oidcEnabled   Boolean @default(false)
+  oidcClientId  String? // better-auth OAuth client_id when OIDC is enabled
+
   // Access control
   groupAccess AppGroupAccess[]
 

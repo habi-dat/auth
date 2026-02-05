@@ -43,6 +43,9 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false)
 
   const returnTo = searchParams.get('returnTo') || '/'
+  const samlApp = searchParams.get('samlApp')
+  const samlRequest = searchParams.get('SAMLRequest')
+  const relayState = searchParams.get('RelayState')
   const displayName = platformName?.trim() || t('title')
 
   const {
@@ -70,7 +73,14 @@ export function LoginForm({
         return
       }
 
-      router.push(returnTo)
+      if (samlApp) {
+        const ssoUrl = new URL(`/sso/login/${samlApp}`, window.location.origin)
+        if (samlRequest) ssoUrl.searchParams.set('SAMLRequest', samlRequest)
+        if (relayState) ssoUrl.searchParams.set('RelayState', relayState)
+        router.push(ssoUrl.pathname + ssoUrl.search)
+      } else {
+        router.push(returnTo)
+      }
       router.refresh()
     } catch {
       toast({

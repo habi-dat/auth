@@ -2107,7 +2107,9 @@ export const AppScalarFieldEnum = {
   samlEntityId: 'samlEntityId',
   samlAcsUrl: 'samlAcsUrl',
   samlSloUrl: 'samlSloUrl',
-  samlCertificate: 'samlCertificate'
+  samlCertificate: 'samlCertificate',
+  oidcEnabled: 'oidcEnabled',
+  oidcClientId: 'oidcClientId'
 } as const
 
 export type AppScalarFieldEnum = (typeof AppScalarFieldEnum)[keyof typeof AppScalarFieldEnum]

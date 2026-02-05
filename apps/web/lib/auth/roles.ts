@@ -55,3 +55,24 @@ export function isMemberOfGroup(session: SessionWithGroups, groupId: string): bo
 export function isOwnerOfGroup(session: SessionWithGroups, groupId: string): boolean {
   return session.ownerships.some((o) => o.groupId === groupId) || session.isAdmin
 }
+
+/** App with groupAccess for canAccessApp */
+export type AppWithGroupAccess = {
+  id: string
+  slug: string
+  groupAccess: Array<{ groupId: string }>
+}
+
+/** Check if user can access an app. Empty groupAccess = all users. */
+export function canAccessApp(
+  session: SessionWithGroups,
+  app: AppWithGroupAccess
+): boolean {
+  if (app.groupAccess.length === 0) return true
+  const allowedGroupIds = app.groupAccess.map((a) => a.groupId)
+  const userGroupIds = new Set([
+    ...session.memberships.map((m) => m.groupId),
+    ...session.ownerships.map((o) => o.groupId),
+  ])
+  return allowedGroupIds.some((gid) => userGroupIds.has(gid)) || session.isAdmin
+}
