@@ -196,6 +196,27 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "description": "Allgemeine Einstellungen und E-Mail-Vorlagen",
+    "tabGeneral": "Allgemein",
+    "tabTemplates": "E-Mail-Vorlagen",
+    "general": {
+      "title": "Allgemeine Einstellungen",
+      "description": "Plattformname, Logo und Support-E-Mail (z. B. für E-Mails und Fußzeilen).",
+      "platformName": "Plattformname",
+      "platformNamePlaceholder": "z. B. Habidat",
+      "logo": "Logo",
+      "logoUpload": "Logo hochladen",
+      "logoReplace": "Logo ersetzen",
+      "logoUploadHelp": "PNG, JPEG, SVG oder WebP, max. 2 MB",
+      "logoUploaded": "Logo hochgeladen",
+      "logoUploadFailed": "Logo konnte nicht hochgeladen werden",
+      "logoRemove": "Logo entfernen",
+      "logoRemoved": "Logo entfernt",
+      "supportEmail": "Support-E-Mail",
+      "supportEmailPlaceholder": "z. B. support@example.org",
+      "save": "Speichern",
+      "saved": "Gespeichert"
+    },
     "templates": {
       "title": "E-Mail-Vorlagen",
       "description": "Texte für Einladungs- und Passwort-Reset-E-Mails anpassen (pro Sprache)",

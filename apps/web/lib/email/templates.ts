@@ -9,6 +9,7 @@ import type {
   SingleLocaleEmailConfig,
   SupportedEmailLocale,
 } from '@/lib/email/types'
+import { getGeneralSettings } from '@/lib/settings/general'
 import { prisma } from '@habidat/db'
 import { render } from '@react-email/components'
 
@@ -67,12 +68,30 @@ function mergeLocaleConfig(
   }
 }
 
-function getPlatformName(): string {
-  return process.env.NEXT_PUBLIC_APP_NAME ?? 'Habidat'
-}
+const appUrlFallback =
+  process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-function getAppUrl(): string {
-  return process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+async function getEmailBranding(): Promise<{
+  platformName: string
+  appUrl: string
+  logoUrl?: string
+}> {
+  const general = await getGeneralSettings()
+  const appUrl = appUrlFallback
+  const logoUrlRaw = general.logoUrl?.trim()
+  const logoUrl = logoUrlRaw
+    ? logoUrlRaw.startsWith('/')
+      ? `${appUrl}${logoUrlRaw}`
+      : logoUrlRaw
+    : `${appUrl}/logo.png`
+  return {
+    platformName:
+      general.platformName?.trim() ||
+      process.env.NEXT_PUBLIC_APP_NAME ||
+      'Habidat',
+    appUrl,
+    logoUrl,
+  }
 }
 
 /** Render invite email to HTML. Uses template from DB, merged with default copy for locale. */
@@ -89,18 +108,16 @@ export async function renderInviteEmail(params: {
   const config = mergeLocaleConfig(locale, 'invite', configByLocale)
 
   const subject = params.subject ?? config.subject ?? template?.subject ?? 'You are invited'
-  const platformName = getPlatformName()
-  const appUrl = getAppUrl()
-  const logoUrl = `${appUrl}/logo.png`
+  const branding = await getEmailBranding()
 
   const html = await render(
     InviteEmail({
       subject,
       inviterName: params.inviterName,
       inviteLink: params.inviteLink,
-      platformName,
-      appUrl,
-      logoUrl,
+      platformName: branding.platformName,
+      appUrl: branding.appUrl,
+      logoUrl: branding.logoUrl,
       greeting: config.greeting,
       mainText: config.mainText,
       ctaText: config.ctaText,
@@ -125,17 +142,15 @@ export async function renderPasswordResetEmail(params: {
   const config = mergeLocaleConfig(locale, 'passwordReset', configByLocale)
 
   const subject = params.subject ?? config.subject ?? template?.subject ?? 'Reset your password'
-  const platformName = getPlatformName()
-  const appUrl = getAppUrl()
-  const logoUrl = `${appUrl}/logo.png`
+  const branding = await getEmailBranding()
 
   const html = await render(
     PasswordResetEmail({
       subject,
       resetLink: params.resetLink,
-      platformName,
-      appUrl,
-      logoUrl,
+      platformName: branding.platformName,
+      appUrl: branding.appUrl,
+      logoUrl: branding.logoUrl,
       greeting: config.greeting,
       mainText: config.mainText,
       ctaText: config.ctaText,

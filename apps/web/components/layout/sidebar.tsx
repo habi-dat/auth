@@ -9,11 +9,24 @@ import { usePathname } from 'next/navigation'
 interface SidebarProps {
   isAdmin?: boolean
   isGroupAdmin?: boolean
+  /** Platform name from general settings; falls back to sidebar.brand */
+  brandName?: string
+  /** Logo URL from general settings (e.g. /uploads/logo.png) */
+  logoUrl?: string
+  /** Cache-buster so sidebar logo updates after upload (e.g. Setting.updatedAt) */
+  logoUpdatedAt?: string
 }
 
-export function Sidebar({ isAdmin = false, isGroupAdmin = false }: SidebarProps) {
+export function Sidebar({
+  isAdmin = false,
+  isGroupAdmin = false,
+  brandName,
+  logoUrl,
+  logoUpdatedAt,
+}: SidebarProps) {
   const t = useTranslations('sidebar')
   const pathname = usePathname()
+  const displayName = brandName ?? t('brand')
 
   const navItems = [
     { href: '/', labelKey: 'nav.profile', icon: User },
@@ -36,10 +49,25 @@ export function Sidebar({ isAdmin = false, isGroupAdmin = false }: SidebarProps)
     <aside className="w-64 border-r bg-card hidden md:block">
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">H</span>
-          </div>
-          <span className="font-semibold text-lg">{t('brand')}</span>
+          {logoUrl ? (
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUpdatedAt ? `${logoUrl}?v=${logoUpdatedAt}` : logoUrl}
+                alt=""
+                className="h-full w-full object-contain"
+                width={32}
+                height={32}
+              />
+            </div>
+          ) : (
+            <div className="h-8 w-8 flex-shrink-0 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="font-semibold text-lg truncate">{displayName}</span>
         </Link>
       </div>
       <nav className="px-3">

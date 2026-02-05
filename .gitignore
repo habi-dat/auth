@@ -23,6 +23,9 @@ build/
 .next/
 out/
 
+# Uploaded assets (logo etc.)
+apps/web/public/uploads/
+
 # Prisma
 packages/db/prisma/*.db
 packages/db/prisma/*.db-journal

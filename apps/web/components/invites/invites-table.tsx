@@ -2,14 +2,14 @@
 
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
-import type { getInvites, getGroupsForSelect } from '@/lib/actions/invite-actions'
+import { useToast } from '@/components/ui/use-toast'
+import type { getGroupsForSelect, getInvites } from '@/lib/actions/invite-actions'
 import { deleteInvitesAction } from '@/lib/actions/invite-actions'
 import type { ColumnDef } from '@tanstack/react-table'
+import { Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { useToast } from '@/components/ui/use-toast'
-import { Trash2 } from 'lucide-react'
 
 type InviteRow = Awaited<ReturnType<typeof getInvites>>[number]
 type GroupRow = Awaited<ReturnType<typeof getGroupsForSelect>>[number]
@@ -98,13 +98,5 @@ export function InvitesTable({
     },
   ]
 
-  return (
-    <DataTable
-      columns={columns}
-      data={invites}
-      emptyMessage={t('noInvites')}
-      searchPlaceholder=""
-      pageSize={25}
-    />
-  )
+  return <DataTable columns={columns} data={invites} emptyMessage={t('noInvites')} pageSize={25} />
 }

@@ -21,6 +21,27 @@
   },
   "settings": {
     "title": "Settings",
+    "description": "General settings and email templates",
+    "tabGeneral": "General",
+    "tabTemplates": "Email templates",
+    "general": {
+      "title": "General settings",
+      "description": "Platform name, logo and support email (e.g. for emails and footers).",
+      "platformName": "Platform name",
+      "platformNamePlaceholder": "e.g. Habidat",
+      "logo": "Logo",
+      "logoUpload": "Upload logo",
+      "logoReplace": "Replace logo",
+      "logoUploadHelp": "PNG, JPEG, SVG or WebP, max 2MB",
+      "logoUploaded": "Logo uploaded",
+      "logoUploadFailed": "Logo upload failed",
+      "logoRemove": "Remove logo",
+      "logoRemoved": "Logo removed",
+      "supportEmail": "Support email",
+      "supportEmailPlaceholder": "e.g. support@example.org",
+      "save": "Save",
+      "saved": "Saved"
+    },
     "templates": {
       "title": "Email templates",
       "description": "Customise texts for invite and password reset emails (per language)",
