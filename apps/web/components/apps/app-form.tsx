@@ -33,6 +33,8 @@ const appFormSchema = z.object({
   samlCertificate: z.string().optional().nullable(),
   oidcEnabled: z.boolean(),
   oidcClientId: z.string().optional().nullable(),
+  oidcRedirectUris: z.string().optional().nullable(),
+  oidcClientSecret: z.string().optional().nullable(),
   groupIds: z.array(z.string()).optional(),
 })
 
@@ -95,6 +97,8 @@ export function AppForm({ app, allGroups }: AppFormProps) {
       samlCertificate: app?.samlCertificate ?? null,
       oidcEnabled: app?.oidcEnabled ?? false,
       oidcClientId: app?.oidcClientId ?? null,
+      oidcRedirectUris: app?.oidcRedirectUris ?? null,
+      oidcClientSecret: app?.oidcClientSecret ?? null,
       groupIds: app?.groupAccess.map((a) => a.groupId) ?? [],
     },
   })
@@ -116,6 +120,8 @@ export function AppForm({ app, allGroups }: AppFormProps) {
       samlCertificate: data.samlEnabled ? data.samlCertificate ?? null : null,
       oidcEnabled: data.oidcEnabled,
       oidcClientId: data.oidcEnabled ? data.oidcClientId ?? null : null,
+      oidcRedirectUris: data.oidcEnabled ? data.oidcRedirectUris ?? null : null,
+      oidcClientSecret: data.oidcEnabled ? data.oidcClientSecret ?? null : null,
       groupIds: data.groupIds ?? [],
     }
     if (isEditing && app) {
@@ -278,18 +284,40 @@ export function AppForm({ app, allGroups }: AppFormProps) {
             <Label htmlFor="oidcEnabled">{t('oidcEnabled')}</Label>
           </div>
           {oidcEnabled && (
-            <div className="space-y-2">
-              <Label htmlFor="oidcClientId">{t('oidcClientId')}</Label>
-              <Input
-                id="oidcClientId"
-                {...form.register('oidcClientId')}
-                disabled={isExecuting}
-                placeholder={t('oidcClientIdPlaceholder')}
-              />
-              <p className="text-xs text-muted-foreground">
-                Erstellen Sie einen OAuth-Client (z. B. über Einstellungen oder API) und tragen Sie
-                die Client ID hier ein.
-              </p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="oidcClientId">{t('oidcClientId')}</Label>
+                <Input
+                  id="oidcClientId"
+                  {...form.register('oidcClientId')}
+                  disabled={isExecuting}
+                  placeholder={t('oidcClientIdPlaceholder')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="oidcRedirectUris">{t('oidcRedirectUris')}</Label>
+                <Textarea
+                  id="oidcRedirectUris"
+                  {...form.register('oidcRedirectUris')}
+                  disabled={isExecuting}
+                  placeholder={t('oidcRedirectUrisPlaceholder')}
+                  rows={3}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">{t('oidcRedirectUrisHint')}</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="oidcClientSecret">{t('oidcClientSecret')}</Label>
+                <Input
+                  id="oidcClientSecret"
+                  type="password"
+                  autoComplete="off"
+                  {...form.register('oidcClientSecret')}
+                  disabled={isExecuting}
+                  placeholder={t('oidcClientSecretPlaceholder')}
+                />
+                <p className="text-xs text-muted-foreground">{t('oidcClientSecretHint')}</p>
+              </div>
             </div>
           )}
         </CardContent>

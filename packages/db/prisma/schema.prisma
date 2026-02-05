@@ -252,9 +252,11 @@ model App {
   samlSloUrl      String?
   samlCertificate String?
 
-  // OAuth / OpenID Connect configuration (client_id from better-auth OAuth provider)
-  oidcEnabled   Boolean @default(false)
-  oidcClientId  String? // better-auth OAuth client_id when OIDC is enabled
+  // OAuth / OpenID Connect (node-oidc-provider): client_id and redirect URIs for this app as OIDC client
+  oidcEnabled      Boolean @default(false)
+  oidcClientId     String? // OIDC client_id (e.g. app slug or custom)
+  oidcRedirectUris String? // JSON array of redirect_uri strings, e.g. ["https://app.example/callback"]
+  oidcClientSecret String? // optional client_secret for confidential clients
 
   // Access control
   groupAccess AppGroupAccess[]

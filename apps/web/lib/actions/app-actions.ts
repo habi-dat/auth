@@ -28,6 +28,8 @@ const appSchema = z.object({
   samlCertificate: z.string().optional().nullable(),
   oidcEnabled: z.boolean().default(false),
   oidcClientId: z.string().optional().nullable(),
+  oidcRedirectUris: z.string().optional().nullable(),
+  oidcClientSecret: z.string().optional().nullable(),
   groupIds: z.array(z.string().cuid()).optional(),
 })
 
@@ -98,6 +100,8 @@ export const updateAppAction = adminAction
           samlCertificate: parsedInput.samlCertificate ?? undefined,
           oidcEnabled: parsedInput.oidcEnabled,
           oidcClientId: parsedInput.oidcClientId ?? undefined,
+          oidcRedirectUris: parsedInput.oidcRedirectUris ?? undefined,
+          oidcClientSecret: parsedInput.oidcClientSecret ?? undefined,
         },
       })
       await tx.appGroupAccess.deleteMany({

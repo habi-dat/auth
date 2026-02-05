@@ -43,6 +43,7 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false)
 
   const returnTo = searchParams.get('returnTo') || '/'
+  const callbackUrl = searchParams.get('callbackUrl') // OIDC interaction return URL
   const samlApp = searchParams.get('samlApp')
   const samlRequest = searchParams.get('SAMLRequest')
   const relayState = searchParams.get('RelayState')
@@ -78,6 +79,8 @@ export function LoginForm({
         if (samlRequest) ssoUrl.searchParams.set('SAMLRequest', samlRequest)
         if (relayState) ssoUrl.searchParams.set('RelayState', relayState)
         router.push(ssoUrl.pathname + ssoUrl.search)
+      } else if (callbackUrl) {
+        router.push(callbackUrl)
       } else {
         router.push(returnTo)
       }
