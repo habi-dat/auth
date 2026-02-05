@@ -1,5 +1,5 @@
 import { AuditTable } from '@/components/audit/audit-table'
-import { Card, CardContent } from '@/components/ui/card'
+import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { getAuditLogs } from '@/lib/audit'
 import { requireAdmin } from '@/lib/auth/session'
 import { Loader2 } from 'lucide-react'
@@ -16,25 +16,16 @@ export default async function AuditPage() {
   await requireAdmin()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground">{t('description')}</p>
-      </div>
-
-      <Card>
-        <CardContent className="pt-6">
-          <Suspense
-            fallback={
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            }
-          >
-            <AuditTableWrapper />
-          </Suspense>
-        </CardContent>
-      </Card>
-    </div>
+    <ListPageLayout title={t('title')} description={t('description')}>
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        }
+      >
+        <AuditTableWrapper />
+      </Suspense>
+    </ListPageLayout>
   )
 }
