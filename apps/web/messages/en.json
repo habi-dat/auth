@@ -39,6 +39,8 @@
       "logoRemoved": "Logo removed",
       "supportEmail": "Support email",
       "supportEmailPlaceholder": "e.g. support@example.org",
+      "loginPageText": "Login page text",
+      "loginPageTextPlaceholder": "Optional welcome text (e.g. usage notes)",
       "save": "Save",
       "saved": "Saved"
     },

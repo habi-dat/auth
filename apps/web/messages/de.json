@@ -214,6 +214,8 @@
       "logoRemoved": "Logo entfernt",
       "supportEmail": "Support-E-Mail",
       "supportEmailPlaceholder": "z. B. support@example.org",
+      "loginPageText": "Text auf der Anmeldeseite",
+      "loginPageTextPlaceholder": "Optionaler Willkommenstext (z. B. Hinweise zur Nutzung)",
       "save": "Speichern",
       "saved": "Gespeichert"
     },

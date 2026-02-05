@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   updateGeneralSettingsAction,
   removeLogoAction,
@@ -27,6 +28,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [logoUrl, setLogoUrl] = useState(initialSettings.logoUrl ?? '')
   const [logoVersion, setLogoVersion] = useState(0)
   const [supportEmail, setSupportEmail] = useState(initialSettings.supportEmail ?? '')
+  const [loginPageText, setLoginPageText] = useState(initialSettings.loginPageText ?? '')
   const [isPending, setIsPending] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
@@ -36,6 +38,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
     const result = await updateGeneralSettingsAction({
       platformName: platformName.trim() || undefined,
       supportEmail: supportEmail.trim() || undefined,
+      loginPageText: loginPageText.trim() || undefined,
     })
     setIsPending(false)
     if (result?.data?.success) {
@@ -163,6 +166,18 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
           onChange={(e) => setSupportEmail(e.target.value)}
           placeholder={t('supportEmailPlaceholder')}
           maxLength={200}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="loginPageText">{t('loginPageText')}</Label>
+        <Textarea
+          id="loginPageText"
+          value={loginPageText}
+          onChange={(e) => setLoginPageText(e.target.value)}
+          placeholder={t('loginPageTextPlaceholder')}
+          rows={3}
+          maxLength={1000}
+          className="resize-y"
         />
       </div>
       <Button type="submit" disabled={isPending}>

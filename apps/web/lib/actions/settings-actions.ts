@@ -9,6 +9,7 @@ const updateGeneralSchema = z.object({
   platformName: z.string().max(200).optional(),
   logoUrl: z.string().max(500).optional(),
   supportEmail: z.string().email().max(200).optional().or(z.literal('')),
+  loginPageText: z.string().max(1000).optional(),
 })
 
 export const updateGeneralSettingsAction = adminAction
@@ -23,6 +24,9 @@ export const updateGeneralSettingsAction = adminAction
       }),
       ...(parsedInput.supportEmail !== undefined && {
         supportEmail: parsedInput.supportEmail || undefined,
+      }),
+      ...(parsedInput.loginPageText !== undefined && {
+        loginPageText: parsedInput.loginPageText || undefined,
       }),
     }
     await updateGeneralSettings(data)
