@@ -86,37 +86,39 @@ export function LoginForm({
   const logoSrc = logoUrl && logoUpdatedAt ? `${logoUrl}?v=${logoUpdatedAt}` : logoUrl
 
   return (
-    <div className="w-full space-y-8">
+    <div className="relative w-full space-y-8">
       {/* Branding */}
-      <div className="flex flex-col items-center gap-4 text-center">
+      <div className="flex flex-col items-center gap-5 text-center">
         {logoSrc ? (
-          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-muted/80">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-muted/60 shadow-inner ring-1 ring-black/5 dark:ring-white/5 p-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoSrc}
               alt=""
               className="h-full w-full object-contain"
-              width={56}
-              height={56}
+              width={64}
+              height={64}
             />
           </div>
         ) : null}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {displayName}
           </h1>
           {loginPageText?.trim() ? (
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px] mx-auto">
               {loginPageText.trim()}
             </p>
           ) : null}
         </div>
       </div>
 
+      <div className="border-t border-border/60" role="presentation" />
+
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">{t('email')}</Label>
+          <Label htmlFor="email" className="text-foreground/90">{t('email')}</Label>
           <Input
             id="email"
             type="email"
@@ -124,7 +126,7 @@ export function LoginForm({
             placeholder={t('emailPlaceholder')}
             {...register('email')}
             disabled={isLoading}
-            className="h-10"
+            className="h-11"
           />
           {errors.email && (
             <p className="text-destructive text-sm">{errors.email.message}</p>
@@ -132,7 +134,7 @@ export function LoginForm({
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">{t('password')}</Label>
+            <Label htmlFor="password" className="text-foreground/90">{t('password')}</Label>
             <Link
               href="/forgot-password"
               className="text-muted-foreground text-sm hover:text-primary hover:underline transition-colors"
@@ -146,7 +148,7 @@ export function LoginForm({
             autoComplete="current-password"
             {...register('password')}
             disabled={isLoading}
-            className="h-10"
+            className="h-11"
           />
           {errors.password && (
             <p className="text-destructive text-sm">{errors.password.message}</p>
@@ -154,7 +156,7 @@ export function LoginForm({
         </div>
         <Button
           type="submit"
-          className="w-full h-10 font-medium"
+          className="w-full h-11 font-semibold shadow-sm"
           disabled={isLoading}
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
