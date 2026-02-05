@@ -17,6 +17,10 @@ export interface CreateUserData {
   ldapUidNumber: number
   /** SSHA-hashed password for userPassword attribute; optional (e.g. for sync without password) */
   userPassword?: string
+  /** Primary group name → LDAP attribute "title" */
+  title?: string
+  /** Primary group LDAP DN → LDAP attribute "ou" */
+  ou?: string
 }
 
 export interface UpdateUserData {
@@ -27,6 +31,10 @@ export interface UpdateUserData {
   storageQuota?: string
   /** SSHA-hashed password; only set when password was changed */
   userPassword?: string
+  /** Primary group name → LDAP attribute "title" */
+  title?: string
+  /** Primary group LDAP DN → LDAP attribute "ou" */
+  ou?: string
 }
 
 export interface CreateGroupData {
@@ -53,6 +61,10 @@ export interface LdapUserEntry {
   description?: string
   uidNumber?: string
   userPassword?: string
+  /** Primary group name (LDAP "title") */
+  title?: string
+  /** Primary group DN (LDAP "ou") */
+  ou?: string
 }
 
 export interface LdapGroupEntry {

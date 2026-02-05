@@ -125,7 +125,13 @@
     "colorModeSystem": "System",
     "updated": "Profil aktualisiert",
     "updatedDescription": "Ihre Änderungen wurden gespeichert.",
-    "updateFailed": "Das Profil konnte nicht aktualisiert werden."
+    "updateFailed": "Das Profil konnte nicht aktualisiert werden.",
+    "primaryGroup": "Primärgruppe",
+    "primaryGroupPlaceholder": "Primärgruppe wählen",
+    "primaryGroupNone": "Keine",
+    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Muss eine Ihrer Mitgliedsgruppen sein.",
+    "groups": "Gruppen",
+    "groupAdmins": "Gruppenadmin von"
   },
   "password": {
     "changeTitle": "Passwort ändern",
@@ -374,6 +380,10 @@
     "groupMemberships": "Gruppenmitgliedschaften",
     "groupOwnership": "Gruppenadmin-Rechte",
     "groupOwnershipHint": "Gruppen, in denen dieser Benutzer Admin-Rechte hat",
+    "primaryGroup": "Primärgruppe",
+    "primaryGroupPlaceholder": "Primärgruppe wählen",
+    "primaryGroupNone": "Keine",
+    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Muss eine Ihrer Mitgliedsgruppen sein.",
     "selectGroupsPlaceholder": "Gruppen auswählen...",
     "searchGroups": "Gruppen suchen...",
     "noGroupsFound": "Keine Gruppen gefunden.",
@@ -415,7 +425,10 @@
     "submit": "Konto erstellen",
     "successDescription": "Konto erstellt. Sie können sich jetzt anmelden.",
     "invalidOrExpired": "Ungültige oder abgelaufene Einladung.",
-    "backToLogin": "Zurück zur Anmeldung"
+    "backToLogin": "Zurück zur Anmeldung",
+    "primaryGroup": "Primärgruppe",
+    "primaryGroupPlaceholder": "Primärgruppe wählen",
+    "primaryGroupHint": "Hauptgruppe für LDAP-Sync (title/ou). Sie werden Mitglied aller eingeladenen Gruppen."
   },
   "groups": {
     "title": "Gruppen",

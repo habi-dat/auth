@@ -264,16 +264,27 @@ async function importFromLdap(
       for (const u of ldapUsers) {
         const userId = userDnToId.get(normalizeDn(u.dn))
         if (!userId) continue
-        const firstMembership = await tx.groupMembership.findFirst({
+        const memberships = await tx.groupMembership.findMany({
           where: { userId },
-          orderBy: { createdAt: 'asc' },
+          select: { groupId: true },
         })
-        if (firstMembership) {
-          await tx.user.update({
-            where: { id: userId },
-            data: { primaryGroupId: firstMembership.groupId },
+        const memberGroupIds = memberships.map((m) => m.groupId)
+        if (memberGroupIds.length === 0) continue
+        let primaryGroupId: string | null = null
+        if (u.ou?.trim()) {
+          const groupByOu = await tx.group.findFirst({
+            where: { ldapDn: u.ou.trim() },
+            select: { id: true },
           })
+          if (groupByOu && memberGroupIds.includes(groupByOu.id)) {
+            primaryGroupId = groupByOu.id
+          }
         }
+        if (!primaryGroupId) primaryGroupId = memberGroupIds[0]
+        await tx.user.update({
+          where: { id: userId },
+          data: { primaryGroupId },
+        })
       }
     },
     { timeout: 300_000 }

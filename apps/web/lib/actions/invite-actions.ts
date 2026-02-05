@@ -13,6 +13,11 @@ import { z } from 'zod'
 import { actionClient, groupAdminAction } from './client'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 
+export type InviteWithGroupsResult = {
+  invite: { memberGroups: { groupId: string }[]; ownerGroups: { groupId: string }[] }
+  groups: { id: string; name: string; slug: string }[]
+} | null
+
 const createInviteSchema = z.object({
   email: z.string().email(),
   memberGroupIds: z.array(z.string().cuid()).min(1),
@@ -116,6 +121,30 @@ export async function getInvites() {
   })
 }
 
+/** Get invite by token (for accept-invite page). Returns null if not found or expired. */
+export async function getInviteByToken(token: string): Promise<InviteWithGroupsResult> {
+  if (!token.trim()) return null
+  const invite = await prisma.invite.findFirst({
+    where: { token: token.trim(), expiresAt: { gt: new Date() } },
+    include: { memberGroups: true, ownerGroups: true },
+  })
+  if (!invite) return null
+  const groupIds = [
+    ...new Set([
+      ...invite.memberGroups.map((mg) => mg.groupId),
+      ...invite.ownerGroups.map((og) => og.groupId),
+    ]),
+  ]
+  const groups =
+    groupIds.length > 0
+      ? await prisma.group.findMany({
+          where: { id: { in: groupIds } },
+          select: { id: true, name: true, slug: true },
+        })
+      : []
+  return { invite: { memberGroups: invite.memberGroups, ownerGroups: invite.ownerGroups }, groups }
+}
+
 export async function getGroupsForSelect() {
   return prisma.group.findMany({
     select: { id: true, name: true, slug: true },
@@ -181,6 +210,7 @@ const acceptInviteSchema = z.object({
       'Username can only contain letters, numbers, underscores, and hyphens'
     ),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  primaryGroupId: z.string().cuid().optional().nullable(),
 })
 
 export const acceptInviteAction = actionClient
@@ -217,6 +247,17 @@ export const acceptInviteAction = actionClient
     const hashedPassword = await hashPassword(parsedInput.password)
     const ldapPasswordSsha = hashPasswordSsha(parsedInput.password)
 
+    const effectiveMemberGroupIds = [
+      ...new Set([
+        ...invite.memberGroups.map((mg) => mg.groupId),
+        ...invite.ownerGroups.map((og) => og.groupId),
+      ]),
+    ]
+    const primaryGroupId =
+      parsedInput.primaryGroupId && effectiveMemberGroupIds.includes(parsedInput.primaryGroupId)
+        ? parsedInput.primaryGroupId
+        : invite.memberGroups[0]?.groupId ?? invite.ownerGroups[0]?.groupId ?? null
+
     const { user, ldapSyncEventId, discourseSyncEventId, discourseGroupSyncEventIds } =
       await prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
@@ -226,7 +267,7 @@ export const acceptInviteAction = actionClient
             email: invite.email,
             emailVerified: true,
             ldapUidNumber,
-            primaryGroupId: invite.memberGroups[0]?.groupId ?? null,
+            primaryGroupId,
           },
         })
 

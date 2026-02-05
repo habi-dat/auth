@@ -51,8 +51,8 @@ export async function createLoginResponse(
   const attributes: Record<string, string | string[]> = {
     email: user.email,
     username: user.username,
-    place: user.location,
-    title: user.title,
+    place: user.location ?? '',
+    title: user.title ?? '',
     uid: user.uid,
   }
   if (user.groups?.length) attributes.groups = user.groups

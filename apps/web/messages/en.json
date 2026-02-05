@@ -160,7 +160,11 @@
     "username": "Username",
     "groups": "Groups",
     "groupAdmins": "Group admins",
-    "noUsers": "No users found"
+    "noUsers": "No users found",
+    "primaryGroup": "Primary group",
+    "primaryGroupPlaceholder": "Select primary group",
+    "primaryGroupNone": "None",
+    "primaryGroupHint": "Main group for LDAP sync (title/ou). Must be one of the user's member groups."
   },
   "groups": {
     "edit": "Edit",
@@ -179,6 +183,38 @@
     "system": "System",
     "subgroupsCount": "{count} subgroup(s)",
     "noGroups": "No groups found"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit",
+    "changePassword": "Change password",
+    "email": "Email",
+    "location": "Location",
+    "language": "Language",
+    "preferredLanguage": "Preferred language",
+    "languageDe": "German",
+    "languageEn": "English",
+    "storageQuota": "Storage quota",
+    "preferredTheme": "Theme",
+    "preferredColorMode": "Color mode",
+    "theme1": "Red / Black",
+    "theme2": "Purple / Green",
+    "theme3": "Green / Earth",
+    "theme4": "Blue / Grey",
+    "colorModeLight": "Light",
+    "colorModeDark": "Dark",
+    "colorModeSystem": "System",
+    "primaryGroup": "Primary group",
+    "primaryGroupPlaceholder": "Select primary group",
+    "primaryGroupNone": "None",
+    "primaryGroupHint": "Main group for LDAP sync (title/ou). Must be one of your member groups.",
+    "groups": "Groups",
+    "groupAdmins": "Group admin of"
+  },
+  "acceptInvite": {
+    "primaryGroup": "Primary group",
+    "primaryGroupPlaceholder": "Select primary group",
+    "primaryGroupHint": "Main group for LDAP sync (title/ou). You will be a member of all invited groups."
   },
   "sidebar": {
     "brand": "habidat",

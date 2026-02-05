@@ -24,9 +24,9 @@ import type { SessionUser } from '@/lib/auth/session'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAction } from 'next-safe-action/hooks'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -50,11 +50,18 @@ function defaultValuesFromUser(user: SessionUser): ProfileForm {
   }
 }
 
-interface EditProfileFormProps {
-  initialUser: SessionUser
+interface MemberGroup {
+  id: string
+  name: string
+  slug: string
 }
 
-export function EditProfileForm({ initialUser }: EditProfileFormProps) {
+interface EditProfileFormProps {
+  initialUser: SessionUser
+  memberGroups: MemberGroup[]
+}
+
+export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormProps) {
   const t = useTranslations('profile')
   const tVal = useTranslations('auth.validation')
   const tCommon = useTranslations('common')
@@ -94,6 +101,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
   const preferredLanguage = watch('preferredLanguage')
   const preferredTheme = watch('preferredTheme')
   const preferredColorMode = watch('preferredColorMode')
+  const primaryGroupId = watch('primaryGroupId')
 
   const onSubmit = (data: ProfileForm) => {
     executeUpdateProfile({
@@ -176,7 +184,9 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
               <Label htmlFor="preferredTheme">{t('preferredTheme')}</Label>
               <Select
                 value={preferredTheme ?? '1'}
-                onValueChange={(value) => setValue('preferredTheme', value as '1' | '2' | '3' | '4')}
+                onValueChange={(value) =>
+                  setValue('preferredTheme', value as '1' | '2' | '3' | '4')
+                }
                 disabled={isExecuting}
               >
                 <SelectTrigger id="preferredTheme">
@@ -210,6 +220,30 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {memberGroups.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="primaryGroupId">{t('primaryGroup')}</Label>
+                <Select
+                  value={primaryGroupId ?? ''}
+                  onValueChange={(value) => setValue('primaryGroupId', value || null)}
+                  disabled={isExecuting}
+                >
+                  <SelectTrigger id="primaryGroupId">
+                    <SelectValue placeholder={t('primaryGroupPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('primaryGroupNone')}</SelectItem>
+                    {memberGroups.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{t('primaryGroupHint')}</p>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Link href="/">

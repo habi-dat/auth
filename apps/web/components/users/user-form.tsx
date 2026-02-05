@@ -3,6 +3,7 @@
 import { GroupSelector } from '@/components/groups/group-selector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -12,20 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
-import {
-  createUserAction,
-  deleteUserAction,
-  updateUserAction,
-} from '@/lib/actions/user-actions'
+import { createUserAction, deleteUserAction, updateUserAction } from '@/lib/actions/user-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
@@ -45,6 +41,7 @@ interface UserFormProps {
     location: string | null
     preferredLanguage: string
     storageQuota: string
+    primaryGroupId: string | null
     memberships: Array<{ group: GroupWithSlug }>
     ownerships: Array<{ group: GroupWithSlug }>
   }
@@ -75,6 +72,7 @@ export function UserForm({ user, groups }: UserFormProps) {
     storageQuota: z.string().default('1 GB'),
     memberGroupIds: z.array(z.string()),
     ownerGroupIds: z.array(z.string()).optional(),
+    primaryGroupId: z.string().optional().nullable(),
   })
 
   const updateUserSchema = z.object({
@@ -86,6 +84,7 @@ export function UserForm({ user, groups }: UserFormProps) {
     storageQuota: z.string(),
     memberGroupIds: z.array(z.string()),
     ownerGroupIds: z.array(z.string()).optional(),
+    primaryGroupId: z.string().optional().nullable(),
   })
 
   type CreateUserForm = z.infer<typeof createUserSchema>
@@ -155,6 +154,7 @@ export function UserForm({ user, groups }: UserFormProps) {
           ownerGroupIds: user.ownerships
             .filter((o) => o.group.slug !== GROUPADMIN_GROUP_SLUG)
             .map((o) => o.group.id),
+          primaryGroupId: user.primaryGroupId ?? null,
         }
       : {
           name: '',
@@ -166,12 +166,15 @@ export function UserForm({ user, groups }: UserFormProps) {
           storageQuota: '1 GB',
           memberGroupIds: [],
           ownerGroupIds: [],
+          primaryGroupId: null,
         },
   })
 
   const password = watch('password' as keyof (CreateUserForm | UpdateUserForm))
   const preferredLanguage = watch('preferredLanguage')
   const storageQuota = watch('storageQuota')
+  const memberGroupIds = watch('memberGroupIds') || []
+  const primaryGroupId = watch('primaryGroupId')
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const result = zxcvbn(e.target.value)
@@ -211,10 +214,17 @@ export function UserForm({ user, groups }: UserFormProps) {
     }
   }
 
-  const isLoading =
-    createAction.isPending || updateAction.isPending || deleteAction.isPending
+  const isLoading = createAction.isPending || updateAction.isPending || deleteAction.isPending
   // groupadmin system group cannot be assigned/removed on user form (membership is automatic)
   const selectableGroups = groups.filter((g) => g.slug !== GROUPADMIN_GROUP_SLUG)
+  const primaryGroupOptions = selectableGroups.filter((g) => memberGroupIds.includes(g.id))
+  useEffect(() => {
+    if (primaryGroupId == null) return
+    const valid = memberGroupIds.includes(primaryGroupId)
+    if (!valid) {
+      setValue('primaryGroupId', memberGroupIds[0] ?? null)
+    }
+  }, [memberGroupIds, primaryGroupId, setValue])
 
   return (
     <Card>
@@ -344,6 +354,29 @@ export function UserForm({ user, groups }: UserFormProps) {
             disabled={isLoading}
           />
           <p className="text-xs text-muted-foreground -mt-2">{t('groupOwnershipHint')}</p>
+          {primaryGroupOptions.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="primaryGroupId">{t('primaryGroup')}</Label>
+              <Select
+                value={primaryGroupId ?? ''}
+                onValueChange={(v) => setValue('primaryGroupId', v || null)}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="primaryGroupId">
+                  <SelectValue placeholder={t('primaryGroupPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('primaryGroupNone')}</SelectItem>
+                  {primaryGroupOptions.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{t('primaryGroupHint')}</p>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="flex gap-2">
@@ -377,9 +410,7 @@ export function UserForm({ user, groups }: UserFormProps) {
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           title={t('deleteTitle')}
-          description={
-            user ? t('deleteDescription', { name: user.name }) : ''
-          }
+          description={user ? t('deleteDescription', { name: user.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ userId: user!.id })}

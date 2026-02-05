@@ -36,6 +36,7 @@ const createUserSchema = z.object({
   storageQuota: z.string().default('1 GB'),
   memberGroupIds: z.array(z.string()),
   ownerGroupIds: z.array(z.string()).optional(),
+  primaryGroupId: z.string().optional().nullable(),
 })
 
 const updateUserSchema = z.object({
@@ -47,6 +48,7 @@ const updateUserSchema = z.object({
   storageQuota: z.string().optional(),
   memberGroupIds: z.array(z.string()).optional(),
   ownerGroupIds: z.array(z.string()).optional(),
+  primaryGroupId: z.string().optional().nullable(),
 })
 
 const updateProfileSchema = z.object({
@@ -82,6 +84,15 @@ export const createUserAction = groupAdminAction
       throw new Error('User must belong to at least one group (excluding system groups)')
     }
 
+    const effectiveMemberGroupIds = [...new Set([...memberGroupIds, ...ownerGroupIds])]
+    const primaryGroupId =
+      parsedInput.primaryGroupId && effectiveMemberGroupIds.includes(parsedInput.primaryGroupId)
+        ? parsedInput.primaryGroupId
+        : memberGroupIds[0] ?? ownerGroupIds[0] ?? null
+    if (effectiveMemberGroupIds.length > 0 && !primaryGroupId) {
+      throw new Error('Primary group is required when user is a member of at least one group')
+    }
+
     // Verify actor can add to all specified groups
     for (const groupId of memberGroupIds) {
       if (!canManageGroup(session, groupId)) {
@@ -110,7 +121,6 @@ export const createUserAction = groupAdminAction
     const ldapPasswordSsha = hashPasswordSsha(parsedInput.password)
 
     // Create user with groups and LDAP + Discourse sync events (user + each group for member sync)
-    const effectiveMemberGroupIds = [...new Set([...memberGroupIds, ...ownerGroupIds])]
     const {
       user,
       ldapSyncEventId,
@@ -128,7 +138,7 @@ export const createUserAction = groupAdminAction
           preferredLanguage: parsedInput.preferredLanguage,
           storageQuota: parsedInput.storageQuota,
           ldapUidNumber,
-          primaryGroupId: memberGroupIds[0] ?? ownerGroupIds[0] ?? null,
+          primaryGroupId,
         },
       })
 
@@ -269,6 +279,7 @@ export const updateUserAction = groupAdminAction
         ? parsedInput.ownerGroupIds.filter((id) => id !== groupAdminId)
         : parsedInput.ownerGroupIds
       : undefined
+    const primaryGroupId = parsedInput.primaryGroupId
 
     const beforeGroupIds = [
       ...new Set([
@@ -284,6 +295,22 @@ export const updateUserAction = groupAdminAction
       discourseSyncEventId,
       discourseGroupSyncEventIds,
     } = await prisma.$transaction(async (tx) => {
+      const afterGroupIdsForPrimary =
+        memberGroupIds !== undefined
+          ? [...new Set([...memberGroupIds, ...(ownerGroupIds ?? [])])]
+          : [
+              ...new Set([
+                ...existingUser.memberships.map((m) => m.groupId),
+                ...existingUser.ownerships.map((o) => o.groupId),
+              ]),
+            ]
+        const primaryGroupIdValid =
+          primaryGroupId == null ||
+          (afterGroupIdsForPrimary.length > 0 && afterGroupIdsForPrimary.includes(primaryGroupId))
+        if (!primaryGroupIdValid) {
+          throw new Error('Primary group must be one of the user’s member groups')
+        }
+
       const updated = await tx.user.update({
         where: { id: parsedInput.id },
         data: {
@@ -292,6 +319,7 @@ export const updateUserAction = groupAdminAction
           location: parsedInput.location,
           preferredLanguage: parsedInput.preferredLanguage,
           storageQuota: parsedInput.storageQuota,
+          ...(primaryGroupId !== undefined ? { primaryGroupId } : {}),
         },
       })
 
@@ -439,19 +467,49 @@ export const updateProfileAction = userAction
 
     const oldUser = await prisma.user.findUniqueOrThrow({
       where: { id: session.user.id },
+      include: { memberships: { select: { groupId: true } } },
     })
+    const memberGroupIds = oldUser.memberships.map((m) => m.groupId)
+    if (parsedInput.primaryGroupId != null && memberGroupIds.length > 0) {
+      if (!memberGroupIds.includes(parsedInput.primaryGroupId)) {
+        throw new Error('Primary group must be one of your member groups')
+      }
+    }
 
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        name: parsedInput.name,
-        location: parsedInput.location,
-        preferredLanguage: parsedInput.preferredLanguage,
-        preferredTheme: parsedInput.preferredTheme,
-        preferredColorMode: parsedInput.preferredColorMode,
-        primaryGroupId: parsedInput.primaryGroupId,
-      },
+    const { user, ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: session.user.id },
+        data: {
+          name: parsedInput.name,
+          location: parsedInput.location,
+          preferredLanguage: parsedInput.preferredLanguage,
+          preferredTheme: parsedInput.preferredTheme,
+          preferredColorMode: parsedInput.preferredColorMode,
+          primaryGroupId: parsedInput.primaryGroupId,
+        },
+      })
+      const ldapSyncEvent = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'UPDATE',
+        entityType: 'USER',
+        entityId: updated.id,
+        payload: { userId: updated.id },
+      })
+      const discourseSyncEvent = await createSyncEvent(tx, {
+        target: 'DISCOURSE',
+        operation: 'UPDATE',
+        entityType: 'USER',
+        entityId: updated.id,
+        payload: { userId: updated.id },
+      })
+      return {
+        user: updated,
+        ldapSyncEventId: ldapSyncEvent.id,
+        discourseSyncEventId: discourseSyncEvent.id,
+      }
     })
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
+    await dispatchDiscourseSyncAfterCommit(discourseSyncEventId, 'DISCOURSE')
 
     const oldValue = {
       name: oldUser.name,

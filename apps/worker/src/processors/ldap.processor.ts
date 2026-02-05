@@ -74,6 +74,8 @@ async function createUserOrThrow(
     preferredLanguage: string
     storageQuota: string
     ldapUidNumber: number
+    primaryGroupName?: string | null
+    primaryGroupLdapDn?: string | null
   },
   userPassword?: string
 ): Promise<string> {
@@ -86,6 +88,8 @@ async function createUserOrThrow(
       preferredLanguage: user.preferredLanguage,
       storageQuota: user.storageQuota ?? '1 GB',
       ldapUidNumber: user.ldapUidNumber,
+      ...(user.primaryGroupName ? { title: user.primaryGroupName } : {}),
+      ...(user.primaryGroupLdapDn ? { ou: user.primaryGroupLdapDn } : {}),
       ...(userPassword ? { userPassword } : {}),
     })
   } catch (err) {
@@ -110,6 +114,7 @@ async function handleSyncUser(
 ): Promise<void> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: payload.userId },
+    include: { primaryGroup: { select: { name: true, ldapDn: true } } },
   })
 
   if (!user.ldapUidNumber) {
@@ -132,7 +137,12 @@ async function handleSyncUser(
   if (!ldapUser) {
     const dn = await createUserOrThrow(
       ldap,
-      { ...user, ldapUidNumber: user.ldapUidNumber! },
+      {
+        ...user,
+        ldapUidNumber: user.ldapUidNumber!,
+        primaryGroupName: user.primaryGroup?.name ?? null,
+        primaryGroupLdapDn: user.primaryGroup?.ldapDn ?? null,
+      },
       userPassword
     )
     await prisma.user.update({
@@ -142,12 +152,16 @@ async function handleSyncUser(
     return
   }
 
+  const primaryGroupName = user.primaryGroup?.name ?? ''
+  const primaryGroupLdapDn = user.primaryGroup?.ldapDn ?? ''
   const needsUpdate =
     ldapUser.cn !== user.name ||
     ldapUser.mail !== user.email ||
     (ldapUser.l ?? '') !== (user.location ?? '') ||
     (ldapUser.preferredLanguage ?? 'de') !== (user.preferredLanguage ?? 'de') ||
     (ldapUser.description ?? '1 GB') !== (user.storageQuota ?? '1 GB') ||
+    (ldapUser.title ?? '') !== primaryGroupName ||
+    (ldapUser.ou ?? '') !== primaryGroupLdapDn ||
     (userPassword != null && ldapUser.userPassword !== userPassword)
 
   if (needsUpdate) {
@@ -158,13 +172,20 @@ async function handleSyncUser(
         location: user.location ?? undefined,
         preferredLanguage: user.preferredLanguage,
         storageQuota: user.storageQuota ?? undefined,
+        ...(primaryGroupName ? { title: primaryGroupName } : {}),
+        ...(primaryGroupLdapDn ? { ou: primaryGroupLdapDn } : {}),
         ...(userPassword ? { userPassword } : {}),
       })
     } catch (updateErr) {
       if (isNoSuchObjectError(updateErr)) {
         const dn = await createUserOrThrow(
           ldap,
-          { ...user, ldapUidNumber: user.ldapUidNumber! },
+          {
+            ...user,
+            ldapUidNumber: user.ldapUidNumber!,
+            primaryGroupName: user.primaryGroup?.name ?? null,
+            primaryGroupLdapDn: user.primaryGroup?.ldapDn ?? null,
+          },
           userPassword
         )
         await prisma.user.update({
