@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { createUserAction, updateUserAction } from '@/lib/actions/user-actions'
+import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -24,7 +25,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
 
-interface Group {
+interface GroupWithSlug {
   id: string
   name: string
   slug: string
@@ -39,10 +40,10 @@ interface UserFormProps {
     location: string | null
     preferredLanguage: string
     storageQuota: string
-    memberships: Array<{ group: Group }>
-    ownerships: Array<{ group: Group }>
+    memberships: Array<{ group: GroupWithSlug }>
+    ownerships: Array<{ group: GroupWithSlug }>
   }
-  groups: Group[]
+  groups: GroupWithSlug[]
 }
 
 export function UserForm({ user, groups }: UserFormProps) {
@@ -128,8 +129,12 @@ export function UserForm({ user, groups }: UserFormProps) {
           location: user.location || '',
           preferredLanguage: user.preferredLanguage,
           storageQuota: user.storageQuota,
-          memberGroupIds: user.memberships.map((m) => m.group.id),
-          ownerGroupIds: user.ownerships.map((o) => o.group.id),
+          memberGroupIds: user.memberships
+            .filter((m) => m.group.slug !== GROUPADMIN_GROUP_SLUG)
+            .map((m) => m.group.id),
+          ownerGroupIds: user.ownerships
+            .filter((o) => o.group.slug !== GROUPADMIN_GROUP_SLUG)
+            .map((o) => o.group.id),
         }
       : {
           name: '',
@@ -187,6 +192,8 @@ export function UserForm({ user, groups }: UserFormProps) {
   }
 
   const isLoading = createAction.isPending || updateAction.isPending
+  // groupadmin system group cannot be assigned/removed on user form (membership is automatic)
+  const selectableGroups = groups.filter((g) => g.slug !== GROUPADMIN_GROUP_SLUG)
 
   return (
     <Card>
@@ -296,7 +303,7 @@ export function UserForm({ user, groups }: UserFormProps) {
           </div>
 
           <GroupSelector
-            groups={groups}
+            groups={selectableGroups}
             value={watch('memberGroupIds') || []}
             onChange={(ids) => setValue('memberGroupIds', ids)}
             label={t('groupMemberships')}
@@ -306,7 +313,7 @@ export function UserForm({ user, groups }: UserFormProps) {
             disabled={isLoading}
           />
           <GroupSelector
-            groups={groups}
+            groups={selectableGroups}
             value={watch('ownerGroupIds') || []}
             onChange={(ids) => setValue('ownerGroupIds', ids)}
             label={t('groupOwnership')}

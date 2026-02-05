@@ -2,6 +2,7 @@
 
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@/lib/auth/roles'
+import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import {
   createSyncEvent,
   dispatchDiscourseSyncAfterCommit,
@@ -11,6 +12,8 @@ import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { adminAction, groupAdminAction } from './client'
+
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
 
 // Schema definitions
 const createGroupSchema = z.object({
@@ -56,6 +59,39 @@ const removeOwnerSchema = z.object({
   userId: z.string(),
 })
 
+async function getGroupAdminGroupId(tx: Tx) {
+  const g = await tx.group.findUnique({
+    where: { slug: GROUPADMIN_GROUP_SLUG },
+    select: { id: true },
+  })
+  return g?.id ?? null
+}
+
+/** Add user to groupadmin group (GroupMembership) if groupadmin exists. Exported for use in user-actions. */
+export async function addUserToGroupAdmin(tx: Tx, userId: string) {
+  const groupAdminId = await getGroupAdminGroupId(tx)
+  if (!groupAdminId) return
+  await tx.groupMembership.upsert({
+    where: { userId_groupId: { userId, groupId: groupAdminId } },
+    create: { userId, groupId: groupAdminId },
+    update: {},
+  })
+}
+
+/** Remove user from groupadmin group if they have no other GroupOwnership. Exported for use in user-actions. */
+export async function removeUserFromGroupAdminIfNoOwnership(tx: Tx, userId: string) {
+  const groupAdminId = await getGroupAdminGroupId(tx)
+  if (!groupAdminId) return
+  const ownershipCount = await tx.groupOwnership.count({
+    where: { userId },
+  })
+  if (ownershipCount === 0) {
+    await tx.groupMembership.deleteMany({
+      where: { userId, groupId: groupAdminId },
+    })
+  }
+}
+
 // Create group (admin only)
 export const createGroupAction = adminAction
   .schema(createGroupSchema)
@@ -69,6 +105,18 @@ export const createGroupAction = adminAction
     if (existing) {
       throw new Error('Group slug already exists')
     }
+
+    const groupAdminGroup = await prisma.group.findUnique({
+      where: { slug: GROUPADMIN_GROUP_SLUG },
+      select: { id: true },
+    })
+    const groupAdminId = groupAdminGroup?.id ?? null
+    const filteredParentGroupIds = (parsedInput.parentGroupIds ?? []).filter(
+      (id) => id !== groupAdminId
+    )
+    const filteredChildGroupIds = (parsedInput.childGroupIds ?? []).filter(
+      (id) => id !== groupAdminId
+    )
 
     const { group, ldapSyncEventId, discourseSyncEventId, discourseUserSyncEventIds } =
       await prisma.$transaction(async (tx) => {
@@ -96,20 +144,23 @@ export const createGroupAction = adminAction
               userId,
             })),
           })
+          for (const userId of parsedInput.ownerUserIds) {
+            await addUserToGroupAdmin(tx, userId)
+          }
         }
 
-        if (parsedInput.parentGroupIds?.length) {
+        if (filteredParentGroupIds.length > 0) {
           await tx.groupHierarchy.createMany({
-            data: parsedInput.parentGroupIds.map((parentGroupId) => ({
+            data: filteredParentGroupIds.map((parentGroupId) => ({
               parentGroupId,
               childGroupId: newGroup.id,
             })),
           })
         }
 
-        if (parsedInput.childGroupIds?.length) {
+        if (filteredChildGroupIds.length > 0) {
           await tx.groupHierarchy.createMany({
-            data: parsedInput.childGroupIds.map((childGroupId) => ({
+            data: filteredChildGroupIds.map((childGroupId) => ({
               parentGroupId: newGroup.id,
               childGroupId,
             })),
@@ -131,10 +182,7 @@ export const createGroupAction = adminAction
           payload: { groupId: newGroup.id },
         })
         const memberAndOwnerIds = [
-          ...new Set([
-            ...(parsedInput.memberUserIds ?? []),
-            ...(parsedInput.ownerUserIds ?? []),
-          ]),
+          ...new Set([...(parsedInput.memberUserIds ?? []), ...(parsedInput.ownerUserIds ?? [])]),
         ]
         const discourseUserSyncEventIds: string[] = []
         for (const userId of memberAndOwnerIds) {
@@ -207,117 +255,138 @@ export const updateGroupAction = groupAdminAction
     if (existingGroup.isSystem && !session.isAdmin) {
       throw new Error('System groups can only be modified by admins')
     }
+    // groupadmin system group cannot be edited at all (membership is managed automatically)
+    if (existingGroup.slug === GROUPADMIN_GROUP_SLUG) {
+      throw new Error('The groupadmin system group cannot be edited')
+    }
 
-    const {
-      group,
-      ldapSyncEventId,
-      discourseSyncEventId,
-      discourseUserSyncEventIds,
-    } = await prisma.$transaction(async (tx) => {
-      const updated = await tx.group.update({
-        where: { id: parsedInput.id },
-        data: {
-          name: parsedInput.name,
-          description: parsedInput.description,
-        },
-      })
+    const groupAdminGroup = await prisma.group.findUnique({
+      where: { slug: GROUPADMIN_GROUP_SLUG },
+      select: { id: true },
+    })
+    const groupAdminId = groupAdminGroup?.id ?? null
+    const filteredParentGroupIds = (parsedInput.parentGroupIds ?? []).filter(
+      (id) => id !== groupAdminId
+    )
+    const filteredChildGroupIds = (parsedInput.childGroupIds ?? []).filter(
+      (id) => id !== groupAdminId
+    )
 
-      if (parsedInput.memberUserIds) {
-        await tx.groupMembership.deleteMany({
-          where: { groupId: parsedInput.id },
+    const { group, ldapSyncEventId, discourseSyncEventId, discourseUserSyncEventIds } =
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.group.update({
+          where: { id: parsedInput.id },
+          data: {
+            name: parsedInput.name,
+            description: parsedInput.description,
+          },
         })
-        if (parsedInput.memberUserIds.length > 0) {
-          await tx.groupMembership.createMany({
-            data: parsedInput.memberUserIds.map((userId) => ({
-              groupId: parsedInput.id,
-              userId,
-            })),
-          })
-        }
-      }
 
-      if (parsedInput.ownerUserIds && session.isAdmin) {
-        await tx.groupOwnership.deleteMany({
-          where: { groupId: parsedInput.id },
+        if (parsedInput.memberUserIds) {
+          await tx.groupMembership.deleteMany({
+            where: { groupId: parsedInput.id },
+          })
+          if (parsedInput.memberUserIds.length > 0) {
+            await tx.groupMembership.createMany({
+              data: parsedInput.memberUserIds.map((userId) => ({
+                groupId: parsedInput.id,
+                userId,
+              })),
+            })
+          }
+        }
+
+        if (parsedInput.ownerUserIds && session.isAdmin) {
+          const oldOwnerIds = existingGroup.ownerships.map((o) => o.userId)
+          await tx.groupOwnership.deleteMany({
+            where: { groupId: parsedInput.id },
+          })
+          if (parsedInput.ownerUserIds.length > 0) {
+            await tx.groupOwnership.createMany({
+              data: parsedInput.ownerUserIds.map((userId) => ({
+                groupId: parsedInput.id,
+                userId,
+              })),
+            })
+            for (const userId of parsedInput.ownerUserIds) {
+              await addUserToGroupAdmin(tx, userId)
+            }
+          }
+          for (const userId of oldOwnerIds) {
+            if (!parsedInput.ownerUserIds?.includes(userId)) {
+              await removeUserFromGroupAdminIfNoOwnership(tx, userId)
+            }
+          }
+        }
+
+        if (parsedInput.parentGroupIds) {
+          await tx.groupHierarchy.deleteMany({
+            where: { childGroupId: parsedInput.id },
+          })
+          if (filteredParentGroupIds.length > 0) {
+            await tx.groupHierarchy.createMany({
+              data: filteredParentGroupIds.map((parentGroupId) => ({
+                parentGroupId,
+                childGroupId: parsedInput.id,
+              })),
+            })
+          }
+        }
+
+        if (parsedInput.childGroupIds) {
+          await tx.groupHierarchy.deleteMany({
+            where: { parentGroupId: parsedInput.id },
+          })
+          if (filteredChildGroupIds.length > 0) {
+            await tx.groupHierarchy.createMany({
+              data: filteredChildGroupIds.map((childGroupId) => ({
+                parentGroupId: parsedInput.id,
+                childGroupId,
+              })),
+            })
+          }
+        }
+
+        const groupWithRels = await tx.group.findUniqueOrThrow({
+          where: { id: updated.id },
+          include: { memberships: true, ownerships: true },
         })
-        if (parsedInput.ownerUserIds.length > 0) {
-          await tx.groupOwnership.createMany({
-            data: parsedInput.ownerUserIds.map((userId) => ({
-              groupId: parsedInput.id,
-              userId,
-            })),
-          })
-        }
-      }
+        const memberUserIds = groupWithRels.memberships.map((m) => m.userId)
+        const ownerUserIds = groupWithRels.ownerships.map((o) => o.userId)
+        const allUserIds = [...new Set([...memberUserIds, ...ownerUserIds])]
 
-      if (parsedInput.parentGroupIds) {
-        await tx.groupHierarchy.deleteMany({
-          where: { childGroupId: parsedInput.id },
+        const syncEvent = await createSyncEvent(tx, {
+          target: 'LDAP',
+          operation: 'UPDATE',
+          entityType: 'GROUP',
+          entityId: updated.id,
+          payload: { groupId: updated.id },
         })
-        if (parsedInput.parentGroupIds.length > 0) {
-          await tx.groupHierarchy.createMany({
-            data: parsedInput.parentGroupIds.map((parentGroupId) => ({
-              parentGroupId,
-              childGroupId: parsedInput.id,
-            })),
-          })
-        }
-      }
-
-      if (parsedInput.childGroupIds) {
-        await tx.groupHierarchy.deleteMany({
-          where: { parentGroupId: parsedInput.id },
-        })
-        if (parsedInput.childGroupIds.length > 0) {
-          await tx.groupHierarchy.createMany({
-            data: parsedInput.childGroupIds.map((childGroupId) => ({
-              parentGroupId: parsedInput.id,
-              childGroupId,
-            })),
-          })
-        }
-      }
-
-      const groupWithRels = await tx.group.findUniqueOrThrow({
-        where: { id: updated.id },
-        include: { memberships: true, ownerships: true },
-      })
-      const memberUserIds = groupWithRels.memberships.map((m) => m.userId)
-      const ownerUserIds = groupWithRels.ownerships.map((o) => o.userId)
-      const allUserIds = [...new Set([...memberUserIds, ...ownerUserIds])]
-
-      const syncEvent = await createSyncEvent(tx, {
-        target: 'LDAP',
-        operation: 'UPDATE',
-        entityType: 'GROUP',
-        entityId: updated.id,
-        payload: { groupId: updated.id },
-      })
-      const discourseGroupEv = await createSyncEvent(tx, {
-        target: 'DISCOURSE',
-        operation: 'UPDATE',
-        entityType: 'GROUP',
-        entityId: updated.id,
-        payload: { groupId: updated.id, oldSlug: existingGroup.slug },
-      })
-      const discourseUserSyncEventIds: string[] = []
-      for (const userId of allUserIds) {
-        const ev = await createSyncEvent(tx, {
+        const discourseGroupEv = await createSyncEvent(tx, {
           target: 'DISCOURSE',
           operation: 'UPDATE',
-          entityType: 'USER',
-          entityId: userId,
-          payload: { userId },
+          entityType: 'GROUP',
+          entityId: updated.id,
+          payload: { groupId: updated.id, oldSlug: existingGroup.slug },
         })
-        discourseUserSyncEventIds.push(ev.id)
-      }
-      return {
-        group: updated,
-        ldapSyncEventId: syncEvent.id,
-        discourseSyncEventId: discourseGroupEv.id,
-        discourseUserSyncEventIds,
-      }
-    })
+        const discourseUserSyncEventIds: string[] = []
+        for (const userId of allUserIds) {
+          const ev = await createSyncEvent(tx, {
+            target: 'DISCOURSE',
+            operation: 'UPDATE',
+            entityType: 'USER',
+            entityId: userId,
+            payload: { userId },
+          })
+          discourseUserSyncEventIds.push(ev.id)
+        }
+        return {
+          group: updated,
+          ldapSyncEventId: syncEvent.id,
+          discourseSyncEventId: discourseGroupEv.id,
+          discourseUserSyncEventIds,
+        }
+      })
 
     await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
     await dispatchDiscourseSyncAfterCommit(discourseSyncEventId, 'DISCOURSE')
@@ -409,7 +478,11 @@ export const deleteGroupAction = adminAction
         operation: 'DELETE',
         entityType: 'GROUP',
         entityId: group.id,
-        payload: { groupId: group.id, discourseId: group.discourseId ?? undefined, slug: group.slug },
+        payload: {
+          groupId: group.id,
+          discourseId: group.discourseId ?? undefined,
+          slug: group.slug,
+        },
       })
       await tx.group.delete({ where: { id: group.id } })
       return { ldapSyncEventId: syncEvent.id, discourseSyncEventId: discourseEv.id }
@@ -442,6 +515,9 @@ export const addMemberAction = groupAdminAction
     })
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
+    }
+    if (group.slug === GROUPADMIN_GROUP_SLUG) {
+      throw new Error('The groupadmin system group membership is managed automatically')
     }
     const existing = await prisma.groupMembership.findUnique({
       where: {
@@ -524,6 +600,9 @@ export const removeMemberAction = groupAdminAction
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
     }
+    if (group.slug === GROUPADMIN_GROUP_SLUG) {
+      throw new Error('The groupadmin system group membership is managed automatically')
+    }
 
     const oldMemberIds = group.memberships.map((m) => m.userId)
     const { ldapSyncEventId, discourseGroupSyncEventId, discourseUserSyncEventId } =
@@ -597,6 +676,9 @@ export const addOwnerAction = groupAdminAction
       where: { id: parsedInput.groupId },
       include: { ownerships: true },
     })
+    if (group.slug === GROUPADMIN_GROUP_SLUG) {
+      throw new Error('The groupadmin system group membership is managed automatically')
+    }
     const existingOwner = await prisma.groupOwnership.findUnique({
       where: {
         userId_groupId: {
@@ -637,6 +719,7 @@ export const addOwnerAction = groupAdminAction
             groupId: parsedInput.groupId,
           },
         })
+        await addUserToGroupAdmin(tx, parsedInput.userId)
         const ev = await createSyncEvent(tx, {
           target: 'LDAP',
           operation: 'UPDATE',
@@ -696,6 +779,9 @@ export const removeOwnerAction = groupAdminAction
     if (!canManageGroup(session, parsedInput.groupId)) {
       throw new Error('You do not have permission to manage this group')
     }
+    if (group.slug === GROUPADMIN_GROUP_SLUG) {
+      throw new Error('The groupadmin system group membership is managed automatically')
+    }
 
     const oldOwnerIds = group.ownerships.map((o) => o.userId)
     const { ldapSyncEventId, discourseGroupSyncEventId, discourseUserSyncEventId } =
@@ -708,6 +794,7 @@ export const removeOwnerAction = groupAdminAction
             },
           },
         })
+        await removeUserFromGroupAdminIfNoOwnership(tx, parsedInput.userId)
         const ev = await createSyncEvent(tx, {
           target: 'LDAP',
           operation: 'UPDATE',

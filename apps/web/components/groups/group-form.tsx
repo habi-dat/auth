@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
 import { createGroupAction, updateGroupAction } from '@/lib/actions/group-actions'
+import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -66,7 +67,10 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
   type CreateGroupForm = z.infer<typeof createGroupSchema>
   type UpdateGroupForm = z.infer<typeof updateGroupSchema>
 
-  const availableGroups = allGroups.filter((g) => g.id !== group?.id)
+  // groupadmin system group cannot be used as parent or child of another group
+  const availableGroups = allGroups.filter(
+    (g) => g.id !== group?.id && g.slug !== GROUPADMIN_GROUP_SLUG
+  )
 
   const createAction = useAction(createGroupAction, {
     onSuccess: () => {
@@ -109,8 +113,12 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
           id: group.id,
           name: group.name,
           description: group.description,
-          parentGroupIds: group.parentGroups.map((p) => p.parentGroup.id),
-          childGroupIds: group.childGroups.map((c) => c.childGroup.id),
+          parentGroupIds: group.parentGroups
+            .filter((p) => p.parentGroup.slug !== GROUPADMIN_GROUP_SLUG)
+            .map((p) => p.parentGroup.id),
+          childGroupIds: group.childGroups
+            .filter((c) => c.childGroup.slug !== GROUPADMIN_GROUP_SLUG)
+            .map((c) => c.childGroup.id),
         }
       : {
           name: '',
@@ -176,7 +184,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
           {isAdmin && availableGroups.length > 0 && (
             <>
               <GroupSelector
-                groups={allGroups}
+                groups={availableGroups}
                 value={watch('parentGroupIds') || []}
                 onChange={(ids) => setValue('parentGroupIds', ids)}
                 label={t('parentGroups')}
@@ -184,12 +192,12 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
                 searchPlaceholder={t('searchGroups')}
                 emptyText={t('noGroupsFound')}
                 disabled={isLoading}
-                excludeGroupIds={group ? [group.id] : []}
+                excludeGroupIds={[]}
               />
               <p className="text-xs text-muted-foreground -mt-1">{t('parentGroupsHint')}</p>
 
               <GroupSelector
-                groups={allGroups}
+                groups={availableGroups}
                 value={watch('childGroupIds') || []}
                 onChange={(ids) => setValue('childGroupIds', ids)}
                 label={t('childGroups')}
@@ -197,7 +205,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
                 searchPlaceholder={t('searchGroups')}
                 emptyText={t('noGroupsFound')}
                 disabled={isLoading}
-                excludeGroupIds={group ? [group.id] : []}
+                excludeGroupIds={[]}
               />
               <p className="text-xs text-muted-foreground -mt-1">{t('childGroupsHint')}</p>
             </>

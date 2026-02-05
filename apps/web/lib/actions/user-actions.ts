@@ -2,6 +2,11 @@
 
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup, canManageUser } from '@/lib/auth/roles'
+import {
+  addUserToGroupAdmin,
+  removeUserFromGroupAdminIfNoOwnership,
+} from '@/lib/actions/group-actions'
+import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import {
   createSyncEvent,
@@ -59,8 +64,26 @@ export const createUserAction = groupAdminAction
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
 
+    // groupadmin system group cannot be assigned manually (membership is automatic)
+    const groupAdminGroup = await prisma.group.findUnique({
+      where: { slug: GROUPADMIN_GROUP_SLUG },
+      select: { id: true },
+    })
+    const groupAdminId = groupAdminGroup?.id ?? null
+    const memberGroupIds = groupAdminId
+      ? parsedInput.memberGroupIds.filter((id) => id !== groupAdminId)
+      : parsedInput.memberGroupIds
+    const ownerGroupIds =
+      (groupAdminId && parsedInput.ownerGroupIds
+        ? parsedInput.ownerGroupIds.filter((id) => id !== groupAdminId)
+        : parsedInput.ownerGroupIds) ?? []
+
+    if (memberGroupIds.length === 0 && ownerGroupIds.length === 0) {
+      throw new Error('User must belong to at least one group (excluding system groups)')
+    }
+
     // Verify actor can add to all specified groups
-    for (const groupId of parsedInput.memberGroupIds) {
+    for (const groupId of memberGroupIds) {
       if (!canManageGroup(session, groupId)) {
         throw new Error('You cannot add users to this group')
       }
@@ -87,97 +110,101 @@ export const createUserAction = groupAdminAction
     const ldapPasswordSsha = hashPasswordSsha(parsedInput.password)
 
     // Create user with groups and LDAP + Discourse sync events (user + each group for member sync)
-    const { user, ldapSyncEventId, groupSyncEventIds, discourseSyncEventId, discourseGroupSyncEventIds } =
-      await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
-          data: {
-            name: parsedInput.name,
-            username: parsedInput.username,
-            email: parsedInput.email,
-            emailVerified: true,
-            location: parsedInput.location,
-            preferredLanguage: parsedInput.preferredLanguage,
-            storageQuota: parsedInput.storageQuota,
-            ldapUidNumber,
-            primaryGroupId: parsedInput.memberGroupIds[0] ?? parsedInput.ownerGroupIds?.[0] ?? null,
-          },
-        })
-
-        await tx.account.create({
-          data: {
-            userId: newUser.id,
-            accountId: newUser.id,
-            providerId: 'credential',
-            password: hashedPassword,
-            passwordHashType: 'scrypt',
-          },
-        })
-
-        const effectiveMemberGroupIds = [
-          ...new Set([...parsedInput.memberGroupIds, ...(parsedInput.ownerGroupIds ?? [])]),
-        ]
-        if (effectiveMemberGroupIds.length > 0) {
-          await tx.groupMembership.createMany({
-            data: effectiveMemberGroupIds.map((groupId) => ({
-              userId: newUser.id,
-              groupId,
-            })),
-          })
-        }
-
-        if (parsedInput.ownerGroupIds?.length) {
-          await tx.groupOwnership.createMany({
-            data: parsedInput.ownerGroupIds.map((groupId) => ({
-              userId: newUser.id,
-              groupId,
-            })),
-          })
-        }
-
-        const syncEvent = await createSyncEvent(tx, {
-          target: 'LDAP',
-          operation: 'CREATE',
-          entityType: 'USER',
-          entityId: newUser.id,
-          payload: { userId: newUser.id, hashedPassword: ldapPasswordSsha },
-        })
-        const groupSyncEventIds: string[] = []
-        for (const groupId of effectiveMemberGroupIds) {
-          const ev = await createSyncEvent(tx, {
-            target: 'LDAP',
-            operation: 'UPDATE',
-            entityType: 'GROUP',
-            entityId: groupId,
-            payload: { groupId },
-          })
-          groupSyncEventIds.push(ev.id)
-        }
-        const discourseUserEv = await createSyncEvent(tx, {
-          target: 'DISCOURSE',
-          operation: 'CREATE',
-          entityType: 'USER',
-          entityId: newUser.id,
-          payload: { userId: newUser.id },
-        })
-        const discourseGroupSyncEventIds: string[] = []
-        for (const groupId of effectiveMemberGroupIds) {
-          const ev = await createSyncEvent(tx, {
-            target: 'DISCOURSE',
-            operation: 'UPDATE',
-            entityType: 'GROUP',
-            entityId: groupId,
-            payload: { groupId },
-          })
-          discourseGroupSyncEventIds.push(ev.id)
-        }
-        return {
-          user: newUser,
-          ldapSyncEventId: syncEvent.id,
-          groupSyncEventIds,
-          discourseSyncEventId: discourseUserEv.id,
-          discourseGroupSyncEventIds,
-        }
+    const effectiveMemberGroupIds = [...new Set([...memberGroupIds, ...ownerGroupIds])]
+    const {
+      user,
+      ldapSyncEventId,
+      groupSyncEventIds,
+      discourseSyncEventId,
+      discourseGroupSyncEventIds,
+    } = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          name: parsedInput.name,
+          username: parsedInput.username,
+          email: parsedInput.email,
+          emailVerified: true,
+          location: parsedInput.location,
+          preferredLanguage: parsedInput.preferredLanguage,
+          storageQuota: parsedInput.storageQuota,
+          ldapUidNumber,
+          primaryGroupId: memberGroupIds[0] ?? ownerGroupIds[0] ?? null,
+        },
       })
+
+      await tx.account.create({
+        data: {
+          userId: newUser.id,
+          accountId: newUser.id,
+          providerId: 'credential',
+          password: hashedPassword,
+          passwordHashType: 'scrypt',
+        },
+      })
+
+      if (effectiveMemberGroupIds.length > 0) {
+        await tx.groupMembership.createMany({
+          data: effectiveMemberGroupIds.map((groupId) => ({
+            userId: newUser.id,
+            groupId,
+          })),
+        })
+      }
+
+      if (ownerGroupIds.length > 0) {
+        await tx.groupOwnership.createMany({
+          data: ownerGroupIds.map((groupId) => ({
+            userId: newUser.id,
+            groupId,
+          })),
+        })
+        await addUserToGroupAdmin(tx, newUser.id)
+      }
+
+      const syncEvent = await createSyncEvent(tx, {
+        target: 'LDAP',
+        operation: 'CREATE',
+        entityType: 'USER',
+        entityId: newUser.id,
+        payload: { userId: newUser.id, hashedPassword: ldapPasswordSsha },
+      })
+      const groupSyncEventIds: string[] = []
+      for (const groupId of effectiveMemberGroupIds) {
+        const ev = await createSyncEvent(tx, {
+          target: 'LDAP',
+          operation: 'UPDATE',
+          entityType: 'GROUP',
+          entityId: groupId,
+          payload: { groupId },
+        })
+        groupSyncEventIds.push(ev.id)
+      }
+      const discourseUserEv = await createSyncEvent(tx, {
+        target: 'DISCOURSE',
+        operation: 'CREATE',
+        entityType: 'USER',
+        entityId: newUser.id,
+        payload: { userId: newUser.id },
+      })
+      const discourseGroupSyncEventIds: string[] = []
+      for (const groupId of effectiveMemberGroupIds) {
+        const ev = await createSyncEvent(tx, {
+          target: 'DISCOURSE',
+          operation: 'UPDATE',
+          entityType: 'GROUP',
+          entityId: groupId,
+          payload: { groupId },
+        })
+        discourseGroupSyncEventIds.push(ev.id)
+      }
+      return {
+        user: newUser,
+        ldapSyncEventId: syncEvent.id,
+        groupSyncEventIds,
+        discourseSyncEventId: discourseUserEv.id,
+        discourseGroupSyncEventIds,
+      }
+    })
 
     await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
     for (const id of groupSyncEventIds) {
@@ -195,8 +222,8 @@ export const createUserAction = groupAdminAction
       location: user.location ?? undefined,
       preferredLanguage: user.preferredLanguage,
       storageQuota: user.storageQuota,
-      memberGroupIds: [...parsedInput.memberGroupIds],
-      ownerGroupIds: [...(parsedInput.ownerGroupIds ?? [])],
+      memberGroupIds: [...memberGroupIds],
+      ownerGroupIds: [...ownerGroupIds],
     }
     await createAuditLog({
       actorId: session.user.id,
@@ -226,6 +253,23 @@ export const updateUserAction = groupAdminAction
       throw new Error('You do not have permission to update this user')
     }
 
+    // groupadmin system group cannot be assigned or removed manually (membership is automatic)
+    const groupAdminGroup = await prisma.group.findUnique({
+      where: { slug: GROUPADMIN_GROUP_SLUG },
+      select: { id: true },
+    })
+    const groupAdminId = groupAdminGroup?.id ?? null
+    const memberGroupIds = parsedInput.memberGroupIds
+      ? groupAdminId
+        ? parsedInput.memberGroupIds.filter((id) => id !== groupAdminId)
+        : parsedInput.memberGroupIds
+      : undefined
+    const ownerGroupIds = parsedInput.ownerGroupIds
+      ? groupAdminId
+        ? parsedInput.ownerGroupIds.filter((id) => id !== groupAdminId)
+        : parsedInput.ownerGroupIds
+      : undefined
+
     const beforeGroupIds = [
       ...new Set([
         ...existingUser.memberships.map((m) => m.groupId),
@@ -252,12 +296,14 @@ export const updateUserAction = groupAdminAction
       })
 
       let afterGroupIds: string[] | null = null
-      if (parsedInput.memberGroupIds) {
-        afterGroupIds = [
-          ...new Set([...parsedInput.memberGroupIds, ...(parsedInput.ownerGroupIds ?? [])]),
-        ]
+      if (memberGroupIds !== undefined) {
+        afterGroupIds = [...new Set([...memberGroupIds, ...(ownerGroupIds ?? [])])]
+        // Remove only non-system memberships so groupadmin membership (managed automatically) is preserved
         await tx.groupMembership.deleteMany({
-          where: { userId: parsedInput.id },
+          where: {
+            userId: parsedInput.id,
+            ...(groupAdminId ? { groupId: { not: groupAdminId } } : {}),
+          },
         })
         if (afterGroupIds.length > 0) {
           await tx.groupMembership.createMany({
@@ -269,13 +315,13 @@ export const updateUserAction = groupAdminAction
         }
       }
 
-      if (parsedInput.ownerGroupIds) {
+      if (ownerGroupIds !== undefined) {
         await tx.groupOwnership.deleteMany({
           where: { userId: parsedInput.id },
         })
-        if (parsedInput.ownerGroupIds.length > 0) {
+        if (ownerGroupIds.length > 0) {
           await tx.groupOwnership.createMany({
-            data: parsedInput.ownerGroupIds.map((groupId) => ({
+            data: ownerGroupIds.map((groupId) => ({
               userId: parsedInput.id,
               groupId,
             })),
@@ -283,11 +329,13 @@ export const updateUserAction = groupAdminAction
         }
         if (!afterGroupIds) {
           afterGroupIds = [
-            ...new Set([
-              ...existingUser.memberships.map((m) => m.groupId),
-              ...parsedInput.ownerGroupIds,
-            ]),
+            ...new Set([...existingUser.memberships.map((m) => m.groupId), ...ownerGroupIds]),
           ]
+        }
+        // Sync groupadmin system group: remove if no ownerships, add if has ownerships
+        await removeUserFromGroupAdminIfNoOwnership(tx, parsedInput.id)
+        if (ownerGroupIds.length > 0) {
+          await addUserToGroupAdmin(tx, parsedInput.id)
         }
       }
 

@@ -233,6 +233,34 @@ async function importFromLdap(
         }
       }
 
+      // Ensure groupadmin system group exists and sync membership (all users with any GroupOwnership)
+      let groupAdminGroup = await tx.group.findUnique({
+        where: { slug: 'groupadmin' },
+      })
+      if (!groupAdminGroup) {
+        groupAdminGroup = await tx.group.create({
+          data: {
+            slug: 'groupadmin',
+            name: 'Group Admins',
+            description: 'System group: all users who are admin of any group (managed automatically)',
+            isSystem: true,
+          },
+        })
+      }
+      const ownerUserIds = await tx.groupOwnership.findMany({
+        select: { userId: true },
+        distinct: ['userId'],
+      })
+      for (const { userId: uid } of ownerUserIds) {
+        await tx.groupMembership.upsert({
+          where: {
+            userId_groupId: { userId: uid, groupId: groupAdminGroup.id },
+          },
+          create: { userId: uid, groupId: groupAdminGroup.id },
+          update: {},
+        })
+      }
+
       for (const u of ldapUsers) {
         const userId = userDnToId.get(normalizeDn(u.dn))
         if (!userId) continue
@@ -399,6 +427,24 @@ async function main() {
       console.log(`Admin group already exists: ${adminGroup.name} (${adminGroup.slug})`)
     }
 
+    // System group "groupadmin": holds all users who have admin rights to any group (managed automatically)
+    let groupAdminGroup = await prisma.group.findUnique({
+      where: { slug: 'groupadmin' },
+    })
+    if (!groupAdminGroup) {
+      groupAdminGroup = await prisma.group.create({
+        data: {
+          slug: 'groupadmin',
+          name: 'Group Admins',
+          description: 'System group: all users who are admin of any group (managed automatically)',
+          isSystem: true,
+        },
+      })
+      console.log(`Created groupadmin system group: ${groupAdminGroup.name} (${groupAdminGroup.slug})`)
+    } else {
+      console.log(`Groupadmin system group already exists: ${groupAdminGroup.name} (${groupAdminGroup.slug})`)
+    }
+
     let adminUser = await prisma.user.findUnique({
       where: { email: adminEmail },
     })
@@ -446,6 +492,15 @@ async function main() {
           },
         })
 
+        // Admin user is an owner of admin group → add to groupadmin system group
+        await tx.groupMembership.upsert({
+          where: {
+            userId_groupId: { userId: user.id, groupId: groupAdminGroup!.id },
+          },
+          create: { userId: user.id, groupId: groupAdminGroup!.id },
+          update: {},
+        })
+
         return user
       })
 
@@ -477,6 +532,16 @@ async function main() {
           data: { userId: adminUser.id, groupId: adminGroup.id },
         })
         console.log('Added admin user to admin group as owner')
+      }
+      // Ensure admin user is in groupadmin (they are an owner of admin group)
+      if (groupAdminGroup) {
+        await prisma.groupMembership.upsert({
+          where: {
+            userId_groupId: { userId: adminUser.id, groupId: groupAdminGroup.id },
+          },
+          create: { userId: adminUser.id, groupId: groupAdminGroup.id },
+          update: {},
+        })
       }
     }
 
