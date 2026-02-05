@@ -51,6 +51,9 @@ export type UserMinAggregateOutputType = {
   ldapUidNumber: number | null
   ldapSynced: boolean | null
   ldapSyncedAt: Date | null
+  discourseId: string | null
+  discourseSynced: boolean | null
+  discourseSyncedAt: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -70,6 +73,9 @@ export type UserMaxAggregateOutputType = {
   ldapUidNumber: number | null
   ldapSynced: boolean | null
   ldapSyncedAt: Date | null
+  discourseId: string | null
+  discourseSynced: boolean | null
+  discourseSyncedAt: Date | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -89,6 +95,9 @@ export type UserCountAggregateOutputType = {
   ldapUidNumber: number
   ldapSynced: number
   ldapSyncedAt: number
+  discourseId: number
+  discourseSynced: number
+  discourseSyncedAt: number
   _all: number
 }
 
@@ -118,6 +127,9 @@ export type UserMinAggregateInputType = {
   ldapUidNumber?: true
   ldapSynced?: true
   ldapSyncedAt?: true
+  discourseId?: true
+  discourseSynced?: true
+  discourseSyncedAt?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -137,6 +149,9 @@ export type UserMaxAggregateInputType = {
   ldapUidNumber?: true
   ldapSynced?: true
   ldapSyncedAt?: true
+  discourseId?: true
+  discourseSynced?: true
+  discourseSyncedAt?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -156,6 +171,9 @@ export type UserCountAggregateInputType = {
   ldapUidNumber?: true
   ldapSynced?: true
   ldapSyncedAt?: true
+  discourseId?: true
+  discourseSynced?: true
+  discourseSyncedAt?: true
   _all?: true
 }
 
@@ -262,6 +280,9 @@ export type UserGroupByOutputType = {
   ldapUidNumber: number | null
   ldapSynced: boolean
   ldapSyncedAt: Date | null
+  discourseId: string | null
+  discourseSynced: boolean
+  discourseSyncedAt: Date | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -304,6 +325,9 @@ export type UserWhereInput = {
   ldapUidNumber?: Prisma.IntNullableFilter<"User"> | number | null
   ldapSynced?: Prisma.BoolFilter<"User"> | boolean
   ldapSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  discourseId?: Prisma.StringNullableFilter<"User"> | string | null
+  discourseSynced?: Prisma.BoolFilter<"User"> | boolean
+  discourseSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   primaryGroup?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
@@ -330,6 +354,9 @@ export type UserOrderByWithRelationInput = {
   ldapUidNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   ldapSynced?: Prisma.SortOrder
   ldapSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  discourseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  discourseSynced?: Prisma.SortOrder
+  discourseSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   primaryGroup?: Prisma.GroupOrderByWithRelationInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
@@ -345,6 +372,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   username?: string
   ldapDn?: string
   ldapUidNumber?: number
+  discourseId?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -359,6 +387,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   primaryGroupId?: Prisma.StringNullableFilter<"User"> | string | null
   ldapSynced?: Prisma.BoolFilter<"User"> | boolean
   ldapSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  discourseSynced?: Prisma.BoolFilter<"User"> | boolean
+  discourseSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   primaryGroup?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
@@ -366,7 +396,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   ownerships?: Prisma.GroupOwnershipListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   invitesCreated?: Prisma.InviteListRelationFilter
-}, "id" | "email" | "username" | "ldapDn" | "ldapUidNumber">
+}, "id" | "email" | "username" | "ldapDn" | "ldapUidNumber" | "discourseId">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -385,6 +415,9 @@ export type UserOrderByWithAggregationInput = {
   ldapUidNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   ldapSynced?: Prisma.SortOrder
   ldapSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  discourseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  discourseSynced?: Prisma.SortOrder
+  discourseSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -412,6 +445,9 @@ export type UserScalarWhereWithAggregatesInput = {
   ldapUidNumber?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
   ldapSynced?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   ldapSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  discourseId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  discourseSynced?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  discourseSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
 export type UserCreateInput = {
@@ -430,6 +466,9 @@ export type UserCreateInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -456,6 +495,9 @@ export type UserUncheckedCreateInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
@@ -480,6 +522,9 @@ export type UserUpdateInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -506,6 +551,9 @@ export type UserUncheckedUpdateInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -531,6 +579,9 @@ export type UserCreateManyInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -549,6 +600,9 @@ export type UserUpdateManyMutationInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -568,6 +622,9 @@ export type UserUncheckedUpdateManyInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -587,6 +644,9 @@ export type UserCountOrderByAggregateInput = {
   ldapUidNumber?: Prisma.SortOrder
   ldapSynced?: Prisma.SortOrder
   ldapSyncedAt?: Prisma.SortOrder
+  discourseId?: Prisma.SortOrder
+  discourseSynced?: Prisma.SortOrder
+  discourseSyncedAt?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -610,6 +670,9 @@ export type UserMaxOrderByAggregateInput = {
   ldapUidNumber?: Prisma.SortOrder
   ldapSynced?: Prisma.SortOrder
   ldapSyncedAt?: Prisma.SortOrder
+  discourseId?: Prisma.SortOrder
+  discourseSynced?: Prisma.SortOrder
+  discourseSyncedAt?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -629,6 +692,9 @@ export type UserMinOrderByAggregateInput = {
   ldapUidNumber?: Prisma.SortOrder
   ldapSynced?: Prisma.SortOrder
   ldapSyncedAt?: Prisma.SortOrder
+  discourseId?: Prisma.SortOrder
+  discourseSynced?: Prisma.SortOrder
+  discourseSyncedAt?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
@@ -827,6 +893,9 @@ export type UserCreateWithoutSessionsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipCreateNestedManyWithoutUserInput
@@ -852,6 +921,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
   ownerships?: Prisma.GroupOwnershipUncheckedCreateNestedManyWithoutUserInput
@@ -891,6 +963,9 @@ export type UserUpdateWithoutSessionsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUpdateManyWithoutUserNestedInput
@@ -916,6 +991,9 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
   ownerships?: Prisma.GroupOwnershipUncheckedUpdateManyWithoutUserNestedInput
@@ -939,6 +1017,9 @@ export type UserCreateWithoutAccountsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipCreateNestedManyWithoutUserInput
@@ -964,6 +1045,9 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
   ownerships?: Prisma.GroupOwnershipUncheckedCreateNestedManyWithoutUserInput
@@ -1003,6 +1087,9 @@ export type UserUpdateWithoutAccountsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUpdateManyWithoutUserNestedInput
@@ -1028,6 +1115,9 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
   ownerships?: Prisma.GroupOwnershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1051,6 +1141,9 @@ export type UserCreateWithoutPrimaryGroupInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipCreateNestedManyWithoutUserInput
@@ -1075,6 +1168,9 @@ export type UserUncheckedCreateWithoutPrimaryGroupInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1129,6 +1225,9 @@ export type UserScalarWhereInput = {
   ldapUidNumber?: Prisma.IntNullableFilter<"User"> | number | null
   ldapSynced?: Prisma.BoolFilter<"User"> | boolean
   ldapSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  discourseId?: Prisma.StringNullableFilter<"User"> | string | null
+  discourseSynced?: Prisma.BoolFilter<"User"> | boolean
+  discourseSyncedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -1147,6 +1246,9 @@ export type UserCreateWithoutMembershipsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1172,6 +1274,9 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   ownerships?: Prisma.GroupOwnershipUncheckedCreateNestedManyWithoutUserInput
@@ -1211,6 +1316,9 @@ export type UserUpdateWithoutMembershipsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1236,6 +1344,9 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   ownerships?: Prisma.GroupOwnershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1259,6 +1370,9 @@ export type UserCreateWithoutOwnershipsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1284,6 +1398,9 @@ export type UserUncheckedCreateWithoutOwnershipsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1323,6 +1440,9 @@ export type UserUpdateWithoutOwnershipsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1348,6 +1468,9 @@ export type UserUncheckedUpdateWithoutOwnershipsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1371,6 +1494,9 @@ export type UserCreateWithoutInvitesCreatedInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1396,6 +1522,9 @@ export type UserUncheckedCreateWithoutInvitesCreatedInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1435,6 +1564,9 @@ export type UserUpdateWithoutInvitesCreatedInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1460,6 +1592,9 @@ export type UserUncheckedUpdateWithoutInvitesCreatedInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1483,6 +1618,9 @@ export type UserCreateWithoutAuditLogsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   primaryGroup?: Prisma.GroupCreateNestedOneWithoutPrimaryUsersInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1508,6 +1646,9 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.GroupMembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1547,6 +1688,9 @@ export type UserUpdateWithoutAuditLogsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   primaryGroup?: Prisma.GroupUpdateOneWithoutPrimaryUsersNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1572,6 +1716,9 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1595,6 +1742,9 @@ export type UserCreateManyPrimaryGroupInput = {
   ldapUidNumber?: number | null
   ldapSynced?: boolean
   ldapSyncedAt?: Date | string | null
+  discourseId?: string | null
+  discourseSynced?: boolean
+  discourseSyncedAt?: Date | string | null
 }
 
 export type UserUpdateWithoutPrimaryGroupInput = {
@@ -1613,6 +1763,9 @@ export type UserUpdateWithoutPrimaryGroupInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUpdateManyWithoutUserNestedInput
@@ -1637,6 +1790,9 @@ export type UserUncheckedUpdateWithoutPrimaryGroupInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1661,6 +1817,9 @@ export type UserUncheckedUpdateManyWithoutPrimaryGroupInput = {
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ldapSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ldapSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  discourseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discourseSynced?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  discourseSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1756,6 +1915,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   ldapUidNumber?: boolean
   ldapSynced?: boolean
   ldapSyncedAt?: boolean
+  discourseId?: boolean
+  discourseSynced?: boolean
+  discourseSyncedAt?: boolean
   primaryGroup?: boolean | Prisma.User$primaryGroupArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
@@ -1783,6 +1945,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   ldapUidNumber?: boolean
   ldapSynced?: boolean
   ldapSyncedAt?: boolean
+  discourseId?: boolean
+  discourseSynced?: boolean
+  discourseSyncedAt?: boolean
   primaryGroup?: boolean | Prisma.User$primaryGroupArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1803,6 +1968,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   ldapUidNumber?: boolean
   ldapSynced?: boolean
   ldapSyncedAt?: boolean
+  discourseId?: boolean
+  discourseSynced?: boolean
+  discourseSyncedAt?: boolean
   primaryGroup?: boolean | Prisma.User$primaryGroupArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1823,9 +1991,12 @@ export type UserSelectScalar = {
   ldapUidNumber?: boolean
   ldapSynced?: boolean
   ldapSyncedAt?: boolean
+  discourseId?: boolean
+  discourseSynced?: boolean
+  discourseSyncedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "name" | "username" | "image" | "createdAt" | "updatedAt" | "location" | "preferredLanguage" | "storageQuota" | "primaryGroupId" | "ldapDn" | "ldapUidNumber" | "ldapSynced" | "ldapSyncedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "name" | "username" | "image" | "createdAt" | "updatedAt" | "location" | "preferredLanguage" | "storageQuota" | "primaryGroupId" | "ldapDn" | "ldapUidNumber" | "ldapSynced" | "ldapSyncedAt" | "discourseId" | "discourseSynced" | "discourseSyncedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   primaryGroup?: boolean | Prisma.User$primaryGroupArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -1871,6 +2042,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     ldapUidNumber: number | null
     ldapSynced: boolean
     ldapSyncedAt: Date | null
+    discourseId: string | null
+    discourseSynced: boolean
+    discourseSyncedAt: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -2317,6 +2491,9 @@ export interface UserFieldRefs {
   readonly ldapUidNumber: Prisma.FieldRef<"User", 'Int'>
   readonly ldapSynced: Prisma.FieldRef<"User", 'Boolean'>
   readonly ldapSyncedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly discourseId: Prisma.FieldRef<"User", 'String'>
+  readonly discourseSynced: Prisma.FieldRef<"User", 'Boolean'>
+  readonly discourseSyncedAt: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 

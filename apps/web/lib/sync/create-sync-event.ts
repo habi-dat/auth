@@ -1,12 +1,14 @@
 import type { PrismaClient } from '@habidat/db'
 import type { SyncTarget } from '@habidat/db'
-import { queueLdapSync } from '@habidat/sync'
+import { queueDiscourseSync, queueLdapSync } from '@habidat/sync'
 
 export type SyncEventPayload =
   | { userId: string; hashedPassword?: string }
-  | { groupId: string }
+  | { groupId: string; oldSlug?: string }
+  | { groupId: string; discourseId?: number; slug: string; oldSlug?: string }
   | { ldapDn: string; username: string }
   | { ldapDn: string; slug: string }
+  | { username: string }
 
 export interface CreateSyncEventParams {
   target: SyncTarget
@@ -50,5 +52,18 @@ export async function createSyncEvent(
 export async function dispatchLdapSyncAfterCommit(syncEventId: string, target: SyncTarget): Promise<void> {
   if (target === 'LDAP') {
     await queueLdapSync(syncEventId)
+  }
+}
+
+/**
+ * Call after the transaction has committed to dispatch the Discourse sync job.
+ * Only queues when target is DISCOURSE.
+ */
+export async function dispatchDiscourseSyncAfterCommit(
+  syncEventId: string,
+  target: SyncTarget
+): Promise<void> {
+  if (target === 'DISCOURSE') {
+    await queueDiscourseSync(syncEventId)
   }
 }

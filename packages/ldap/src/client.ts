@@ -68,6 +68,24 @@ export class LdapService {
     }
   }
 
+  /** Find user by DN (base search). Use when ldapDn is known so lookup works after username change. Returns null if not found. */
+  async findUserByDn(dn: string): Promise<LdapUserEntry | null> {
+    const client = this.ensureConnected()
+    try {
+      const results = await client.search(dn, {
+        scope: 'base',
+        filter: '(objectClass=*)',
+        attributes: ['dn', 'uid', 'cn', 'mail', 'l', 'preferredLanguage', 'description', 'uidNumber', 'userPassword'],
+        sizeLimit: 1,
+      })
+      if (!results || results.length === 0) return null
+      return mapSearchEntryToUser(results[0] as Record<string, unknown>)
+    } catch (err) {
+      if (isNoSuchObjectError(err)) return null
+      throw err
+    }
+  }
+
   /** Find group by cn (slug) under groupsDn. Returns null if not found or base DN missing. */
   async findGroupBySlug(slug: string): Promise<LdapGroupEntry | null> {
     const client = this.ensureConnected()

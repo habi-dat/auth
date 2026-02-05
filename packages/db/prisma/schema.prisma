@@ -36,6 +36,11 @@ model User {
   ldapSynced        Boolean   @default(false)
   ldapSyncedAt      DateTime?
 
+  // Discourse sync fields (external_id for sync_sso; set from username on first sync, then kept)
+  discourseId       String?   @unique
+  discourseSynced   Boolean   @default(false)
+  discourseSyncedAt DateTime?
+
   // Relations
   sessions          Session[]
   accounts          Account[]
@@ -47,6 +52,7 @@ model User {
   @@index([email])
   @@index([username])
   @@index([ldapDn])
+  @@index([discourseId])
 }
 
 model Session {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@habidat/db": "workspace:*",
+    "@habidat/discourse": "workspace:*",
     "@habidat/env": "workspace:*",
     "@habidat/ldap": "workspace:*",
     "@habidat/sync": "workspace:*",

@@ -1958,7 +1958,10 @@ export const UserScalarFieldEnum = {
   ldapDn: 'ldapDn',
   ldapUidNumber: 'ldapUidNumber',
   ldapSynced: 'ldapSynced',
-  ldapSyncedAt: 'ldapSyncedAt'
+  ldapSyncedAt: 'ldapSyncedAt',
+  discourseId: 'discourseId',
+  discourseSynced: 'discourseSynced',
+  discourseSyncedAt: 'discourseSyncedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]

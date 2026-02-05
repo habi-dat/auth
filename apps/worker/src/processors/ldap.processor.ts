@@ -124,7 +124,9 @@ async function handleSyncUser(
     user.ldapUidNumber = ldapUidNumber
   }
 
-  const ldapUser = await ldap.findUserByUsername(user.username)
+  const ldapUser = user.ldapDn
+    ? await ldap.findUserByDn(user.ldapDn)
+    : await ldap.findUserByUsername(user.username)
   const userPassword = payload.hashedPassword
 
   if (!ldapUser) {

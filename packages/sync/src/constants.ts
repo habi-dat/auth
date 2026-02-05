@@ -1,10 +1,12 @@
 export const QUEUE_NAMES = {
   LDAP_SYNC: 'ldap-sync',
+  DISCOURSE_SYNC: 'discourse-sync',
 } as const
 
-/** Single job type: worker loads SyncEvent by id and processes based on event target/operation/entityType */
+/** Single job type per queue: worker loads SyncEvent by id and processes based on event target/operation/entityType */
 export const JOB_NAMES = {
   LDAP_SYNC: 'ldap:sync',
+  DISCOURSE_SYNC: 'discourse:sync',
 } as const
 
 export const defaultJobOptions = {
