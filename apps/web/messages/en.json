@@ -1,4 +1,10 @@
 {
+  "header": {
+    "profile": "Profile",
+    "editProfile": "Edit profile",
+    "signOut": "Sign out",
+    "colorMode": "Color mode"
+  },
   "emailTemplates": {
     "invite": {
       "subject": "Invitation to {platformName}",
@@ -41,6 +47,11 @@
       "supportEmailPlaceholder": "e.g. support@example.org",
       "loginPageText": "Login page text",
       "loginPageTextPlaceholder": "Optional welcome text (e.g. usage notes)",
+      "defaultTheme": "Default color scheme",
+      "theme1": "Red / Black",
+      "theme2": "Purple / Green",
+      "theme3": "Green / Earth",
+      "theme4": "Blue / Grey",
       "save": "Save",
       "saved": "Saved"
     },

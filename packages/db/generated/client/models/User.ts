@@ -45,6 +45,8 @@ export type UserMinAggregateOutputType = {
   updatedAt: Date | null
   location: string | null
   preferredLanguage: string | null
+  preferredTheme: string | null
+  preferredColorMode: string | null
   storageQuota: string | null
   primaryGroupId: string | null
   ldapDn: string | null
@@ -67,6 +69,8 @@ export type UserMaxAggregateOutputType = {
   updatedAt: Date | null
   location: string | null
   preferredLanguage: string | null
+  preferredTheme: string | null
+  preferredColorMode: string | null
   storageQuota: string | null
   primaryGroupId: string | null
   ldapDn: string | null
@@ -89,6 +93,8 @@ export type UserCountAggregateOutputType = {
   updatedAt: number
   location: number
   preferredLanguage: number
+  preferredTheme: number
+  preferredColorMode: number
   storageQuota: number
   primaryGroupId: number
   ldapDn: number
@@ -121,6 +127,8 @@ export type UserMinAggregateInputType = {
   updatedAt?: true
   location?: true
   preferredLanguage?: true
+  preferredTheme?: true
+  preferredColorMode?: true
   storageQuota?: true
   primaryGroupId?: true
   ldapDn?: true
@@ -143,6 +151,8 @@ export type UserMaxAggregateInputType = {
   updatedAt?: true
   location?: true
   preferredLanguage?: true
+  preferredTheme?: true
+  preferredColorMode?: true
   storageQuota?: true
   primaryGroupId?: true
   ldapDn?: true
@@ -165,6 +175,8 @@ export type UserCountAggregateInputType = {
   updatedAt?: true
   location?: true
   preferredLanguage?: true
+  preferredTheme?: true
+  preferredColorMode?: true
   storageQuota?: true
   primaryGroupId?: true
   ldapDn?: true
@@ -274,6 +286,8 @@ export type UserGroupByOutputType = {
   updatedAt: Date
   location: string | null
   preferredLanguage: string
+  preferredTheme: string | null
+  preferredColorMode: string | null
   storageQuota: string
   primaryGroupId: string | null
   ldapDn: string | null
@@ -319,6 +333,8 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   location?: Prisma.StringNullableFilter<"User"> | string | null
   preferredLanguage?: Prisma.StringFilter<"User"> | string
+  preferredTheme?: Prisma.StringNullableFilter<"User"> | string | null
+  preferredColorMode?: Prisma.StringNullableFilter<"User"> | string | null
   storageQuota?: Prisma.StringFilter<"User"> | string
   primaryGroupId?: Prisma.StringNullableFilter<"User"> | string | null
   ldapDn?: Prisma.StringNullableFilter<"User"> | string | null
@@ -348,6 +364,8 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   preferredLanguage?: Prisma.SortOrder
+  preferredTheme?: Prisma.SortOrderInput | Prisma.SortOrder
+  preferredColorMode?: Prisma.SortOrderInput | Prisma.SortOrder
   storageQuota?: Prisma.SortOrder
   primaryGroupId?: Prisma.SortOrderInput | Prisma.SortOrder
   ldapDn?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -383,6 +401,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   location?: Prisma.StringNullableFilter<"User"> | string | null
   preferredLanguage?: Prisma.StringFilter<"User"> | string
+  preferredTheme?: Prisma.StringNullableFilter<"User"> | string | null
+  preferredColorMode?: Prisma.StringNullableFilter<"User"> | string | null
   storageQuota?: Prisma.StringFilter<"User"> | string
   primaryGroupId?: Prisma.StringNullableFilter<"User"> | string | null
   ldapSynced?: Prisma.BoolFilter<"User"> | boolean
@@ -409,6 +429,8 @@ export type UserOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   preferredLanguage?: Prisma.SortOrder
+  preferredTheme?: Prisma.SortOrderInput | Prisma.SortOrder
+  preferredColorMode?: Prisma.SortOrderInput | Prisma.SortOrder
   storageQuota?: Prisma.SortOrder
   primaryGroupId?: Prisma.SortOrderInput | Prisma.SortOrder
   ldapDn?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -439,6 +461,8 @@ export type UserScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   location?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   preferredLanguage?: Prisma.StringWithAggregatesFilter<"User"> | string
+  preferredTheme?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  preferredColorMode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   storageQuota?: Prisma.StringWithAggregatesFilter<"User"> | string
   primaryGroupId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   ldapDn?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -461,6 +485,8 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -489,6 +515,8 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -517,6 +545,8 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -545,6 +575,8 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -573,6 +605,8 @@ export type UserCreateManyInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -595,6 +629,8 @@ export type UserUpdateManyMutationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -616,6 +652,8 @@ export type UserUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -638,6 +676,8 @@ export type UserCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   location?: Prisma.SortOrder
   preferredLanguage?: Prisma.SortOrder
+  preferredTheme?: Prisma.SortOrder
+  preferredColorMode?: Prisma.SortOrder
   storageQuota?: Prisma.SortOrder
   primaryGroupId?: Prisma.SortOrder
   ldapDn?: Prisma.SortOrder
@@ -664,6 +704,8 @@ export type UserMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   location?: Prisma.SortOrder
   preferredLanguage?: Prisma.SortOrder
+  preferredTheme?: Prisma.SortOrder
+  preferredColorMode?: Prisma.SortOrder
   storageQuota?: Prisma.SortOrder
   primaryGroupId?: Prisma.SortOrder
   ldapDn?: Prisma.SortOrder
@@ -686,6 +728,8 @@ export type UserMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   location?: Prisma.SortOrder
   preferredLanguage?: Prisma.SortOrder
+  preferredTheme?: Prisma.SortOrder
+  preferredColorMode?: Prisma.SortOrder
   storageQuota?: Prisma.SortOrder
   primaryGroupId?: Prisma.SortOrder
   ldapDn?: Prisma.SortOrder
@@ -888,6 +932,8 @@ export type UserCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -915,6 +961,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -958,6 +1006,8 @@ export type UserUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -985,6 +1035,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1012,6 +1064,8 @@ export type UserCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1039,6 +1093,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -1082,6 +1138,8 @@ export type UserUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1109,6 +1167,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1136,6 +1196,8 @@ export type UserCreateWithoutPrimaryGroupInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1163,6 +1225,8 @@ export type UserUncheckedCreateWithoutPrimaryGroupInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1219,6 +1283,8 @@ export type UserScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   location?: Prisma.StringNullableFilter<"User"> | string | null
   preferredLanguage?: Prisma.StringFilter<"User"> | string
+  preferredTheme?: Prisma.StringNullableFilter<"User"> | string | null
+  preferredColorMode?: Prisma.StringNullableFilter<"User"> | string | null
   storageQuota?: Prisma.StringFilter<"User"> | string
   primaryGroupId?: Prisma.StringNullableFilter<"User"> | string | null
   ldapDn?: Prisma.StringNullableFilter<"User"> | string | null
@@ -1241,6 +1307,8 @@ export type UserCreateWithoutMembershipsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1268,6 +1336,8 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -1311,6 +1381,8 @@ export type UserUpdateWithoutMembershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1338,6 +1410,8 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1365,6 +1439,8 @@ export type UserCreateWithoutOwnershipsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1392,6 +1468,8 @@ export type UserUncheckedCreateWithoutOwnershipsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -1435,6 +1513,8 @@ export type UserUpdateWithoutOwnershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1462,6 +1542,8 @@ export type UserUncheckedUpdateWithoutOwnershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1489,6 +1571,8 @@ export type UserCreateWithoutInvitesCreatedInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1516,6 +1600,8 @@ export type UserUncheckedCreateWithoutInvitesCreatedInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -1559,6 +1645,8 @@ export type UserUpdateWithoutInvitesCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1586,6 +1674,8 @@ export type UserUncheckedUpdateWithoutInvitesCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1613,6 +1703,8 @@ export type UserCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1640,6 +1732,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   primaryGroupId?: string | null
   ldapDn?: string | null
@@ -1683,6 +1777,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1710,6 +1806,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   primaryGroupId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1737,6 +1835,8 @@ export type UserCreateManyPrimaryGroupInput = {
   updatedAt?: Date | string
   location?: string | null
   preferredLanguage?: string
+  preferredTheme?: string | null
+  preferredColorMode?: string | null
   storageQuota?: string
   ldapDn?: string | null
   ldapUidNumber?: number | null
@@ -1758,6 +1858,8 @@ export type UserUpdateWithoutPrimaryGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1785,6 +1887,8 @@ export type UserUncheckedUpdateWithoutPrimaryGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1812,6 +1916,8 @@ export type UserUncheckedUpdateManyWithoutPrimaryGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  preferredTheme?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredColorMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageQuota?: Prisma.StringFieldUpdateOperationsInput | string
   ldapDn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ldapUidNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1909,6 +2015,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   location?: boolean
   preferredLanguage?: boolean
+  preferredTheme?: boolean
+  preferredColorMode?: boolean
   storageQuota?: boolean
   primaryGroupId?: boolean
   ldapDn?: boolean
@@ -1939,6 +2047,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedAt?: boolean
   location?: boolean
   preferredLanguage?: boolean
+  preferredTheme?: boolean
+  preferredColorMode?: boolean
   storageQuota?: boolean
   primaryGroupId?: boolean
   ldapDn?: boolean
@@ -1962,6 +2072,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedAt?: boolean
   location?: boolean
   preferredLanguage?: boolean
+  preferredTheme?: boolean
+  preferredColorMode?: boolean
   storageQuota?: boolean
   primaryGroupId?: boolean
   ldapDn?: boolean
@@ -1985,6 +2097,8 @@ export type UserSelectScalar = {
   updatedAt?: boolean
   location?: boolean
   preferredLanguage?: boolean
+  preferredTheme?: boolean
+  preferredColorMode?: boolean
   storageQuota?: boolean
   primaryGroupId?: boolean
   ldapDn?: boolean
@@ -1996,7 +2110,7 @@ export type UserSelectScalar = {
   discourseSyncedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "name" | "username" | "image" | "createdAt" | "updatedAt" | "location" | "preferredLanguage" | "storageQuota" | "primaryGroupId" | "ldapDn" | "ldapUidNumber" | "ldapSynced" | "ldapSyncedAt" | "discourseId" | "discourseSynced" | "discourseSyncedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "name" | "username" | "image" | "createdAt" | "updatedAt" | "location" | "preferredLanguage" | "preferredTheme" | "preferredColorMode" | "storageQuota" | "primaryGroupId" | "ldapDn" | "ldapUidNumber" | "ldapSynced" | "ldapSyncedAt" | "discourseId" | "discourseSynced" | "discourseSyncedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   primaryGroup?: boolean | Prisma.User$primaryGroupArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -2036,6 +2150,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     updatedAt: Date
     location: string | null
     preferredLanguage: string
+    preferredTheme: string | null
+    preferredColorMode: string | null
     storageQuota: string
     primaryGroupId: string | null
     ldapDn: string | null
@@ -2485,6 +2601,8 @@ export interface UserFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly location: Prisma.FieldRef<"User", 'String'>
   readonly preferredLanguage: Prisma.FieldRef<"User", 'String'>
+  readonly preferredTheme: Prisma.FieldRef<"User", 'String'>
+  readonly preferredColorMode: Prisma.FieldRef<"User", 'String'>
   readonly storageQuota: Prisma.FieldRef<"User", 'String'>
   readonly primaryGroupId: Prisma.FieldRef<"User", 'String'>
   readonly ldapDn: Prisma.FieldRef<"User", 'String'>

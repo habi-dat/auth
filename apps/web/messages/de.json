@@ -114,6 +114,15 @@
     "selectLanguage": "Sprache wählen",
     "locationPlaceholder": "z.B. Wien, Österreich",
     "emailNotEditable": "Die E-Mail-Adresse kann hier nicht geändert werden. Ein separater Vorgang zum Ändern der E-Mail wird später angeboten.",
+    "preferredTheme": "Farbschema",
+    "preferredColorMode": "Hell / Dunkel",
+    "theme1": "Rot / Schwarz",
+    "theme2": "Lila / Grün",
+    "theme3": "Grün / Erde",
+    "theme4": "Blau / Grau",
+    "colorModeLight": "Hell",
+    "colorModeDark": "Dunkel",
+    "colorModeSystem": "System",
     "updated": "Profil aktualisiert",
     "updatedDescription": "Ihre Änderungen wurden gespeichert.",
     "updateFailed": "Das Profil konnte nicht aktualisiert werden."
@@ -216,6 +225,11 @@
       "supportEmailPlaceholder": "z. B. support@example.org",
       "loginPageText": "Text auf der Anmeldeseite",
       "loginPageTextPlaceholder": "Optionaler Willkommenstext (z. B. Hinweise zur Nutzung)",
+      "defaultTheme": "Standard-Farbschema",
+      "theme1": "Rot / Schwarz",
+      "theme2": "Lila / Grün",
+      "theme3": "Grün / Erde",
+      "theme4": "Blau / Grau",
       "save": "Speichern",
       "saved": "Gespeichert"
     },
@@ -255,7 +269,8 @@
   "header": {
     "profile": "Profil",
     "editProfile": "Profil bearbeiten",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "colorMode": "Farbschema"
   },
   "users": {
     "title": "Benutzer",

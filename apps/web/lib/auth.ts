@@ -48,6 +48,14 @@ export const auth = betterAuth({
         required: false,
         defaultValue: 'de',
       },
+      preferredTheme: {
+        type: 'string',
+        required: false,
+      },
+      preferredColorMode: {
+        type: 'string',
+        required: false,
+      },
       storageQuota: {
         type: 'string',
         required: false,

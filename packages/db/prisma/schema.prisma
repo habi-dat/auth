@@ -22,9 +22,11 @@ model User {
   updatedAt         DateTime  @updatedAt
 
   // Profile fields
-  location          String?
-  preferredLanguage String    @default("de")
-  storageQuota      String    @default("1 GB")
+  location            String?
+  preferredLanguage   String    @default("de")
+  preferredTheme      String?   // "1" | "2" | "3"
+  preferredColorMode  String?   // "light" | "dark" | "system"
+  storageQuota        String    @default("1 GB")
 
   // Primary affiliation
   primaryGroupId    String?

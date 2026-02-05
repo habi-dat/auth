@@ -3,6 +3,13 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   updateGeneralSettingsAction,
@@ -29,6 +36,11 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [logoVersion, setLogoVersion] = useState(0)
   const [supportEmail, setSupportEmail] = useState(initialSettings.supportEmail ?? '')
   const [loginPageText, setLoginPageText] = useState(initialSettings.loginPageText ?? '')
+  const [defaultTheme, setDefaultTheme] = useState(
+    initialSettings.defaultTheme && ['1', '2', '3', '4'].includes(initialSettings.defaultTheme)
+      ? initialSettings.defaultTheme
+      : '1'
+  )
   const [isPending, setIsPending] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
@@ -39,6 +51,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
       platformName: platformName.trim() || undefined,
       supportEmail: supportEmail.trim() || undefined,
       loginPageText: loginPageText.trim() || undefined,
+      defaultTheme: defaultTheme as '1' | '2' | '3' | '4',
     })
     setIsPending(false)
     if (result?.data?.success) {
@@ -179,6 +192,20 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
           maxLength={1000}
           className="resize-y"
         />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="defaultTheme">{t('defaultTheme')}</Label>
+        <Select value={defaultTheme} onValueChange={(v) => setDefaultTheme(v)}>
+          <SelectTrigger id="defaultTheme">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">{t('theme1')}</SelectItem>
+            <SelectItem value="2">{t('theme2')}</SelectItem>
+            <SelectItem value="3">{t('theme3')}</SelectItem>
+            <SelectItem value="4">{t('theme4')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <Button type="submit" disabled={isPending}>
         {isPending ? '…' : t('save')}

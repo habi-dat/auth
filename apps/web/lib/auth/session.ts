@@ -12,6 +12,8 @@ export type SessionUser = {
   image: string | null
   location: string | null
   preferredLanguage: string
+  preferredTheme: string | null
+  preferredColorMode: string | null
   storageQuota: string
   primaryGroupId: string | null
   ldapDn: string | null
@@ -34,6 +36,19 @@ export const getSession = cache(async () => {
   })
   return session
 })
+
+/** Theme preferences from DB for the current user (used by root layout so theme reflects saved profile). */
+export const getCurrentUserThemePreferences = cache(
+  async (): Promise<{ preferredTheme: string | null; preferredColorMode: string | null } | null> => {
+    const session = await getSession()
+    if (!session?.user?.id) return null
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredTheme: true, preferredColorMode: true },
+    })
+    return user ? { preferredTheme: user.preferredTheme, preferredColorMode: user.preferredColorMode } : null
+  }
+)
 
 // Get current user or redirect to login
 export async function requireUser(): Promise<SessionUser> {

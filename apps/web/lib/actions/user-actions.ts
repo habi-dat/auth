@@ -48,6 +48,8 @@ const updateProfileSchema = z.object({
   name: z.string().min(2),
   location: z.string().optional().nullable(),
   preferredLanguage: z.string(),
+  preferredTheme: z.enum(['1', '2', '3', '4']).optional().nullable(),
+  preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
   primaryGroupId: z.string().optional().nullable(),
 })
 
@@ -397,6 +399,8 @@ export const updateProfileAction = userAction
         name: parsedInput.name,
         location: parsedInput.location,
         preferredLanguage: parsedInput.preferredLanguage,
+        preferredTheme: parsedInput.preferredTheme,
+        preferredColorMode: parsedInput.preferredColorMode,
         primaryGroupId: parsedInput.primaryGroupId,
       },
     })
@@ -405,12 +409,16 @@ export const updateProfileAction = userAction
       name: oldUser.name,
       location: oldUser.location ?? undefined,
       preferredLanguage: oldUser.preferredLanguage,
+      preferredTheme: oldUser.preferredTheme ?? undefined,
+      preferredColorMode: oldUser.preferredColorMode ?? undefined,
       primaryGroupId: oldUser.primaryGroupId ?? undefined,
     }
     const newValue = {
       name: user.name,
       location: user.location ?? undefined,
       preferredLanguage: user.preferredLanguage,
+      preferredTheme: user.preferredTheme ?? undefined,
+      preferredColorMode: user.preferredColorMode ?? undefined,
       primaryGroupId: user.primaryGroupId ?? undefined,
     }
     await createAuditLog({

@@ -8,13 +8,19 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { updateProfileAction } from '@/lib/actions/user-actions'
 import { signOut } from '@/lib/auth-client'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAction } from 'next-safe-action/hooks'
 
 interface HeaderProps {
   user: {
@@ -22,12 +28,33 @@ interface HeaderProps {
     name: string
     email: string
     image?: string | null
+    preferredTheme?: string | null
+    preferredColorMode?: string | null
+    primaryGroupId?: string | null
+    preferredLanguage?: string
   }
 }
 
 export function Header({ user }: HeaderProps) {
   const t = useTranslations('header')
+  const tProfile = useTranslations('profile')
   const router = useRouter()
+  const { setTheme, resolvedTheme } = useTheme()
+  const { execute: executeUpdateColorMode } = useAction(updateProfileAction, {
+    onSuccess: () => router.refresh(),
+  })
+
+  const handleColorMode = (mode: 'light' | 'dark' | 'system') => {
+    setTheme(mode === 'system' ? 'system' : mode)
+    executeUpdateColorMode({
+      name: user.name,
+      location: null,
+      preferredLanguage: user.preferredLanguage ?? 'de',
+      preferredTheme: user.preferredTheme ?? null,
+      preferredColorMode: mode,
+      primaryGroupId: user.primaryGroupId ?? null,
+    })
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -62,6 +89,29 @@ export function Header({ user }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                {resolvedTheme === 'dark' ? (
+                  <Moon className="mr-2 h-4 w-4" />
+                ) : (
+                  <Sun className="mr-2 h-4 w-4" />
+                )}
+                <span>{t('colorMode')}</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => handleColorMode('light')}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  {tProfile('colorModeLight')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleColorMode('dark')}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  {tProfile('colorModeDark')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleColorMode('system')}>
+                  {tProfile('colorModeSystem')}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuItem asChild>
               <Link href="/" className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
