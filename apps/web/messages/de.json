@@ -147,6 +147,22 @@
     "noChanges": "Keine Feldänderungen erfasst.",
     "metadata": "Metadaten"
   },
+  "sync": {
+    "title": "Sync-Status",
+    "description": "Status der Synchronisation mit LDAP und Discourse",
+    "noEvents": "Keine Sync-Einträge vorhanden.",
+    "createdAt": "Erstellt",
+    "target": "Ziel",
+    "operation": "Aktion",
+    "entityType": "Typ",
+    "entityId": "Objekt",
+    "status": "Status",
+    "attempts": "Versuche",
+    "lastError": "Fehler",
+    "detailsTitle": "Sync-Details",
+    "payload": "Payload",
+    "processedAt": "Verarbeitet"
+  },
   "sidebar": {
     "brand": "habidat",
     "nav": {
@@ -156,7 +172,8 @@
       "invites": "Einladungen",
       "apps": "Apps",
       "settings": "Einstellungen",
-      "audit": "Protokoll"
+      "audit": "Protokoll",
+      "sync": "Sync"
     }
   },
   "header": {

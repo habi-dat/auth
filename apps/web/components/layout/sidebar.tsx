@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { FileText, FolderTree, History, Mail, Settings, User, Users } from 'lucide-react'
+import { FileText, FolderTree, History, Mail, RefreshCw, Settings, User, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -23,6 +23,7 @@ export function Sidebar({ isAdmin = false, isGroupAdmin = false }: SidebarProps)
     { href: '/apps', labelKey: 'nav.apps', icon: FileText, adminOnly: true },
     { href: '/settings', labelKey: 'nav.settings', icon: Settings, adminOnly: true },
     { href: '/audit', labelKey: 'nav.audit', icon: History, adminOnly: true },
+    { href: '/sync', labelKey: 'nav.sync', icon: RefreshCw, adminOnly: true },
   ]
 
   const filteredNavItems = navItems.filter((item) => {
