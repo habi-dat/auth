@@ -102,6 +102,7 @@ export const createUserAction = groupAdminAction
           accountId: newUser.id,
           providerId: 'credential',
           password: hashedPassword,
+          passwordHashType: 'scrypt',
         },
       })
 

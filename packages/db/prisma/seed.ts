@@ -1,20 +1,23 @@
+import { resolve } from 'node:path'
 /**
- * Prisma seed: creates admin group and admin user (DB + optional LDAP).
+ * Prisma seed: creates admin group and admin user (DB + optional LDAP), or imports from LDAP.
  *
  * Required env: DATABASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
  * Optional env: ADMIN_NAME (default: "Admin"), ADMIN_USERNAME (default: "admin"),
  *               ADMIN_GROUP_SLUG (default: "admin"), ADMIN_GROUP_NAME (default: "Admin")
- * Optional LDAP bootstrap (if all set): LDAP_URL, LDAP_BIND_DN, LDAP_BIND_PASSWORD,
+ * Optional LDAP (if all set): LDAP_URL, LDAP_BIND_DN, LDAP_BIND_PASSWORD,
  *               LDAP_BASE_DN, LDAP_USERS_DN, LDAP_GROUPS_DN
  *
- * Uses better-auth's scrypt hash for DB; SSHA for LDAP userPassword.
+ * Behaviour:
+ * - If LDAP env is set and LDAP has users/groups: import from LDAP into DB (member = users + subgroups, owner = group admins).
+ * - If LDAP is empty or not set: create admin user/group in DB, then optionally bootstrap LDAP.
+ * Imported users keep LDAP hashed passwords (SSHA); passwordHashType is set so they can still log in.
  */
 import { LdapService, hashPasswordSsha } from '@habidat/ldap'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { hashPassword } from 'better-auth/crypto'
 import { config } from 'dotenv'
-import { resolve } from 'node:path'
 import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../generated/client/client'
 
 // Load root .env so ADMIN_* and DATABASE_URL are available when running from monorepo root
@@ -32,6 +35,224 @@ function getLdapEnv() {
     return { url, bindDn, bindPassword, baseDn, usersDn, groupsDn }
   }
   return null
+}
+
+/** True if dn is under baseDn (e.g. uid=john,ou=users,dc=... under ou=users,dc=...). Case-insensitive. */
+function dnUnder(dn: string, baseDn: string): boolean {
+  const d = dn.toLowerCase().trim()
+  const b = baseDn.toLowerCase().trim()
+  return d === b || d.endsWith(`,${b}`)
+}
+
+/** Normalize DN for consistent map keys and lookups (LDAP DNs are case-insensitive). */
+function normalizeDn(dn: string): string {
+  return dn.trim().toLowerCase()
+}
+
+/** PostgreSQL integer is 32-bit signed. LDAP uidNumber can be larger; only store if in range. */
+const PG_INT_MIN = -2_147_483_648
+const PG_INT_MAX = 2_147_483_647
+function fitsInPgInt(n: number): boolean {
+  return Number.isInteger(n) && n >= PG_INT_MIN && n <= PG_INT_MAX
+}
+
+/**
+ * Import users and groups from LDAP into the database.
+ * - Group member = user members + subgroups (member DNs under usersDn → GroupMembership; under groupsDn → GroupHierarchy child).
+ * - Group owner = group admins (owner DNs under usersDn → GroupOwnership).
+ * Returns true if import was performed (LDAP had data), false if LDAP was empty.
+ */
+async function importFromLdap(
+  ldap: LdapService,
+  prisma: PrismaClient,
+  usersDn: string,
+  groupsDn: string
+): Promise<boolean> {
+  const ldapUsers = await ldap.listAllUsers()
+  const ldapGroups = await ldap.listAllGroups()
+  if (ldapUsers.length === 0 && ldapGroups.length === 0) return false
+
+  console.log(`LDAP import: ${ldapUsers.length} users, ${ldapGroups.length} groups`)
+
+  const userDnToId = new Map<string, string>()
+  const groupDnToId = new Map<string, string>()
+
+  await prisma.$transaction(
+    async (tx) => {
+      for (const u of ldapUsers) {
+        const email = (u.mail ?? '').trim() || `${u.uid}@ldap-import.local`
+        const name = (u.cn ?? u.uid ?? 'Unknown').trim()
+        const username = u.uid.trim()
+        const uidNum = u.uidNumber ? Number.parseInt(u.uidNumber, 10) : undefined
+        const ldapUidNumber = uidNum !== undefined && fitsInPgInt(uidNum) ? uidNum : undefined
+
+        const existing = await tx.user.findFirst({
+          where: { OR: [{ username }, { email }, { ldapDn: u.dn }] },
+        })
+        if (existing) {
+          userDnToId.set(normalizeDn(u.dn), existing.id)
+          if (!existing.ldapDn) {
+            await tx.user.update({
+              where: { id: existing.id },
+              data: {
+                ldapDn: u.dn,
+                ldapUidNumber:
+                  ldapUidNumber !== undefined
+                    ? ldapUidNumber
+                    : (existing.ldapUidNumber ?? undefined),
+              },
+            })
+          }
+          continue
+        }
+
+        const user = await tx.user.create({
+          data: {
+            name,
+            username,
+            email,
+            emailVerified: true,
+            ldapDn: u.dn,
+            ldapUidNumber: ldapUidNumber ?? undefined,
+            ldapSynced: true,
+            ldapSyncedAt: new Date(),
+            location: u.l ?? null,
+            preferredLanguage: u.preferredLanguage ?? 'de',
+            storageQuota: u.description ?? '1 GB',
+          },
+        })
+        userDnToId.set(normalizeDn(u.dn), user.id)
+
+        const storedPassword = (u.userPassword ?? '').trim()
+        if (storedPassword) {
+          const passwordHashType = storedPassword.startsWith('{SSHA}') ? 'ssha' : 'scrypt'
+          await tx.account.create({
+            data: {
+              userId: user.id,
+              accountId: user.id,
+              providerId: 'credential',
+              password: storedPassword,
+              passwordHashType,
+            },
+          })
+        }
+      }
+
+      for (const g of ldapGroups) {
+        const slug = g.cn.trim()
+        const name = (g.o ?? g.cn ?? slug).trim()
+        const description = (g.description ?? '').trim()
+
+        const existing = await tx.group.findFirst({
+          where: { OR: [{ slug }, { ldapDn: g.dn }] },
+        })
+        if (existing) {
+          groupDnToId.set(normalizeDn(g.dn), existing.id)
+          if (!existing.ldapDn) {
+            await tx.group.update({
+              where: { id: existing.id },
+              data: { ldapDn: g.dn, ldapSynced: true, ldapSyncedAt: new Date() },
+            })
+          }
+          continue
+        }
+
+        const group = await tx.group.create({
+          data: {
+            slug,
+            name,
+            description: description || ' ',
+            ldapDn: g.dn,
+            ldapSynced: true,
+            ldapSyncedAt: new Date(),
+            isSystem: slug === 'admin' || slug === 'groupadmin',
+          },
+        })
+        groupDnToId.set(normalizeDn(g.dn), group.id)
+      }
+
+      for (const g of ldapGroups) {
+        const groupId = groupDnToId.get(normalizeDn(g.dn))
+        if (!groupId) continue
+
+        const members = g.member ?? []
+        for (const memberDn of members) {
+          const dnNorm = memberDn.trim()
+          if (dnUnder(dnNorm, usersDn)) {
+            const userId = userDnToId.get(normalizeDn(dnNorm))
+            if (userId) {
+              const userExists = await tx.user.findUnique({
+                where: { id: userId },
+                select: { id: true },
+              })
+              if (userExists) {
+                await tx.groupMembership.upsert({
+                  where: {
+                    userId_groupId: { userId, groupId },
+                  },
+                  create: { userId, groupId },
+                  update: {},
+                })
+              }
+            }
+          } else if (dnUnder(dnNorm, groupsDn)) {
+            const childGroupId = groupDnToId.get(normalizeDn(dnNorm))
+            if (childGroupId && childGroupId !== groupId) {
+              await tx.groupHierarchy.upsert({
+                where: {
+                  parentGroupId_childGroupId: { parentGroupId: groupId, childGroupId },
+                },
+                create: { parentGroupId: groupId, childGroupId },
+                update: {},
+              })
+            }
+          }
+        }
+
+        const owners = g.owner ?? []
+        for (const ownerDn of owners) {
+          const dnNorm = ownerDn.trim()
+          if (dnUnder(dnNorm, usersDn)) {
+            const userId = userDnToId.get(normalizeDn(dnNorm))
+            if (userId) {
+              const userExists = await tx.user.findUnique({
+                where: { id: userId },
+                select: { id: true },
+              })
+              if (userExists) {
+                await tx.groupOwnership.upsert({
+                  where: {
+                    userId_groupId: { userId, groupId },
+                  },
+                  create: { userId, groupId },
+                  update: {},
+                })
+              }
+            }
+          }
+        }
+      }
+
+      for (const u of ldapUsers) {
+        const userId = userDnToId.get(normalizeDn(u.dn))
+        if (!userId) continue
+        const firstMembership = await tx.groupMembership.findFirst({
+          where: { userId },
+          orderBy: { createdAt: 'asc' },
+        })
+        if (firstMembership) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { primaryGroupId: firstMembership.groupId },
+          })
+        }
+      }
+    },
+    { timeout: 300_000 }
+  )
+
+  console.log('LDAP import completed.')
+  return true
 }
 
 async function bootstrapLdap(
@@ -133,6 +354,24 @@ async function main() {
   const prisma = new PrismaClient({ adapter })
 
   try {
+    const ldapEnv = getLdapEnv()
+    if (ldapEnv) {
+      const ldap = new LdapService(ldapEnv)
+      await ldap.connect()
+      try {
+        const didImport = await importFromLdap(ldap, prisma, ldapEnv.usersDn, ldapEnv.groupsDn)
+        if (didImport) {
+          console.log('LDAP import completed. Skipping admin creation.')
+          return
+        }
+      } finally {
+        await ldap.disconnect()
+      }
+      console.log('LDAP empty – creating admin user/group in DB and bootstrapping LDAP.')
+    } else {
+      console.log('LDAP env not set – creating admin user/group in DB only.')
+    }
+
     const adminGroupSlug = process.env.ADMIN_GROUP_SLUG ?? 'admin'
     const adminGroupName = process.env.ADMIN_GROUP_NAME ?? 'Admin'
 
@@ -183,6 +422,7 @@ async function main() {
             accountId: user.id,
             providerId: 'credential',
             password: hashedPassword,
+            passwordHashType: 'scrypt',
           },
         })
 
@@ -234,7 +474,6 @@ async function main() {
       }
     }
 
-    const ldapEnv = getLdapEnv()
     if (ldapEnv) {
       let adminUserForLdap = adminUser
       if (adminUser.ldapUidNumber == null) {
@@ -251,13 +490,19 @@ async function main() {
       await ldap.connect()
       try {
         const adminPasswordSsha = hashPasswordSsha(adminPassword)
-        await bootstrapLdap(ldap, prisma, {
-          id: adminUserForLdap.id,
-          username: adminUserForLdap.username,
-          name: adminUserForLdap.name,
-          email: adminUserForLdap.email,
-          ldapUidNumber: adminUserForLdap.ldapUidNumber ?? 10000,
-        }, adminGroup, adminPasswordSsha)
+        await bootstrapLdap(
+          ldap,
+          prisma,
+          {
+            id: adminUserForLdap.id,
+            username: adminUserForLdap.username,
+            name: adminUserForLdap.name,
+            email: adminUserForLdap.email,
+            ldapUidNumber: adminUserForLdap.ldapUidNumber ?? 10000,
+          },
+          adminGroup,
+          adminPasswordSsha
+        )
       } finally {
         await ldap.disconnect()
       }

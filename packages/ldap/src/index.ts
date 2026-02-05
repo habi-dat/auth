@@ -1,5 +1,5 @@
 export { LdapService } from './client.js'
-export { hashPasswordSsha } from './password.js'
+export { hashPasswordSsha, verifyPasswordSsha } from './password.js'
 export type {
   CreateGroupData,
   CreateUserData,

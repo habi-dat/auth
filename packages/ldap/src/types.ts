@@ -61,4 +61,6 @@ export interface LdapGroupEntry {
   o?: string
   description?: string
   member?: string[]
+  /** Group admins (owner DNs) */
+  owner?: string[]
 }

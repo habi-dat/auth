@@ -76,13 +76,47 @@ export class LdapService {
       const results = await client.search(this.config.groupsDn, {
         filter,
         scope: 'one',
-        attributes: ['dn', 'cn', 'o', 'description', 'member'],
+        attributes: ['dn', 'cn', 'o', 'description', 'member', 'owner'],
         sizeLimit: 1,
       })
       if (!results || results.length === 0) return null
       return mapSearchEntryToGroup(results[0])
     } catch (err) {
       if (isNoSuchObjectError(err)) return null
+      throw err
+    }
+  }
+
+  /** List all user entries under usersDn (for LDAP import). */
+  async listAllUsers(): Promise<LdapUserEntry[]> {
+    const client = this.ensureConnected()
+    try {
+      const results = await client.search(this.config.usersDn, {
+        filter: '(objectClass=inetOrgPerson)',
+        scope: 'one',
+        attributes: ['dn', 'uid', 'cn', 'sn', 'mail', 'l', 'preferredLanguage', 'description', 'uidNumber', 'userPassword'],
+      })
+      if (!results || results.length === 0) return []
+      return results.map((entry) => mapSearchEntryToUser(entry as Record<string, unknown>))
+    } catch (err) {
+      if (isNoSuchObjectError(err)) return []
+      throw err
+    }
+  }
+
+  /** List all group entries under groupsDn (for LDAP import). Includes member and owner. */
+  async listAllGroups(): Promise<LdapGroupEntry[]> {
+    const client = this.ensureConnected()
+    try {
+      const results = await client.search(this.config.groupsDn, {
+        filter: '(objectClass=*)',
+        scope: 'one',
+        attributes: ['dn', 'cn', 'o', 'description', 'member', 'owner'],
+      })
+      if (!results || results.length === 0) return []
+      return results.map((entry) => mapSearchEntryToGroup(entry as Record<string, unknown>))
+    } catch (err) {
+      if (isNoSuchObjectError(err)) return []
       throw err
     }
   }
@@ -259,5 +293,6 @@ function mapSearchEntryToGroup(entry: Record<string, unknown>): LdapGroupEntry {
     o: entry.o != null ? getStr('o') : undefined,
     description: entry.description != null ? getStr('description') : undefined,
     member: entry.member != null ? getArr('member') : undefined,
+    owner: entry.owner != null ? getArr('owner') : undefined,
   }
 }

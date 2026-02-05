@@ -137,6 +137,7 @@ export const AccountScalarFieldEnum = {
   scope: 'scope',
   idToken: 'idToken',
   password: 'password',
+  passwordHashType: 'passwordHashType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

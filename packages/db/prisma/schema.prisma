@@ -80,6 +80,8 @@ model Account {
   scope                 String?
   idToken               String?
   password              String?
+  /** How password is hashed: "scrypt" (better-auth default) or "ssha" (LDAP import). Used so imported users can still log in. */
+  passwordHashType      String?   @default("scrypt")
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 

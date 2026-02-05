@@ -1,6 +1,8 @@
+import { verifyPasswordSsha } from '@/lib/ldap/password'
 import { prisma } from '@habidat/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
+import { hashPassword, verifyPassword } from 'better-auth/crypto'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,6 +12,17 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     minPasswordLength: 8,
+    password: {
+      hash: async (password) => hashPassword(password),
+      verify: async (data: { hash: string; password: string }) => {
+        const { hash: hashedPassword, password: plainPassword } = data
+        // LDAP-imported users store {SSHA}...; app-created users use scrypt
+        if (hashedPassword.startsWith('{SSHA}')) {
+          return verifyPasswordSsha(hashedPassword, plainPassword)
+        }
+        return verifyPassword({ hash: hashedPassword, password: plainPassword })
+      },
+    },
   },
   session: {
     expiresIn: 60 * 60 * 12, // 12 hours
