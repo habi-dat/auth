@@ -1,3 +1,4 @@
+import { getSessionCookie } from 'better-auth/cookies'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -10,7 +11,7 @@ const publicRoutes = [
   '/api/auth',
 ]
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes
@@ -23,8 +24,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for session cookie
-  const sessionCookie = request.cookies.get('better-auth.session_token')
+  // Check for session cookie using better-auth's utility
+  const sessionCookie = getSessionCookie(request)
 
   if (!sessionCookie) {
     const loginUrl = new URL('/login', request.url)

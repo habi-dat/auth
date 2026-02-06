@@ -3,8 +3,13 @@ import { prisma } from '@habidat/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
+import { nextCookies } from 'better-auth/next-js'
 
-const baseURL = (process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')
+const baseURL = (
+  process.env.APP_URL ||
+  process.env.BETTER_AUTH_URL ||
+  'http://localhost:3000'
+).replace(/\/$/, '')
 
 export const auth = betterAuth({
   baseURL,
@@ -101,6 +106,7 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [nextCookies()],
 })
 
 export type Session = typeof auth.$Infer.Session
