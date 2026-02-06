@@ -24,7 +24,6 @@ model User {
   // Profile fields
   location            String?
   preferredLanguage   String    @default("de")
-  preferredTheme      String?   // "1" | "2" | "3"
   preferredColorMode  String?   // "light" | "dark" | "system"
   storageQuota        String    @default("1 GB")
 

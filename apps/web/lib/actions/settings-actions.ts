@@ -1,50 +1,69 @@
 'use server'
 
-import { updateGeneralSettings } from '@/lib/settings/general'
-import { adminAction } from './client'
+import { adminAction } from '@/lib/actions/client'
+import { createAuditLog } from '@/lib/audit'
+import { getGeneralSettings, updateGeneralSettings } from '@/lib/settings/general'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-const updateGeneralSchema = z.object({
-  platformName: z.string().max(200).optional(),
-  logoUrl: z.string().max(500).optional(),
-  supportEmail: z.string().email().max(200).optional().or(z.literal('')),
-  loginPageText: z.string().max(1000).optional(),
-  defaultTheme: z.enum(['1', '2', '3', '4']).optional(),
+const updateGeneralSettingsSchema = z.object({
+  platformName: z.string().optional(),
+  supportEmail: z.string().email().optional(),
+  loginPageText: z.string().optional(),
+  defaultTheme: z.enum(['1', '2', '3', '4']).optional(), // Kept for backward compat/schema but we will use themeColor
+  themeColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
 })
 
 export const updateGeneralSettingsAction = adminAction
-  .schema(updateGeneralSchema)
-  .action(async ({ parsedInput }) => {
-    const data = {
-      ...(parsedInput.platformName !== undefined && {
-        platformName: parsedInput.platformName || undefined,
-      }),
-      ...(parsedInput.logoUrl !== undefined && {
-        logoUrl: parsedInput.logoUrl || undefined,
-      }),
-      ...(parsedInput.supportEmail !== undefined && {
-        supportEmail: parsedInput.supportEmail || undefined,
-      }),
-      ...(parsedInput.loginPageText !== undefined && {
-        loginPageText: parsedInput.loginPageText || undefined,
-      }),
-      ...(parsedInput.defaultTheme !== undefined && {
-        defaultTheme: parsedInput.defaultTheme,
-      }),
-    }
+  .schema(updateGeneralSettingsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { session } = ctx
+    const { defaultTheme: _dt, ...data } = parsedInput
+
+    // We ignore defaultTheme input and use themeColor
+    const oldSettings = await getGeneralSettings()
     await updateGeneralSettings(data)
-    revalidatePath('/settings')
+
+    // Convert old settings roughly for audit log
+    const oldValue = {
+      ...oldSettings,
+    }
+    const newValue = {
+      ...oldSettings,
+      ...data,
+    }
+
+    await createAuditLog({
+      actorId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'SETTING',
+      entityId: 'general',
+      oldValue,
+      newValue,
+      entityName: 'General Settings',
+    })
+
+    revalidatePath('/')
     return { success: true }
   })
 
-/** Remove logo from general settings. Admin only. */
-export const removeLogoAction = adminAction
-  .schema(z.object({}))
-  .action(async () => {
-    await updateGeneralSettings({ logoUrl: undefined })
-    revalidatePath('/settings')
-    revalidatePath('/settings', 'layout')
-    revalidatePath('/', 'layout')
-    return { success: true }
+export const removeLogoAction = adminAction.action(async ({ ctx }) => {
+  const { session } = ctx
+  const oldSettings = await getGeneralSettings()
+  await updateGeneralSettings({ logoUrl: undefined })
+
+  await createAuditLog({
+    actorId: session.user.id,
+    action: 'DELETE',
+    entityType: 'SETTING',
+    entityId: 'general',
+    oldValue: { logoUrl: oldSettings.logoUrl },
+    entityName: 'General Settings (Logo)',
   })
+
+  revalidatePath('/')
+  return { success: true }
+})

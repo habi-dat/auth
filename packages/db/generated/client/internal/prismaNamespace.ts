@@ -1953,7 +1953,6 @@ export const UserScalarFieldEnum = {
   updatedAt: 'updatedAt',
   location: 'location',
   preferredLanguage: 'preferredLanguage',
-  preferredTheme: 'preferredTheme',
   preferredColorMode: 'preferredColorMode',
   storageQuota: 'storageQuota',
   primaryGroupId: 'primaryGroupId',

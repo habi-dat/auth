@@ -1,28 +1,38 @@
 'use client'
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import { useEffect } from 'react'
+import { generateThemeVariables } from '../../lib/theme-generator'
 
-export type ThemeScheme = '1' | '2' | '3' | '4'
 export type ColorMode = 'light' | 'dark' | 'system'
 
 interface ThemeSchemeProviderProps {
   children: React.ReactNode
-  /** Color scheme: 1 (red/black), 2 (feminist), 3 (nature), 4 (blue/grey). */
-  initialTheme: ThemeScheme
+  /** Base hex color for the theme. */
+  themeColor?: string
   /** Light, dark, or system (follow OS). */
   initialColorMode: ColorMode
 }
 
+function DynamicThemeInjector({ themeColor }: { themeColor?: string }) {
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    const vars = generateThemeVariables(themeColor, resolvedTheme === 'dark' ? 'dark' : 'light')
+    const root = document.documentElement
+    for (const [key, value] of Object.entries(vars)) {
+      root.style.setProperty(key, value)
+    }
+  }, [themeColor, resolvedTheme])
+
+  return null
+}
+
 export function ThemeSchemeProvider({
   children,
-  initialTheme,
+  themeColor,
   initialColorMode,
 }: ThemeSchemeProviderProps) {
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', initialTheme)
-  }, [initialTheme])
-
   return (
     <NextThemesProvider
       attribute="class"
@@ -32,6 +42,7 @@ export function ThemeSchemeProvider({
       disableTransitionOnChange
       storageKey="habidat-color-mode"
     >
+      <DynamicThemeInjector themeColor={themeColor} />
       {children}
     </NextThemesProvider>
   )

@@ -34,7 +34,6 @@ type ProfileForm = {
   name: string
   location?: string
   preferredLanguage: string
-  preferredTheme?: '1' | '2' | '3' | '4' | null
   preferredColorMode?: 'light' | 'dark' | 'system' | null
   primaryGroupId?: string | null
 }
@@ -44,7 +43,6 @@ function defaultValuesFromUser(user: SessionUser): ProfileForm {
     name: user.name,
     location: user.location ?? '',
     preferredLanguage: user.preferredLanguage || 'de',
-    preferredTheme: (user.preferredTheme as '1' | '2' | '3' | '4') || '1',
     preferredColorMode: (user.preferredColorMode as 'light' | 'dark' | 'system') || 'system',
     primaryGroupId: user.primaryGroupId ?? null,
   }
@@ -82,7 +80,6 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     name: z.string().min(2, tVal('nameMin')),
     location: z.string().optional(),
     preferredLanguage: z.string().default('de'),
-    preferredTheme: z.enum(['1', '2', '3', '4']).optional().nullable(),
     preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
     primaryGroupId: z.string().optional().nullable(),
   })
@@ -99,7 +96,6 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
   })
 
   const preferredLanguage = watch('preferredLanguage')
-  const preferredTheme = watch('preferredTheme')
   const preferredColorMode = watch('preferredColorMode')
   const primaryGroupId = watch('primaryGroupId')
 
@@ -108,7 +104,6 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
       name: data.name,
       location: data.location ?? null,
       preferredLanguage: data.preferredLanguage,
-      preferredTheme: data.preferredTheme ?? null,
       preferredColorMode: data.preferredColorMode ?? null,
       primaryGroupId: data.primaryGroupId ?? null,
     })
@@ -199,27 +194,6 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
                 <SelectContent>
                   <SelectItem value="de">{t('languageDe')}</SelectItem>
                   <SelectItem value="en">{t('languageEn')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="preferredTheme">{t('preferredTheme')}</Label>
-              <Select
-                value={preferredTheme ?? '1'}
-                onValueChange={(value) =>
-                  setValue('preferredTheme', value as '1' | '2' | '3' | '4')
-                }
-                disabled={isExecuting}
-              >
-                <SelectTrigger id="preferredTheme">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">{t('theme1')}</SelectItem>
-                  <SelectItem value="2">{t('theme2')}</SelectItem>
-                  <SelectItem value="3">{t('theme3')}</SelectItem>
-                  <SelectItem value="4">{t('theme4')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

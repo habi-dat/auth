@@ -4,13 +4,6 @@ import { Button } from '@/components/ui/button'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
 import { removeLogoAction, updateGeneralSettingsAction } from '@/lib/actions/settings-actions'
@@ -33,11 +26,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [logoVersion, setLogoVersion] = useState(0)
   const [supportEmail, setSupportEmail] = useState(initialSettings.supportEmail ?? '')
   const [loginPageText, setLoginPageText] = useState(initialSettings.loginPageText ?? '')
-  const [defaultTheme, setDefaultTheme] = useState(
-    initialSettings.defaultTheme && ['1', '2', '3', '4'].includes(initialSettings.defaultTheme)
-      ? initialSettings.defaultTheme
-      : '1'
-  )
+  const [themeColor, setThemeColor] = useState(initialSettings.themeColor ?? '#0088cc')
   const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,11 +36,12 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
       platformName: platformName.trim() || undefined,
       supportEmail: supportEmail.trim() || undefined,
       loginPageText: loginPageText.trim() || undefined,
-      defaultTheme: defaultTheme as '1' | '2' | '3' | '4',
+      themeColor,
     })
     setIsPending(false)
     if (result?.data?.success) {
       toast({ title: t('saved') })
+      router.refresh()
     }
     if (result?.serverError) {
       toast({ title: t('save'), description: result.serverError, variant: 'destructive' })
@@ -73,7 +63,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   }
 
   const handleLogoRemove = async () => {
-    const result = await removeLogoAction({})
+    const result = await removeLogoAction()
     if (result?.data?.success) {
       setLogoUrl('')
       router.refresh()
@@ -132,18 +122,28 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="defaultTheme">{t('defaultTheme')}</Label>
-        <Select value={defaultTheme} onValueChange={(v) => setDefaultTheme(v)}>
-          <SelectTrigger id="defaultTheme">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">{t('theme1')}</SelectItem>
-            <SelectItem value="2">{t('theme2')}</SelectItem>
-            <SelectItem value="3">{t('theme3')}</SelectItem>
-            <SelectItem value="4">{t('theme4')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <Label htmlFor="themeColor">{t('themeColor')}</Label>
+        <div className="flex gap-4 items-center">
+          <div className="relative">
+            <Input
+              id="themeColor"
+              type="color"
+              value={themeColor}
+              onChange={(e) => setThemeColor(e.target.value)}
+              className="h-10 w-20 p-1 cursor-pointer"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setThemeColor('#0088cc')}
+            disabled={themeColor === '#0088cc'}
+          >
+            {t('resetColor')}
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">{t('themeColorHelp')}</p>
       </div>
       <Button type="submit" disabled={isPending}>
         {isPending ? '…' : t('save')}

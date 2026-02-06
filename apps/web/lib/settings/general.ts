@@ -6,8 +6,8 @@ export interface GeneralSettings {
   supportEmail?: string
   /** Optional text shown on the login page (e.g. welcome message). */
   loginPageText?: string
-  /** Default color theme: "1" (red/black) | "2" (feminist) | "3" (nature). */
-  defaultTheme?: string
+  /** Base brand color (hex) for dynamic theme generation. Defaults to "#0088cc" if not set. */
+  themeColor?: string
   /** ISO date string of Setting.updatedAt; use as cache-buster for logo (e.g. ?v=...) */
   logoUpdatedAt?: string
 }
@@ -26,10 +26,7 @@ export async function getGeneralSettings(): Promise<GeneralSettings> {
     logoUrl,
     supportEmail: typeof v.supportEmail === 'string' ? v.supportEmail : undefined,
     loginPageText: typeof v.loginPageText === 'string' ? v.loginPageText : undefined,
-    defaultTheme:
-      v.defaultTheme === '1' || v.defaultTheme === '2' || v.defaultTheme === '3' || v.defaultTheme === '4'
-        ? v.defaultTheme
-        : undefined,
+    themeColor: typeof v.themeColor === 'string' ? v.themeColor : undefined,
     logoUpdatedAt: logoUrl && row.updatedAt ? row.updatedAt.toISOString() : undefined,
   }
 }

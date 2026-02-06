@@ -1,11 +1,11 @@
 'use server'
 
-import { createAuditLog } from '@/lib/audit'
-import { canManageGroup, canManageUser } from '@/lib/auth/roles'
 import {
   addUserToGroupAdmin,
   removeUserFromGroupAdminIfNoOwnership,
 } from '@/lib/actions/group-actions'
+import { createAuditLog } from '@/lib/audit'
+import { canManageGroup, canManageUser } from '@/lib/auth/roles'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import {
@@ -29,7 +29,7 @@ const createUserSchema = z.object({
       /^[a-zA-Z0-9_-]+$/,
       'Username can only contain letters, numbers, underscores, and hyphens'
     ),
-  email: z.string().email('Invalid email address'),
+  email: z.email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   location: z.string().optional(),
   preferredLanguage: z.string().default('de'),
@@ -42,7 +42,7 @@ const createUserSchema = z.object({
 const updateUserSchema = z.object({
   id: z.string(),
   name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   location: z.string().optional().nullable(),
   preferredLanguage: z.string().optional(),
   storageQuota: z.string().optional(),
@@ -55,7 +55,6 @@ const updateProfileSchema = z.object({
   name: z.string().min(2),
   location: z.string().optional().nullable(),
   preferredLanguage: z.string(),
-  preferredTheme: z.enum(['1', '2', '3', '4']).optional().nullable(),
   preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
   primaryGroupId: z.string().optional().nullable(),
 })
@@ -88,7 +87,7 @@ export const createUserAction = groupAdminAction
     const primaryGroupId =
       parsedInput.primaryGroupId && effectiveMemberGroupIds.includes(parsedInput.primaryGroupId)
         ? parsedInput.primaryGroupId
-        : memberGroupIds[0] ?? ownerGroupIds[0] ?? null
+        : (memberGroupIds[0] ?? ownerGroupIds[0] ?? null)
     if (effectiveMemberGroupIds.length > 0 && !primaryGroupId) {
       throw new Error('Primary group is required when user is a member of at least one group')
     }
@@ -304,12 +303,12 @@ export const updateUserAction = groupAdminAction
                 ...existingUser.ownerships.map((o) => o.groupId),
               ]),
             ]
-        const primaryGroupIdValid =
-          primaryGroupId == null ||
-          (afterGroupIdsForPrimary.length > 0 && afterGroupIdsForPrimary.includes(primaryGroupId))
-        if (!primaryGroupIdValid) {
-          throw new Error('Primary group must be one of the user’s member groups')
-        }
+      const primaryGroupIdValid =
+        primaryGroupId == null ||
+        (afterGroupIdsForPrimary.length > 0 && afterGroupIdsForPrimary.includes(primaryGroupId))
+      if (!primaryGroupIdValid) {
+        throw new Error('Primary group must be one of the user’s member groups')
+      }
 
       const updated = await tx.user.update({
         where: { id: parsedInput.id },
@@ -476,38 +475,39 @@ export const updateProfileAction = userAction
       }
     }
 
-    const { user, ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(async (tx) => {
-      const updated = await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          name: parsedInput.name,
-          location: parsedInput.location,
-          preferredLanguage: parsedInput.preferredLanguage,
-          preferredTheme: parsedInput.preferredTheme,
-          preferredColorMode: parsedInput.preferredColorMode,
-          primaryGroupId: parsedInput.primaryGroupId,
-        },
-      })
-      const ldapSyncEvent = await createSyncEvent(tx, {
-        target: 'LDAP',
-        operation: 'UPDATE',
-        entityType: 'USER',
-        entityId: updated.id,
-        payload: { userId: updated.id },
-      })
-      const discourseSyncEvent = await createSyncEvent(tx, {
-        target: 'DISCOURSE',
-        operation: 'UPDATE',
-        entityType: 'USER',
-        entityId: updated.id,
-        payload: { userId: updated.id },
-      })
-      return {
-        user: updated,
-        ldapSyncEventId: ldapSyncEvent.id,
-        discourseSyncEventId: discourseSyncEvent.id,
+    const { user, ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(
+      async (tx) => {
+        const updated = await tx.user.update({
+          where: { id: session.user.id },
+          data: {
+            name: parsedInput.name,
+            location: parsedInput.location,
+            preferredLanguage: parsedInput.preferredLanguage,
+            preferredColorMode: parsedInput.preferredColorMode,
+            primaryGroupId: parsedInput.primaryGroupId,
+          },
+        })
+        const ldapSyncEvent = await createSyncEvent(tx, {
+          target: 'LDAP',
+          operation: 'UPDATE',
+          entityType: 'USER',
+          entityId: updated.id,
+          payload: { userId: updated.id },
+        })
+        const discourseSyncEvent = await createSyncEvent(tx, {
+          target: 'DISCOURSE',
+          operation: 'UPDATE',
+          entityType: 'USER',
+          entityId: updated.id,
+          payload: { userId: updated.id },
+        })
+        return {
+          user: updated,
+          ldapSyncEventId: ldapSyncEvent.id,
+          discourseSyncEventId: discourseSyncEvent.id,
+        }
       }
-    })
+    )
     await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
     await dispatchDiscourseSyncAfterCommit(discourseSyncEventId, 'DISCOURSE')
 
@@ -515,7 +515,6 @@ export const updateProfileAction = userAction
       name: oldUser.name,
       location: oldUser.location ?? undefined,
       preferredLanguage: oldUser.preferredLanguage,
-      preferredTheme: oldUser.preferredTheme ?? undefined,
       preferredColorMode: oldUser.preferredColorMode ?? undefined,
       primaryGroupId: oldUser.primaryGroupId ?? undefined,
     }
@@ -523,7 +522,6 @@ export const updateProfileAction = userAction
       name: user.name,
       location: user.location ?? undefined,
       preferredLanguage: user.preferredLanguage,
-      preferredTheme: user.preferredTheme ?? undefined,
       preferredColorMode: user.preferredColorMode ?? undefined,
       primaryGroupId: user.primaryGroupId ?? undefined,
     }

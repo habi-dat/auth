@@ -28,7 +28,6 @@ interface HeaderProps {
     name: string
     email: string
     image?: string | null
-    preferredTheme?: string | null
     preferredColorMode?: string | null
     primaryGroupId?: string | null
     preferredLanguage?: string
@@ -50,7 +49,6 @@ export function Header({ user }: HeaderProps) {
       name: user.name,
       location: null,
       preferredLanguage: user.preferredLanguage ?? 'de',
-      preferredTheme: (user.preferredTheme as '1' | '2' | '3' | '4') ?? null,
       preferredColorMode: mode,
       primaryGroupId: user.primaryGroupId ?? null,
     })
