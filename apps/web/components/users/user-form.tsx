@@ -139,7 +139,7 @@ export function UserForm({ user, groups }: UserFormProps) {
     setValue,
     formState: { errors },
   } = useForm<CreateUserForm | UpdateUserForm>({
-    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema),
+    resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema) as any,
     defaultValues: isEditing
       ? {
           id: user.id,

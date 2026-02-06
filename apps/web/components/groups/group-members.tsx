@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
+import { GenericAction, RowActions } from '@/components/ui/data-table-cells'
 import { useToast } from '@/components/ui/use-toast'
 import { UserSelector } from '@/components/users/user-selector'
 import {
@@ -172,50 +173,47 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
           const userId = row.original.user.id
           const isOwner = ownerIds.has(userId)
           return (
-            <div className="flex items-center justify-end gap-1">
+            <RowActions>
               {isOwner ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title={t('removeAdmin')}
+                <GenericAction
                   onClick={() => removeOwner.execute({ groupId: group.id, userId })}
+                  title={t('removeAdmin')}
                   disabled={removeOwner.isPending}
-                >
-                  {removeOwner.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                  )}
-                </Button>
+                  icon={
+                    removeOwner.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 text-primary" />
+                    )
+                  }
+                />
               ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title={t('makeAdmin')}
+                <GenericAction
                   onClick={() => addOwner.execute({ groupId: group.id, userId })}
+                  title={t('makeAdmin')}
                   disabled={addOwner.isPending}
-                >
-                  {addOwner.isPending ? (
+                  icon={
+                    addOwner.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                    )
+                  }
+                />
+              )}
+              <GenericAction
+                onClick={() => removeMember.execute({ groupId: group.id, userId })}
+                title={t('memberRemoved')}
+                disabled={removeMember.isPending}
+                icon={
+                  removeMember.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                title={t('memberRemoved')}
-                onClick={() => removeMember.execute({ groupId: group.id, userId })}
-                disabled={removeMember.isPending}
-              >
-                {removeMember.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserMinus className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+                    <UserMinus className="h-4 w-4" />
+                  )
+                }
+              />
+            </RowActions>
           )
         },
         meta: { className: 'text-right' },

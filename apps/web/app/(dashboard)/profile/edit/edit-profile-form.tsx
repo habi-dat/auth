@@ -94,7 +94,7 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     watch,
     formState: { errors },
   } = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema) as any,
     defaultValues: defaultValuesFromUser(initialUser),
   })
 

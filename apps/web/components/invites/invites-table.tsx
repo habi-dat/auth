@@ -1,14 +1,18 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
+import {
+  BadgeList,
+  DeleteAction,
+  GenericAction,
+  RowActions,
+} from '@/components/ui/data-table-cells'
 import { useToast } from '@/components/ui/use-toast'
 import type { getGroupsForSelect, getInvites } from '@/lib/actions/invite-actions'
 import { deleteInvitesAction, resendInviteAction } from '@/lib/actions/invite-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
+import { RefreshCw, ShieldCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -42,43 +46,32 @@ export function InvitesTable({
     {
       id: 'memberGroups',
       header: t('memberGroups'),
-      cell: ({ row }) => {
-        const ids = row.original.memberGroups.map((m) => m.groupId)
-        if (ids.length === 0) {
-          return <span className="text-muted-foreground text-sm">—</span>
-        }
-        return (
-          <div className="flex flex-wrap gap-1">
-            {ids.slice(0, 3).map((id) => (
-              <Badge key={id} variant="secondary">
-                {groupMap.get(id) ?? id}
-              </Badge>
-            ))}
-            {ids.length > 3 && <Badge variant="outline">+{ids.length - 3}</Badge>}
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <BadgeList
+          data={row.original.memberGroups}
+          label={(m) => groupMap.get(m.groupId) ?? m.groupId}
+          keyFn={(m) => m.groupId}
+          emptyMessage={<span className="text-muted-foreground text-sm">—</span>}
+        />
+      ),
     },
     {
       id: 'ownerGroups',
       header: t('ownerGroups'),
-      cell: ({ row }) => {
-        const ids = row.original.ownerGroups.map((o) => o.groupId)
-        if (ids.length === 0) {
-          return <span className="text-muted-foreground text-sm">—</span>
-        }
-        return (
-          <div className="flex flex-wrap gap-1 items-center">
-            {ids.slice(0, 3).map((id) => (
-              <Badge key={id} variant="default" className="gap-0.5">
-                <ShieldCheck className="h-3 w-3" />
-                {groupMap.get(id) ?? id}
-              </Badge>
-            ))}
-            {ids.length > 3 && <Badge variant="outline">+{ids.length - 3}</Badge>}
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <BadgeList
+          data={row.original.ownerGroups}
+          label={(o) => (
+            <span className="flex items-center gap-0.5">
+              <ShieldCheck className="h-3 w-3" />
+              {groupMap.get(o.groupId) ?? o.groupId}
+            </span>
+          )}
+          keyFn={(o) => o.groupId}
+          variant="default"
+          emptyMessage={<span className="text-muted-foreground text-sm">—</span>}
+        />
+      ),
     },
     {
       accessorKey: 'expiresAt',
@@ -97,13 +90,8 @@ export function InvitesTable({
       id: 'actions',
       header: () => <span className="sr-only">{t('delete')}</span>,
       cell: ({ row }) => (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon"
-            title={t('resend')}
-            disabled={resendingId === row.original.id}
+        <RowActions>
+          <GenericAction
             onClick={async () => {
               setResendingId(row.original.id)
               const result = await resendInviteAction({ inviteId: row.original.id })
@@ -123,24 +111,24 @@ export function InvitesTable({
                 })
               }
             }}
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${resendingId === row.original.id ? 'animate-spin' : ''}`}
-            />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            title={t('delete')}
+            title={t('resend')}
+            disabled={resendingId === row.original.id}
+            icon={
+              <RefreshCw
+                className={`h-4 w-4 ${resendingId === row.original.id ? 'animate-spin' : ''}`}
+              />
+            }
+          />
+          <DeleteAction
             onClick={() => setDeleteTarget(row.original)}
+            title={t('delete')}
             disabled={isDeleting}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+          />
+        </RowActions>
       ),
-      meta: { className: 'text-right' },
+      meta: {
+        className: 'text-right',
+      },
     },
   ]
 

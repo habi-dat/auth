@@ -1,15 +1,12 @@
 'use client'
-
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
+import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
 import { deleteUserAction, type getUsers } from '@/lib/actions/user-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Pencil, ShieldCheck, Trash2 } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -47,62 +44,33 @@ export function UsersTable({ users }: { users: UserRow[] }) {
     {
       id: 'groups',
       header: t('groups'),
-      cell: ({ row }) => {
-        const memberships = row.original.memberships
-        return (
-          <div className="flex flex-wrap gap-1">
-            {memberships.slice(0, 3).map((m) => (
-              <Badge key={m.group.id} variant="secondary">
-                {m.group.name}
-              </Badge>
-            ))}
-            {memberships.length > 3 && <Badge variant="outline">+{memberships.length - 3}</Badge>}
-          </div>
-        )
-      },
+      cell: ({ row }) => <BadgeList data={row.original.memberships} label={(m) => m.group.name} />,
     },
     {
       id: 'groupAdmins',
       header: t('groupAdmins'),
-      cell: ({ row }) => {
-        const ownerships = row.original.ownerships
-        if (ownerships.length === 0) {
-          return <span className="text-muted-foreground text-sm">—</span>
-        }
-        return (
-          <div className="flex flex-wrap gap-1 items-center">
-            {ownerships.slice(0, 3).map((o) => (
-              <Badge key={o.group.id} variant="default" className="gap-0.5">
-                <ShieldCheck className="h-3 w-3" />
-                {o.group.name}
-              </Badge>
-            ))}
-            {ownerships.length > 3 && <Badge variant="outline">+{ownerships.length - 3}</Badge>}
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <BadgeList
+          data={row.original.ownerships}
+          label={(o) => (
+            <span className="flex items-center gap-0.5">
+              <ShieldCheck className="h-3 w-3" />
+              {o.group.name}
+            </span>
+          )}
+          variant="default"
+          emptyMessage={<span className="text-muted-foreground text-sm">—</span>}
+        />
+      ),
     },
     {
       id: 'actions',
       header: () => <span className="sr-only">{t('actions')}</span>,
       cell: ({ row }) => (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Link href={`/users/${row.original.id}`}>
-            <Button variant="ghost" size="icon" title={t('edit')}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            title={t('delete')}
-            onClick={() => setDeleteTarget(row.original)}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <RowActions>
+          <EditAction href={`/users/${row.original.id}`} title={t('edit')} />
+          <DeleteAction onClick={() => setDeleteTarget(row.original)} title={t('delete')} />
+        </RowActions>
       ),
       meta: { className: 'text-right' },
     },

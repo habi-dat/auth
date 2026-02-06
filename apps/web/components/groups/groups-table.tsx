@@ -4,9 +4,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
+import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
 import { deleteGroupAction, type getGroups } from '@/lib/actions/group-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Eye, FolderTree, Pencil, ShieldCheck, Trash2, Users } from 'lucide-react'
+import { Eye, FolderTree, ShieldCheck, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import Link from 'next/link'
@@ -74,23 +75,21 @@ export function GroupsTable({
     {
       id: 'admins',
       header: t('admins'),
-      cell: ({ row }) => {
-        const ownerships = row.original.ownerships
-        if (ownerships.length === 0) {
-          return <span className="text-muted-foreground text-sm">—</span>
-        }
-        return (
-          <div className="flex flex-wrap gap-1 items-center">
-            {ownerships.slice(0, 2).map((o) => (
-              <Badge key={o.user.id} variant="secondary" className="gap-0.5 font-normal">
-                <ShieldCheck className="h-3 w-3 text-primary" />
-                {o.user.name}
-              </Badge>
-            ))}
-            {ownerships.length > 2 && <Badge variant="outline">+{ownerships.length - 2}</Badge>}
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <BadgeList
+          data={row.original.ownerships}
+          label={(o) => (
+            <span className="flex items-center gap-0.5">
+              <ShieldCheck className="h-3 w-3 text-primary" />
+              {o.user.name}
+            </span>
+          )}
+          keyFn={(o) => o.user.id}
+          variant="secondary"
+          limit={2}
+          emptyMessage={<span className="text-muted-foreground text-sm">—</span>}
+        />
+      ),
     },
     {
       id: 'hierarchy',
@@ -123,25 +122,18 @@ export function GroupsTable({
         const g = row.original
         const canEdit = isAdmin || g.ownerships.length > 0
         return (
-          // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-            <Link href={`/groups/${g.id}`}>
-              <Button variant="ghost" size="icon" title={canEdit ? t('edit') : t('view')}>
-                {canEdit ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </Link>
-            {!g.isSystem && (
-              <Button
-                variant="ghost"
-                size="icon"
-                title={t('delete')}
-                onClick={() => setDeleteTarget(g)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+          <RowActions>
+            {canEdit ? (
+              <EditAction href={`/groups/${g.id}`} title={t('edit')} />
+            ) : (
+              <Link href={`/groups/${g.id}`}>
+                <Button variant="ghost" size="icon" title={t('view')}>
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </Link>
             )}
-          </div>
+            {!g.isSystem && <DeleteAction onClick={() => setDeleteTarget(g)} title={t('delete')} />}
+          </RowActions>
         )
       },
       meta: { className: 'text-right' },

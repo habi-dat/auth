@@ -1,15 +1,14 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
+import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
 import { deleteAppAction, type getApps } from '@/lib/actions/app-actions'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ExternalLink, Key, Lock, Pencil, Trash2 } from 'lucide-react'
+import { ExternalLink, Key, Lock } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -92,41 +91,23 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
     {
       id: 'groupAccess',
       header: t('groupAccess'),
-      cell: ({ row }) => {
-        const count = row.original.groupAccess.length
-        if (count === 0) return <span className="text-muted-foreground text-sm">Alle</span>
-        return (
-          <span className="text-sm">
-            {row.original.groupAccess
-              .slice(0, 2)
-              .map((a) => a.group.name)
-              .join(', ')}
-            {count > 2 ? ` +${count - 2}` : ''}
-          </span>
-        )
-      },
+      cell: ({ row }) => (
+        <BadgeList
+          data={row.original.groupAccess}
+          label={(a) => a.group.name}
+          emptyMessage={<span className="text-muted-foreground text-sm">Alle</span>}
+        />
+      ),
     },
     {
       id: 'actions',
       header: () => <span className="sr-only">{t('actions')}</span>,
       cell: ({ row }) => (
         // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Link href={`/apps/${row.original.slug}/edit`}>
-            <Button variant="ghost" size="icon" title={t('edit')}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            title={t('delete')}
-            onClick={() => setDeleteTarget(row.original)}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <RowActions>
+          <EditAction href={`/apps/${row.original.slug}/edit`} title={t('edit')} />
+          <DeleteAction onClick={() => setDeleteTarget(row.original)} title={t('delete')} />
+        </RowActions>
       ),
       meta: { className: 'text-right' },
     },
