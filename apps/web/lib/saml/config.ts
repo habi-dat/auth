@@ -31,7 +31,6 @@ function getSecret(envVar: string, filePath: string): string | undefined {
 
   try {
     if (existsSync(filePath)) {
-      console.log('reading secret', envVar, readFileSync(filePath, 'utf-8').trim())
       return readFileSync(filePath, 'utf-8').trim()
     }
   } catch (error) {
@@ -54,14 +53,6 @@ export const samlIdpConfig = {
   privateKey: getSecret('SAML_PRIVATE_KEY', '/app/saml/key.pem'),
   certificate: getSecret('SAML_CERTIFICATE', '/app/saml/cert.cer'),
 } as const
-
-console.log('SAML IDP Config:', {
-  privateKeyType: typeof samlIdpConfig.privateKey,
-  privateKeyLength: samlIdpConfig.privateKey?.length,
-  certificateType: typeof samlIdpConfig.certificate,
-  certificateLength: samlIdpConfig.certificate?.length,
-  certificateIsNull: samlIdpConfig.certificate === null,
-})
 
 export type AppSaml = {
   id: string

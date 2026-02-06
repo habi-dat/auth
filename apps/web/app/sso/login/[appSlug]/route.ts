@@ -12,6 +12,7 @@ import { prisma } from '@habidat/db'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request, context: { params: Promise<{ appSlug: string }> }) {
+  const appUrl = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const { appSlug } = await context.params
   const searchParams = new URL(request.url).searchParams
   const samlRequest = searchParams.get('SAMLRequest')
@@ -28,7 +29,7 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
 
   const sessionData = await getSession()
   if (!sessionData?.user) {
-    const loginUrl = new URL('/login', request.url)
+    const loginUrl = new URL(`${appUrl}/login`, request.url)
     loginUrl.searchParams.set('samlApp', appSlug)
     if (samlRequest) loginUrl.searchParams.set('SAMLRequest', samlRequest)
     if (relayState) loginUrl.searchParams.set('RelayState', relayState)
@@ -37,7 +38,7 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
 
   const sessionWithGroups = await getCurrentUserWithGroups()
   if (!sessionWithGroups) {
-    const loginUrl = new URL('/login', request.url)
+    const loginUrl = new URL(`${appUrl}/login`, request.url)
     loginUrl.searchParams.set('samlApp', appSlug)
     if (samlRequest) loginUrl.searchParams.set('SAMLRequest', samlRequest)
     if (relayState) loginUrl.searchParams.set('RelayState', relayState)

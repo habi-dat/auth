@@ -9,6 +9,8 @@ const publicRoutes = [
   '/reset-password',
   '/accept-invite',
   '/api/auth',
+  '/sso/login',
+  '/sso/logout',
 ]
 
 export function proxy(request: NextRequest) {

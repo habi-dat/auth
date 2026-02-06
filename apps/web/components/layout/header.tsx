@@ -13,6 +13,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { getLogoutUrlAction } from '@/lib/actions/auth-actions'
 import { updateProfileAction } from '@/lib/actions/user-actions'
 import { signOut } from '@/lib/auth-client'
 import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
@@ -55,6 +56,11 @@ export function Header({ user }: HeaderProps) {
   }
 
   const handleSignOut = async () => {
+    const { logoutUrl } = await getLogoutUrlAction()
+    if (logoutUrl) {
+      router.push(logoutUrl)
+      return
+    }
     await signOut()
     router.push('/login')
     router.refresh()
