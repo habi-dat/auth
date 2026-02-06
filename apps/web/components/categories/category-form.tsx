@@ -1,9 +1,9 @@
 'use client'
 
 import { GroupSelector } from '@/components/groups/group-selector'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { FormFooter } from '@/components/ui/form-footer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
@@ -14,7 +14,6 @@ import {
 } from '@/lib/actions/category-actions'
 import type { DiscourseCategoryApi } from '@habidat/discourse'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
@@ -251,31 +250,15 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
               <p className="text-xs text-muted-foreground">{t('groupPermissionsHint')}</p>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                disabled={isPending}
-              >
-                {tCommon('cancel')}
-              </Button>
-              {isEditing && category && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  disabled={isPending}
-                >
-                  {t('delete')}
-                </Button>
-              )}
-            </div>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {tCommon('save')}
-            </Button>
+          <CardFooter>
+            <FormFooter
+              className="flex-1"
+              isLoading={isPending}
+              isEditing={isEditing}
+              onCancel={() => router.back()}
+              onDelete={isEditing && category ? () => setDeleteDialogOpen(true) : undefined}
+              deleteLabel={t('delete')}
+            />
           </CardFooter>
         </form>
       </Card>

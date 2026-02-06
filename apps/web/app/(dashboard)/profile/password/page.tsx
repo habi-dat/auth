@@ -9,11 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { FormFooter } from '@/components/ui/form-footer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -208,16 +209,13 @@ export default function ChangePasswordPage() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Link href="/">
-              <Button type="button" variant="outline">
-                {tCommon('cancel')}
-              </Button>
-            </Link>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('submit')}
-            </Button>
+          <CardFooter>
+            <FormFooter
+              className="flex-1"
+              isLoading={isLoading}
+              cancelHref="/"
+              submitLabel={t('submit')}
+            />
           </CardFooter>
         </form>
       </Card>

@@ -1,10 +1,10 @@
 'use client'
 
 import { GroupSelector } from '@/components/groups/group-selector'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { FormFooter } from '@/components/ui/form-footer'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,10 +14,8 @@ import { createAppAction, deleteAppAction, updateAppAction } from '@/lib/actions
 import type { getApps } from '@/lib/actions/app-actions'
 import { removeAppImageAction, uploadAppImageAction } from '@/lib/actions/upload-app-image-action'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -221,7 +219,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
     throw new Error(result.error)
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: AppFormValues) => {
     const payload = {
       slug: data.slug,
       name: data.name,
@@ -541,30 +539,13 @@ export function AppForm({ app, allGroups }: AppFormProps) {
           />
         </CardContent>
       </Card>
-
-      <div className="flex gap-4">
-        <div className="flex gap-2">
-          <Link href="/apps">
-            <Button type="button" variant="outline" disabled={isExecuting}>
-              {tCommon('cancel')}
-            </Button>
-          </Link>
-          {isEditing && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-              disabled={isExecuting}
-            >
-              {t('delete')}
-            </Button>
-          )}
-        </div>
-        <Button type="submit" disabled={isExecuting}>
-          {isExecuting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {tCommon('save')}
-        </Button>
-      </div>
+      <FormFooter
+        isLoading={isExecuting}
+        isEditing={isEditing}
+        cancelHref="/apps"
+        onDelete={isEditing ? () => setDeleteDialogOpen(true) : undefined}
+        deleteLabel={t('delete')}
+      />
       {isEditing && (
         <ConfirmDialog
           open={deleteDialogOpen}

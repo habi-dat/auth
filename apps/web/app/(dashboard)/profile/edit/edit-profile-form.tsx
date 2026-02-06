@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { FormFooter } from '@/components/ui/form-footer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -22,7 +23,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { updateProfileAction } from '@/lib/actions/user-actions'
 import type { SessionUser } from '@/lib/auth/session'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import Link from 'next/link'
@@ -123,7 +124,7 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
       </div>
 
       <Card>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit as any)}>
           <CardHeader>
             <CardTitle>{t('personalInfo')}</CardTitle>
             <CardDescription>{t('personalInfoDescription')}</CardDescription>
@@ -218,16 +219,14 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
               </Select>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Link href="/">
-              <Button type="button" variant="outline">
-                {tCommon('cancel')}
-              </Button>
-            </Link>
-            <Button type="submit" disabled={isExecuting}>
-              {isExecuting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {tCommon('save')}
-            </Button>
+          <CardFooter>
+            <FormFooter
+              className="flex-1"
+              isLoading={isExecuting}
+              cancelHref="/"
+              isEditing
+              onCancel={() => {}} // FormFooter expects onCancel if not cancelHref, though I handled it in component
+            />
           </CardFooter>
         </form>
       </Card>

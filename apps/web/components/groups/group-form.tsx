@@ -1,12 +1,12 @@
 'use client'
 
 import { GroupSelector } from '@/components/groups/group-selector'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { FormFooter } from '@/components/ui/form-footer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
 import {
   createGroupAction,
@@ -15,7 +15,6 @@ import {
 } from '@/lib/actions/group-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
@@ -158,10 +157,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
     }
   }
 
-  const isLoading =
-    createAction.isPending ||
-    updateAction.isPending ||
-    deleteAction.isPending
+  const isLoading = createAction.isPending || updateAction.isPending || deleteAction.isPending
   const isSystemGroup = group?.isSystem
 
   return (
@@ -235,31 +231,16 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
             </>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={isLoading}
-            >
-              {tCommon('cancel')}
-            </Button>
-            {isEditing && !isSystemGroup && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-                disabled={isLoading}
-              >
-                {t('delete')}
-              </Button>
-            )}
-          </div>
-          <Button type="submit" disabled={isLoading || isSystemGroup}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditing ? tCommon('save') : tCommon('create')}
-          </Button>
+        <CardFooter>
+          <FormFooter
+            className="flex-1"
+            isLoading={isLoading}
+            isEditing={isEditing}
+            onCancel={() => router.back()}
+            onDelete={isEditing && !isSystemGroup ? () => setDeleteDialogOpen(true) : undefined}
+            deleteLabel={t('delete')}
+            submitDisabled={isSystemGroup}
+          />
         </CardFooter>
       </form>
       {isEditing && !isSystemGroup && (
@@ -267,9 +248,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           title={t('deleteTitle')}
-          description={
-            group ? t('deleteDescription', { name: group.name }) : ''
-          }
+          description={group ? t('deleteDescription', { name: group.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ groupId: group!.id })}

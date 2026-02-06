@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { FormFooter } from '@/components/ui/form-footer'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -145,9 +146,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
         </div>
         <p className="text-sm text-muted-foreground">{t('themeColorHelp')}</p>
       </div>
-      <Button type="submit" disabled={isPending}>
-        {isPending ? '…' : t('save')}
-      </Button>
+      <FormFooter isLoading={isPending} submitLabel={t('save')} className="flex justify-end" />
     </form>
   )
 }
