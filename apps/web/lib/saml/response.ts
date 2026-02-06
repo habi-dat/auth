@@ -1,16 +1,6 @@
 import { getIdentityProvider, getServiceProvider } from './config'
-import type { AppSaml } from './config'
-
-export type SamlUser = {
-  id: string
-  email: string
-  username: string
-  uid: string
-  location: string | null
-  title: string | null
-  /** Group slugs (member groups + ancestor groups). Included in SAML attribute "groups". */
-  groups?: string[]
-}
+import type { AppSaml, SamlUser } from './config'
+import { createTemplateCallback } from './template'
 
 export interface SamlLoginRequest {
   query: { SAMLRequest?: string; RelayState?: string }
@@ -48,22 +38,14 @@ export async function createLoginResponse(
   const idp = getIdentityProvider()
   const sp = getServiceProvider(app)
   const binding = 'post'
-  const attributes: Record<string, string | string[]> = {
-    email: user.email,
-    username: user.username,
-    place: user.location ?? '',
-    title: user.title ?? '',
-    uid: user.uid,
-  }
-  if (user.groups?.length) attributes.groups = user.groups
 
   return idp.createLoginResponse(
     sp,
     requestInfo,
     binding,
-    attributes,
-    undefined,
-    undefined,
+    user,
+    createTemplateCallback(idp, sp, user, requestInfo.extract.request.id),
+    false,
     relayState ?? undefined
   )
 }

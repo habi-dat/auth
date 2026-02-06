@@ -16,6 +16,7 @@ export const webEnv = createEnv({
     DISCOURSE_API_KEY: z.string().optional(),
     DISCOURSE_API_USERNAME: z.string().optional(),
     DISCOURSE_SSO_SECRET: z.string().optional(),
+    TZ: z.string().default('Europe/Berlin'),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
@@ -33,6 +34,7 @@ export const webEnv = createEnv({
     DISCOURSE_API_KEY: process.env.DISCOURSE_API_KEY,
     DISCOURSE_API_USERNAME: process.env.DISCOURSE_API_USERNAME,
     DISCOURSE_SSO_SECRET: process.env.DISCOURSE_SSO_SECRET,
+    TZ: process.env.TZ,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   emptyStringAsUndefined: true,

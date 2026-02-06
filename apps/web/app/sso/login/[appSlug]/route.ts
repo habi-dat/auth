@@ -55,7 +55,10 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
   let requestInfo: ParsedLoginRequest
   try {
     requestInfo = await parseLoginRequest(app, {
-      query: { SAMLRequest: samlRequest, RelayState: relayState ?? undefined },
+      query: {
+        SAMLRequest: encodeURIComponent(samlRequest),
+        RelayState: relayState ?? '',
+      },
     })
   } catch {
     return NextResponse.json({ error: 'Invalid SAML request' }, { status: 400 })
@@ -73,11 +76,19 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
     email: sessionWithGroups.user.email,
     username: sessionWithGroups.user.name,
     uid: sessionWithGroups.user.username,
-    location: sessionWithGroups.user.location,
+    location: sessionWithGroups.user.location ?? null,
     title: sessionWithGroups.primaryGroup?.name ?? null,
     groups,
   }
-  const result = await createLoginResponse(app, requestInfo, user, relayState)
+
+  // biome-ignore lint/suspicious/noExplicitAny: is any
+  let result: any
+  try {
+    result = await createLoginResponse(app, requestInfo, user, relayState)
+  } catch (e) {
+    console.error('Failed to create login response:', e)
+    return NextResponse.json({ error: 'Failed to create login response' }, { status: 500 })
+  }
 
   const session = sessionData.session as { id: string }
   if (session?.id) {

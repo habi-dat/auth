@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: habidat_auth
+      TZ: Europe/Berlin
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     ports:
@@ -33,6 +34,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    environment:
+      TZ: Europe/Berlin
     command: redis-server --appendonly yes
     networks:
       - habidat-user
@@ -64,8 +67,10 @@ services:
       LETSENCRYPT_HOST: auth.habidat.local
       CERT_NAME: habidat.local
       LDAP_URL: ldap://ldap:389
+      TZ: Europe/Berlin
     volumes:
       - .:/app
+      - /home/florian/sources/habidat-setup/store/auth/cert/saml:/app/saml
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -91,6 +96,7 @@ services:
       SMTP_SECURE: "false"
       SMTP_FROM: dev@habidat.local
       LDAP_URL: ldap://ldap:389
+      TZ: Europe/Berlin
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
