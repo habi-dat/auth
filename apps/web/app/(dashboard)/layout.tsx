@@ -18,15 +18,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login')
   }
 
+  // Only show sidebar for admins and group admins
+  const showSidebar = session.isAdmin || session.isGroupAdmin
+
   return (
     <div className="flex min-h-screen">
-      <Sidebar
-        isAdmin={session.isAdmin}
-        isGroupAdmin={session.isGroupAdmin}
-        brandName={generalSettings.platformName?.trim() || undefined}
-        logoUrl={generalSettings.logoUrl?.trim() || undefined}
-        logoUpdatedAt={generalSettings.logoUpdatedAt}
-      />
+      {showSidebar && (
+        <Sidebar
+          isAdmin={session.isAdmin}
+          isGroupAdmin={session.isGroupAdmin}
+          brandName={generalSettings.platformName?.trim() || undefined}
+          logoUrl={generalSettings.logoUrl?.trim() || undefined}
+          logoUpdatedAt={generalSettings.logoUpdatedAt}
+        />
+      )}
       <div className="flex-1 flex flex-col">
         <Header user={session.user} />
         <main className="flex-1 p-6">{children}</main>

@@ -38,8 +38,11 @@ export type AppMinAggregateOutputType = {
   id: string | null
   slug: string | null
   name: string | null
+  description: string | null
   url: string | null
   iconUrl: string | null
+  logoUrl: string | null
+  useIconAsLogo: boolean | null
   sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -58,8 +61,11 @@ export type AppMaxAggregateOutputType = {
   id: string | null
   slug: string | null
   name: string | null
+  description: string | null
   url: string | null
   iconUrl: string | null
+  logoUrl: string | null
+  useIconAsLogo: boolean | null
   sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -78,8 +84,11 @@ export type AppCountAggregateOutputType = {
   id: number
   slug: number
   name: number
+  description: number
   url: number
   iconUrl: number
+  logoUrl: number
+  useIconAsLogo: number
   sortOrder: number
   createdAt: number
   updatedAt: number
@@ -108,8 +117,11 @@ export type AppMinAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  description?: true
   url?: true
   iconUrl?: true
+  logoUrl?: true
+  useIconAsLogo?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -128,8 +140,11 @@ export type AppMaxAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  description?: true
   url?: true
   iconUrl?: true
+  logoUrl?: true
+  useIconAsLogo?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -148,8 +163,11 @@ export type AppCountAggregateInputType = {
   id?: true
   slug?: true
   name?: true
+  description?: true
   url?: true
   iconUrl?: true
+  logoUrl?: true
+  useIconAsLogo?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -255,8 +273,11 @@ export type AppGroupByOutputType = {
   id: string
   slug: string
   name: string
+  description: string | null
   url: string
   iconUrl: string | null
+  logoUrl: string | null
+  useIconAsLogo: boolean
   sortOrder: number
   createdAt: Date
   updatedAt: Date
@@ -298,8 +319,11 @@ export type AppWhereInput = {
   id?: Prisma.StringFilter<"App"> | string
   slug?: Prisma.StringFilter<"App"> | string
   name?: Prisma.StringFilter<"App"> | string
+  description?: Prisma.StringNullableFilter<"App"> | string | null
   url?: Prisma.StringFilter<"App"> | string
   iconUrl?: Prisma.StringNullableFilter<"App"> | string | null
+  logoUrl?: Prisma.StringNullableFilter<"App"> | string | null
+  useIconAsLogo?: Prisma.BoolFilter<"App"> | boolean
   sortOrder?: Prisma.IntFilter<"App"> | number
   createdAt?: Prisma.DateTimeFilter<"App"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"App"> | Date | string
@@ -320,8 +344,11 @@ export type AppOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   url?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  useIconAsLogo?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -345,8 +372,11 @@ export type AppWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.AppWhereInput[]
   NOT?: Prisma.AppWhereInput | Prisma.AppWhereInput[]
   name?: Prisma.StringFilter<"App"> | string
+  description?: Prisma.StringNullableFilter<"App"> | string | null
   url?: Prisma.StringFilter<"App"> | string
   iconUrl?: Prisma.StringNullableFilter<"App"> | string | null
+  logoUrl?: Prisma.StringNullableFilter<"App"> | string | null
+  useIconAsLogo?: Prisma.BoolFilter<"App"> | boolean
   sortOrder?: Prisma.IntFilter<"App"> | number
   createdAt?: Prisma.DateTimeFilter<"App"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"App"> | Date | string
@@ -367,8 +397,11 @@ export type AppOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   url?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  useIconAsLogo?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -395,8 +428,11 @@ export type AppScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"App"> | string
   slug?: Prisma.StringWithAggregatesFilter<"App"> | string
   name?: Prisma.StringWithAggregatesFilter<"App"> | string
+  description?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
   url?: Prisma.StringWithAggregatesFilter<"App"> | string
   iconUrl?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
+  logoUrl?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
+  useIconAsLogo?: Prisma.BoolWithAggregatesFilter<"App"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"App"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"App"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"App"> | Date | string
@@ -415,8 +451,11 @@ export type AppCreateInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -437,8 +476,11 @@ export type AppUncheckedCreateInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -459,8 +501,11 @@ export type AppUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -481,8 +526,11 @@ export type AppUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -503,8 +551,11 @@ export type AppCreateManyInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -523,8 +574,11 @@ export type AppUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -543,8 +597,11 @@ export type AppUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -563,8 +620,11 @@ export type AppCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   url?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
+  logoUrl?: Prisma.SortOrder
+  useIconAsLogo?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -587,8 +647,11 @@ export type AppMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   url?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
+  logoUrl?: Prisma.SortOrder
+  useIconAsLogo?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -607,8 +670,11 @@ export type AppMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   url?: Prisma.SortOrder
   iconUrl?: Prisma.SortOrder
+  logoUrl?: Prisma.SortOrder
+  useIconAsLogo?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -672,8 +738,11 @@ export type AppCreateWithoutGroupAccessInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -693,8 +762,11 @@ export type AppUncheckedCreateWithoutGroupAccessInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -730,8 +802,11 @@ export type AppUpdateWithoutGroupAccessInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -751,8 +826,11 @@ export type AppUncheckedUpdateWithoutGroupAccessInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -772,8 +850,11 @@ export type AppCreateWithoutSamlSessionsInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -793,8 +874,11 @@ export type AppUncheckedCreateWithoutSamlSessionsInput = {
   id?: string
   slug: string
   name: string
+  description?: string | null
   url: string
   iconUrl?: string | null
+  logoUrl?: string | null
+  useIconAsLogo?: boolean
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -830,8 +914,11 @@ export type AppUpdateWithoutSamlSessionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -851,8 +938,11 @@ export type AppUncheckedUpdateWithoutSamlSessionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.StringFieldUpdateOperationsInput | string
   iconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  useIconAsLogo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -912,8 +1002,11 @@ export type AppSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   id?: boolean
   slug?: boolean
   name?: boolean
+  description?: boolean
   url?: boolean
   iconUrl?: boolean
+  logoUrl?: boolean
+  useIconAsLogo?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -935,8 +1028,11 @@ export type AppSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   slug?: boolean
   name?: boolean
+  description?: boolean
   url?: boolean
   iconUrl?: boolean
+  logoUrl?: boolean
+  useIconAsLogo?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -955,8 +1051,11 @@ export type AppSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   slug?: boolean
   name?: boolean
+  description?: boolean
   url?: boolean
   iconUrl?: boolean
+  logoUrl?: boolean
+  useIconAsLogo?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -975,8 +1074,11 @@ export type AppSelectScalar = {
   id?: boolean
   slug?: boolean
   name?: boolean
+  description?: boolean
   url?: boolean
   iconUrl?: boolean
+  logoUrl?: boolean
+  useIconAsLogo?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -991,7 +1093,7 @@ export type AppSelectScalar = {
   oidcClientSecret?: boolean
 }
 
-export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "url" | "iconUrl" | "sortOrder" | "createdAt" | "updatedAt" | "samlEnabled" | "samlEntityId" | "samlAcsUrl" | "samlSloUrl" | "samlCertificate" | "oidcEnabled" | "oidcClientId" | "oidcRedirectUris" | "oidcClientSecret", ExtArgs["result"]["app"]>
+export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "url" | "iconUrl" | "logoUrl" | "useIconAsLogo" | "sortOrder" | "createdAt" | "updatedAt" | "samlEnabled" | "samlEntityId" | "samlAcsUrl" | "samlSloUrl" | "samlCertificate" | "oidcEnabled" | "oidcClientId" | "oidcRedirectUris" | "oidcClientSecret", ExtArgs["result"]["app"]>
 export type AppInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupAccess?: boolean | Prisma.App$groupAccessArgs<ExtArgs>
   samlSessions?: boolean | Prisma.App$samlSessionsArgs<ExtArgs>
@@ -1010,8 +1112,11 @@ export type $AppPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     id: string
     slug: string
     name: string
+    description: string | null
     url: string
     iconUrl: string | null
+    logoUrl: string | null
+    useIconAsLogo: boolean
     sortOrder: number
     createdAt: Date
     updatedAt: Date
@@ -1452,8 +1557,11 @@ export interface AppFieldRefs {
   readonly id: Prisma.FieldRef<"App", 'String'>
   readonly slug: Prisma.FieldRef<"App", 'String'>
   readonly name: Prisma.FieldRef<"App", 'String'>
+  readonly description: Prisma.FieldRef<"App", 'String'>
   readonly url: Prisma.FieldRef<"App", 'String'>
   readonly iconUrl: Prisma.FieldRef<"App", 'String'>
+  readonly logoUrl: Prisma.FieldRef<"App", 'String'>
+  readonly useIconAsLogo: Prisma.FieldRef<"App", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"App", 'Int'>
   readonly createdAt: Prisma.FieldRef<"App", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"App", 'DateTime'>

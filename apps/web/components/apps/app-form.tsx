@@ -3,22 +3,21 @@
 import { GroupSelector } from '@/components/groups/group-selector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/use-toast'
-import {
-  createAppAction,
-  deleteAppAction,
-  updateAppAction,
-} from '@/lib/actions/app-actions'
+import { createAppAction, deleteAppAction, updateAppAction } from '@/lib/actions/app-actions'
 import type { getApps } from '@/lib/actions/app-actions'
+import { removeAppImageAction, uploadAppImageAction } from '@/lib/actions/upload-app-image-action'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useAction } from 'next-safe-action/hooks'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -27,11 +26,15 @@ import { z } from 'zod'
 type AppRow = Awaited<ReturnType<typeof getApps>>[number]
 
 const appFormSchema = z.object({
-  slug: z.string().min(2).regex(/^[a-zA-Z0-9-]+$/),
+  slug: z
+    .string()
+    .min(2)
+    .regex(/^[a-zA-Z0-9-]+$/),
   name: z.string().min(2),
+  description: z.string().optional().nullable(),
   url: z.string().url(),
-  iconUrl: z.string().url().optional().nullable(),
-  sortOrder: z.coerce.number().int().min(0),
+  sortOrder: z.number().int().min(0),
+  useIconAsLogo: z.boolean(),
   samlEnabled: z.boolean(),
   samlEntityId: z.string().optional().nullable(),
   samlAcsUrl: z.string().url().optional().nullable(),
@@ -57,6 +60,10 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [iconUrl, setIconUrl] = useState(app?.iconUrl ?? null)
+  const [logoUrl, setLogoUrl] = useState(app?.logoUrl ?? null)
+  const [iconVersion, setIconVersion] = useState(0)
+  const [logoVersion, setLogoVersion] = useState(0)
   const isEditing = !!app
 
   const createAction = useAction(createAppAction, {
@@ -104,14 +111,15 @@ export function AppForm({ app, allGroups }: AppFormProps) {
     },
   })
 
-  const form = useForm<AppFormValues>({
+  const form = useForm<AppFormValues, unknown, AppFormValues>({
     resolver: zodResolver(appFormSchema),
     defaultValues: {
       slug: app?.slug ?? '',
       name: app?.name ?? '',
+      description: app?.description ?? '',
       url: app?.url ?? '',
-      iconUrl: app?.iconUrl ?? null,
       sortOrder: app?.sortOrder ?? 0,
+      useIconAsLogo: app?.useIconAsLogo ?? true,
       samlEnabled: app?.samlEnabled ?? false,
       samlEntityId: app?.samlEntityId ?? null,
       samlAcsUrl: app?.samlAcsUrl ?? null,
@@ -127,23 +135,85 @@ export function AppForm({ app, allGroups }: AppFormProps) {
 
   const samlEnabled = form.watch('samlEnabled')
   const oidcEnabled = form.watch('oidcEnabled')
+  const useIconAsLogo = form.watch('useIconAsLogo')
+
+  const handleIconUpload = async (file: File) => {
+    if (!app?.id) {
+      throw new Error('Save the app first before uploading images')
+    }
+    const formData = new FormData()
+    formData.set('appId', app.id)
+    formData.set('imageType', 'icon')
+    formData.set('file', file)
+    const result = await uploadAppImageAction(formData)
+    if (result.success) {
+      setIconUrl(result.imageUrl)
+      setIconVersion((v) => v + 1)
+      toast({ title: t('iconUploaded') })
+      return result.imageUrl
+    }
+    throw new Error(result.error)
+  }
+
+  const handleIconRemove = async () => {
+    if (!app?.id) return
+    const result = await removeAppImageAction(app.id, 'icon')
+    if (result.success) {
+      setIconUrl(null)
+      toast({ title: t('iconRemoved') })
+      return
+    }
+    throw new Error(result.error)
+  }
+
+  const handleLogoUpload = async (file: File) => {
+    if (!app?.id) {
+      throw new Error('Save the app first before uploading images')
+    }
+    const formData = new FormData()
+    formData.set('appId', app.id)
+    formData.set('imageType', 'logo')
+    formData.set('file', file)
+    const result = await uploadAppImageAction(formData)
+    if (result.success) {
+      setLogoUrl(result.imageUrl)
+      setLogoVersion((v) => v + 1)
+      toast({ title: t('logoUploaded') })
+      return result.imageUrl
+    }
+    throw new Error(result.error)
+  }
+
+  const handleLogoRemove = async () => {
+    if (!app?.id) return
+    const result = await removeAppImageAction(app.id, 'logo')
+    if (result.success) {
+      setLogoUrl(null)
+      toast({ title: t('logoRemoved') })
+      return
+    }
+    throw new Error(result.error)
+  }
 
   const onSubmit = (data: AppFormValues) => {
     const payload = {
       slug: data.slug,
       name: data.name,
+      description: data.description ?? null,
       url: data.url,
-      iconUrl: data.iconUrl ?? null,
+      iconUrl: iconUrl,
+      logoUrl: logoUrl,
+      useIconAsLogo: data.useIconAsLogo,
       sortOrder: data.sortOrder,
       samlEnabled: data.samlEnabled,
-      samlEntityId: data.samlEnabled ? data.samlEntityId ?? null : null,
-      samlAcsUrl: data.samlEnabled ? data.samlAcsUrl ?? null : null,
-      samlSloUrl: data.samlEnabled ? data.samlSloUrl ?? null : null,
-      samlCertificate: data.samlEnabled ? data.samlCertificate ?? null : null,
+      samlEntityId: data.samlEnabled ? (data.samlEntityId ?? null) : null,
+      samlAcsUrl: data.samlEnabled ? (data.samlAcsUrl ?? null) : null,
+      samlSloUrl: data.samlEnabled ? (data.samlSloUrl ?? null) : null,
+      samlCertificate: data.samlEnabled ? (data.samlCertificate ?? null) : null,
       oidcEnabled: data.oidcEnabled,
-      oidcClientId: data.oidcEnabled ? data.oidcClientId ?? null : null,
-      oidcRedirectUris: data.oidcEnabled ? data.oidcRedirectUris ?? null : null,
-      oidcClientSecret: data.oidcEnabled ? data.oidcClientSecret ?? null : null,
+      oidcClientId: data.oidcEnabled ? (data.oidcClientId ?? null) : null,
+      oidcRedirectUris: data.oidcEnabled ? (data.oidcRedirectUris ?? null) : null,
+      oidcClientSecret: data.oidcEnabled ? (data.oidcClientSecret ?? null) : null,
       groupIds: data.groupIds ?? [],
     }
     if (isEditing && app) {
@@ -193,6 +263,16 @@ export function AppForm({ app, allGroups }: AppFormProps) {
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="description">{t('appDescription')}</Label>
+            <Textarea
+              id="description"
+              {...form.register('description')}
+              disabled={isExecuting}
+              placeholder={t('appDescriptionPlaceholder')}
+              rows={2}
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="url">{t('url')}</Label>
             <Input
               id="url"
@@ -205,29 +285,63 @@ export function AppForm({ app, allGroups }: AppFormProps) {
               <p className="text-sm text-destructive">{form.formState.errors.url.message}</p>
             )}
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="iconUrl">{t('iconUrl')}</Label>
-              <Input
-                id="iconUrl"
-                type="url"
-                {...form.register('iconUrl')}
-                disabled={isExecuting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
-              <Input
-                id="sortOrder"
-                type="number"
-                {...form.register('sortOrder')}
-                disabled={isExecuting}
-                min={0}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
+            <Input
+              id="sortOrder"
+              type="number"
+              {...form.register('sortOrder')}
+              disabled={isExecuting}
+              min={0}
+              className="w-24"
+            />
           </div>
         </CardContent>
       </Card>
+
+      {isEditing && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bilder</CardTitle>
+            <CardDescription>Icon und Logo für die App</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <ImageUpload
+                label={t('icon')}
+                value={iconUrl}
+                onUpload={handleIconUpload}
+                onRemove={handleIconRemove}
+                hint={t('iconHint')}
+                size="md"
+                cacheKey={iconVersion}
+              />
+              {!useIconAsLogo && (
+                <ImageUpload
+                  label={t('logo')}
+                  value={logoUrl}
+                  onUpload={handleLogoUpload}
+                  onRemove={handleLogoRemove}
+                  hint={t('logoHint')}
+                  size="md"
+                  cacheKey={logoVersion}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="useIconAsLogo"
+                checked={useIconAsLogo}
+                onCheckedChange={(checked) => form.setValue('useIconAsLogo', !!checked)}
+                disabled={isExecuting}
+              />
+              <Label htmlFor="useIconAsLogo" className="cursor-pointer">
+                {t('useIconAsLogo')}
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

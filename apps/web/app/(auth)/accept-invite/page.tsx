@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { acceptInviteAction, getInviteByToken } from '@/lib/actions/invite-actions'
 import { useToast } from '@/components/ui/use-toast'
+import { acceptInviteAction, getInviteByToken } from '@/lib/actions/invite-actions'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -83,9 +83,7 @@ export default function AcceptInvitePage() {
       <div className="space-y-6 rounded-lg border bg-card p-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t('description')}
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
         </div>
 
         {!token ? (
@@ -98,7 +96,6 @@ export default function AcceptInvitePage() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t('namePlaceholder')}
                 required
                 minLength={2}
               />
@@ -109,7 +106,6 @@ export default function AcceptInvitePage() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder={t('usernamePlaceholder')}
                 required
                 minLength={3}
                 pattern="^[a-zA-Z0-9_-]+$"
@@ -155,10 +151,7 @@ export default function AcceptInvitePage() {
         )}
 
         <div className="text-center text-sm">
-          <Link
-            href="/login"
-            className="text-primary hover:underline"
-          >
+          <Link href="/login" className="text-primary hover:underline">
             {t('backToLogin')}
           </Link>
         </div>

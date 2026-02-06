@@ -69,7 +69,7 @@ export const getEmailPreviewHtmlAction = adminAction
       const html = await render(
         InviteEmail({
           subject: subj,
-          inviterName: 'Max Mustermann',
+          inviterName: 'Resi Stanz',
           inviteLink: '#',
           platformName,
           appUrl,

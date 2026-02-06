@@ -1,4 +1,25 @@
 {
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "error": "Error",
+    "errorGeneric": "Something went wrong",
+    "replace": "Replace",
+    "remove": "Remove",
+    "upload": "Upload",
+    "uploadImage": "Upload image",
+    "dropImageHere": "Drop image here",
+    "orClickToBrowse": "or click to browse",
+    "fileTooLarge": "File too large (max {max})",
+    "uploadFailed": "Upload failed",
+    "removeFailed": "Remove failed"
+  },
+  "home": {
+    "title": "Apps",
+    "description": "Your applications and services",
+    "noApps": "No apps available",
+    "openApp": "Open"
+  },
   "header": {
     "profile": "Profile",
     "editProfile": "Edit profile",
@@ -44,7 +65,18 @@
     "deleted": "App deleted",
     "delete": "Delete",
     "deleteTitle": "Delete app?",
-    "deleteDescription": "The app \"{name}\" will be permanently deleted. This cannot be undone."
+    "deleteDescription": "The app \"{name}\" will be permanently deleted. This cannot be undone.",
+    "appDescription": "Description",
+    "appDescriptionPlaceholder": "Brief description of the app...",
+    "icon": "Icon",
+    "iconHint": "Square image (PNG, JPG, SVG, WebP), max 2MB",
+    "logo": "Logo",
+    "logoHint": "Displayed on the home screen, max 2MB",
+    "useIconAsLogo": "Use icon as logo",
+    "iconUploaded": "Icon uploaded",
+    "iconRemoved": "Icon removed",
+    "logoUploaded": "Logo uploaded",
+    "logoRemoved": "Logo removed"
   },
   "emailTemplates": {
     "invite": {
@@ -211,6 +243,31 @@
     "groups": "Groups",
     "groupAdmins": "Group admin of"
   },
+  "invites": {
+    "title": "Invites",
+    "description": "Create and manage invitations",
+    "createInvite": "Create invite",
+    "newInvite": "New invite",
+    "email": "Email",
+    "memberGroups": "Member groups",
+    "ownerGroups": "Admin groups",
+    "expiresAt": "Expires",
+    "createdBy": "Created by",
+    "noInvites": "No invites",
+    "created": "Invite created",
+    "createdDescription": "The invitation has been sent.",
+    "emailNotSent": "Email could not be sent (check SMTP).",
+    "resend": "Resend",
+    "resent": "Invite sent",
+    "resentDescription": "The invitation email has been resent.",
+    "delete": "Delete",
+    "deleteTitle": "Delete invite?",
+    "deleteDescription": "The invitation for \"{email}\" will be permanently deleted.",
+    "deleteSelected": "Delete selected",
+    "selectGroupsPlaceholder": "Select groups...",
+    "searchGroups": "Search groups...",
+    "noGroupsFound": "No groups found."
+  },
   "acceptInvite": {
     "primaryGroup": "Primary group",
     "primaryGroupPlaceholder": "Select primary group",
@@ -219,6 +276,7 @@
   "sidebar": {
     "brand": "habidat",
     "nav": {
+      "home": "Home",
       "profile": "Profile",
       "users": "Users",
       "groups": "Groups",

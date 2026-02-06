@@ -16,11 +16,11 @@ import {
 import { updateProfileAction } from '@/lib/actions/user-actions'
 import { signOut } from '@/lib/auth-client'
 import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAction } from 'next-safe-action/hooks'
 
 interface HeaderProps {
   user: {
@@ -113,7 +113,7 @@ export function Header({ user }: HeaderProps) {
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuItem asChild>
-              <Link href="/" className="cursor-pointer">
+              <Link href="/profile" className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 <span>{t('profile')}</span>
               </Link>

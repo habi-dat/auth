@@ -24,9 +24,11 @@ export async function sendEmail(params: {
   const transporter = getTransporter()
   const from = process.env.SMTP_FROM
   if (!transporter || !from) {
+    console.error(`SMTP not configured, cannot send email ${params.subject} to ${params.to}`)
     return { sent: false }
   }
   try {
+    console.log(`Sending email ${params.subject} to ${params.to}`)
     await transporter.sendMail({
       from,
       to: params.to,
@@ -36,6 +38,7 @@ export async function sendEmail(params: {
     return { sent: true }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
+    console.error(`Failed to send email ${params.subject} to ${params.to}: ${message}`)
     return { sent: false, error: message }
   }
 }

@@ -1,7 +1,7 @@
 'use server'
 
-import { createAuditLog } from '@/lib/audit'
 import { adminAction } from '@/lib/actions/client'
+import { createAuditLog } from '@/lib/audit'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -15,11 +15,42 @@ export async function getApps() {
   })
 }
 
+/** Get apps accessible to a user based on their group memberships */
+export async function getUserApps(userGroupIds: string[]) {
+  return prisma.app.findMany({
+    where: {
+      OR: [
+        // Apps with no group restrictions (open to all)
+        { groupAccess: { none: {} } },
+        // Apps where user is in one of the allowed groups
+        { groupAccess: { some: { groupId: { in: userGroupIds } } } },
+      ],
+    },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      url: true,
+      iconUrl: true,
+      logoUrl: true,
+      useIconAsLogo: true,
+    },
+  })
+}
+
 const appSchema = z.object({
-  slug: z.string().min(2).regex(/^[a-zA-Z0-9-]+$/, 'Slug must be letters, numbers, hyphens only'),
+  slug: z
+    .string()
+    .min(2)
+    .regex(/^[a-zA-Z0-9-]+$/, 'Slug must be letters, numbers, hyphens only'),
   name: z.string().min(2),
+  description: z.string().optional().nullable(),
   url: z.string().url(),
   iconUrl: z.string().url().optional().nullable(),
+  logoUrl: z.string().optional().nullable(),
+  useIconAsLogo: z.boolean().default(true),
   sortOrder: z.number().int().min(0).default(0),
   samlEnabled: z.boolean().default(false),
   samlEntityId: z.string().optional().nullable(),
@@ -47,8 +78,11 @@ export const createAppAction = adminAction
       data: {
         slug: parsedInput.slug,
         name: parsedInput.name,
+        description: parsedInput.description ?? undefined,
         url: parsedInput.url,
         iconUrl: parsedInput.iconUrl ?? undefined,
+        logoUrl: parsedInput.logoUrl ?? undefined,
+        useIconAsLogo: parsedInput.useIconAsLogo,
         sortOrder: parsedInput.sortOrder,
         samlEnabled: parsedInput.samlEnabled,
         samlEntityId: parsedInput.samlEntityId ?? undefined,
@@ -90,8 +124,11 @@ export const updateAppAction = adminAction
         data: {
           slug: parsedInput.slug,
           name: parsedInput.name,
+          description: parsedInput.description ?? undefined,
           url: parsedInput.url,
           iconUrl: parsedInput.iconUrl ?? undefined,
+          logoUrl: parsedInput.logoUrl ?? undefined,
+          useIconAsLogo: parsedInput.useIconAsLogo,
           sortOrder: parsedInput.sortOrder,
           samlEnabled: parsedInput.samlEnabled,
           samlEntityId: parsedInput.samlEntityId ?? undefined,

@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -11,16 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  updateGeneralSettingsAction,
-  removeLogoAction,
-} from '@/lib/actions/settings-actions'
+import { useToast } from '@/components/ui/use-toast'
+import { removeLogoAction, updateGeneralSettingsAction } from '@/lib/actions/settings-actions'
 import { uploadLogoAction } from '@/lib/actions/upload-logo-action'
 import type { GeneralSettings } from '@/lib/settings/general'
-import { useToast } from '@/components/ui/use-toast'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface GeneralSettingsFormProps {
   initialSettings: GeneralSettings
@@ -30,7 +28,6 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const t = useTranslations('settings.general')
   const { toast } = useToast()
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [platformName, setPlatformName] = useState(initialSettings.platformName ?? '')
   const [logoUrl, setLogoUrl] = useState(initialSettings.logoUrl ?? '')
   const [logoVersion, setLogoVersion] = useState(0)
@@ -42,7 +39,6 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
       : '1'
   )
   const [isPending, setIsPending] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,36 +58,30 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
     }
   }
 
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setIsUploading(true)
+  const handleLogoUpload = async (file: File) => {
     const formData = new FormData()
     formData.set('logo', file)
     const result = await uploadLogoAction(formData)
-    setIsUploading(false)
-    e.target.value = ''
     if (result.success) {
       setLogoUrl(result.logoUrl)
       setLogoVersion((v) => v + 1)
       router.refresh()
       toast({ title: t('logoUploaded') })
-    } else {
-      toast({ title: t('logoUploadFailed'), description: result.error, variant: 'destructive' })
+      return result.logoUrl
     }
+    throw new Error(result.error)
   }
 
-  const handleRemoveLogo = async () => {
-    setIsPending(true)
+  const handleLogoRemove = async () => {
     const result = await removeLogoAction({})
-    setIsPending(false)
     if (result?.data?.success) {
       setLogoUrl('')
       router.refresh()
       toast({ title: t('logoRemoved') })
+      return
     }
     if (result?.serverError) {
-      toast({ title: t('save'), description: result.serverError, variant: 'destructive' })
+      throw new Error(result.serverError)
     }
   }
 
@@ -108,67 +98,15 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
         />
       </div>
 
-      <div className="space-y-2">
-        <Label>{t('logo')}</Label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".png,.jpg,.jpeg,.svg,.webp,image/png,image/jpeg,image/svg+xml,image/webp"
-          onChange={handleLogoChange}
-          disabled={isUploading}
-          className="sr-only"
-          aria-label={logoUrl ? t('logoReplace') : t('logoUpload')}
-        />
-        <div className="flex flex-wrap items-start gap-6">
-          {logoUrl ? (
-            <div className="flex flex-col items-start gap-2">
-              <div className="border-border flex h-20 w-20 items-center justify-center overflow-hidden rounded border bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoVersion ? `${logoUrl}?v=${logoVersion}` : logoUrl}
-                  alt=""
-                  className="h-full w-full object-contain"
-                  width={80}
-                  height={80}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? '…' : t('logoReplace')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveLogo}
-                  disabled={isPending}
-                >
-                  {t('logoRemove')}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {isUploading ? '…' : t('logoUpload')}
-              </Button>
-              <p className="text-muted-foreground text-xs">{t('logoUploadHelp')}</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <ImageUpload
+        label={t('logo')}
+        value={logoUrl || null}
+        onUpload={handleLogoUpload}
+        onRemove={handleLogoRemove}
+        hint={t('logoUploadHelp')}
+        size="md"
+        cacheKey={logoVersion}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="supportEmail">{t('supportEmail')}</Label>

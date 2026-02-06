@@ -5,6 +5,7 @@ import {
   FileText,
   FolderTree,
   History,
+  Home,
   Layers,
   Mail,
   RefreshCw,
@@ -39,7 +40,8 @@ export function Sidebar({
   const displayName = brandName ?? t('brand')
 
   const navItems = [
-    { href: '/', labelKey: 'nav.profile', icon: User },
+    { href: '/', labelKey: 'nav.home', icon: Home },
+    { href: '/profile', labelKey: 'nav.profile', icon: User },
     { href: '/users', labelKey: 'nav.users', icon: Users, adminOnly: true },
     { href: '/groups', labelKey: 'nav.groups', icon: FolderTree },
     { href: '/categories', labelKey: 'nav.categories', icon: Layers, adminOnly: true },
@@ -85,7 +87,11 @@ export function Sidebar({
         <ul className="space-y-1">
           {filteredNavItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+            // For home, only exact match; for others, also match subpaths
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
               <li key={item.href}>
                 <Link

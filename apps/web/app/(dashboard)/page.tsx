@@ -1,150 +1,77 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import { getUserApps } from '@/lib/actions/app-actions'
 import { requireUserWithGroups } from '@/lib/auth/session'
-import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
-export default async function ProfilePage() {
-  const t = await getTranslations('profile')
-  const { user, memberships, ownerships, primaryGroup } = await requireUserWithGroups()
+export default async function HomePage() {
+  const t = await getTranslations('home')
+  const { memberships } = await requireUserWithGroups()
 
-  const initials = user.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
-  const langLabel =
-    user.preferredLanguage === 'de' ? t('languageDe') : user.preferredLanguage || t('languageDe')
-
-  const themeLabels: Record<string, string> = {
-    '1': t('theme1'),
-    '2': t('theme2'),
-    '3': t('theme3'),
-    '4': t('theme4'),
-  }
-  const themeLabel = themeLabels[user.preferredTheme ?? '1'] ?? user.preferredTheme ?? t('theme1')
-
-  const colorModeLabels: Record<string, string> = {
-    light: t('colorModeLight'),
-    dark: t('colorModeDark'),
-    system: t('colorModeSystem'),
-  }
-  const colorModeLabel =
-    colorModeLabels[user.preferredColorMode ?? 'system'] ??
-    user.preferredColorMode ??
-    t('colorModeSystem')
+  const userGroupIds = memberships.map((m) => m.groupId)
+  const apps = await getUserApps(userGroupIds)
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div>
         <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <div className="flex gap-2">
-          <Link href="/profile/edit">
-            <Button variant="outline">
-              <Pencil className="mr-2 h-4 w-4" />
-              {t('edit')}
-            </Button>
-          </Link>
-          <Link href="/profile/password">
-            <Button variant="outline">
-              <Key className="mr-2 h-4 w-4" />
-              {t('changePassword')}
-            </Button>
-          </Link>
-        </div>
+        <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-2xl">{user.name}</CardTitle>
-              <CardDescription className="text-base">@{user.username}</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('email')}</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('location')}</p>
-                <p className="font-medium">{user.location ?? '—'}</p>
-              </div>
-            </div>
+      {apps.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            {t('noApps')}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {apps.map((app) => {
+            const displayImage = app.useIconAsLogo ? app.iconUrl : app.logoUrl || app.iconUrl
 
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('primaryGroup')}</p>
-                <p className="font-medium">{primaryGroup?.name ?? '—'}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('groups')}</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {memberships.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    memberships.map((m) => (
-                      <Badge key={m.group.id} variant="secondary">
-                        {m.group.name}
-                      </Badge>
-                    ))
+            return (
+              <Link
+                key={app.id}
+                href={app.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group"
+              >
+                <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3">
+                      {displayImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={displayImage}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded-lg object-contain bg-muted border"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-lg">
+                          {app.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold tracking-tight truncate flex items-center gap-2">
+                          {app.name}
+                          <ExternalLink className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
+                        </h3>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  {app.description && (
+                    <CardContent className="pt-0">
+                      <CardDescription className="line-clamp-2">{app.description}</CardDescription>
+                    </CardContent>
                   )}
-                </div>
-              </div>
-            </div>
-            {ownerships.length > 0 && (
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('groupAdmins')}</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {ownerships.map((o) => (
-                      <Badge key={o.group.id} variant="default">
-                        {o.group.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('preferredLanguage')}</p>
-                <p className="font-medium">{langLabel}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <HardDrive className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('storageQuota')}</p>
-                <p className="font-medium">{user.storageQuota}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

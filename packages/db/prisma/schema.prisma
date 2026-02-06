@@ -236,14 +236,17 @@ model InviteGroupOwnership {
 // ============================================================================
 
 model App {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  name      String
-  url       String
-  iconUrl   String?
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  url         String
+  iconUrl     String?
+  logoUrl     String?
+  useIconAsLogo Boolean @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // SAML configuration
   samlEnabled     Boolean @default(false)

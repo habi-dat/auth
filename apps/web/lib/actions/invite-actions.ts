@@ -4,6 +4,7 @@ import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@/lib/auth/roles'
 import { sendEmail } from '@/lib/email/send'
 import { renderInviteEmail } from '@/lib/email/templates'
+import { hashPasswordSsha } from '@/lib/ldap/password'
 import { createSyncEvent } from '@/lib/sync/create-sync-event'
 import { prisma } from '@habidat/db'
 import { hashPassword } from 'better-auth/crypto'
@@ -11,7 +12,6 @@ import { addDays } from 'date-fns'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { actionClient, groupAdminAction } from './client'
-import { hashPasswordSsha } from '@/lib/ldap/password'
 
 export type InviteWithGroupsResult = {
   invite: { memberGroups: { groupId: string }[]; ownerGroups: { groupId: string }[] }
@@ -172,9 +172,7 @@ export const deleteInvitesAction = groupAdminAction
         invite.memberGroups.some((mg) =>
           session.ownerships.some((o) => o.groupId === mg.groupId)
         ) ||
-        invite.ownerGroups.some((og) =>
-          session.ownerships.some((o) => o.groupId === og.groupId)
-        )
+        invite.ownerGroups.some((og) => session.ownerships.some((o) => o.groupId === og.groupId))
       if (!canDelete) {
         throw new Error(`Cannot delete invite ${invite.id}`)
       }
@@ -197,6 +195,62 @@ export const deleteInvitesAction = groupAdminAction
 
     revalidatePath('/invites')
     return { success: true }
+  })
+
+const resendInviteSchema = z.object({
+  inviteId: z.string().cuid(),
+})
+
+export const resendInviteAction = groupAdminAction
+  .schema(resendInviteSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { session } = ctx
+
+    const invite = await prisma.invite.findUnique({
+      where: { id: parsedInput.inviteId },
+      include: {
+        createdBy: { select: { name: true } },
+        memberGroups: true,
+        ownerGroups: true,
+      },
+    })
+
+    if (!invite) {
+      throw new Error('Invite not found')
+    }
+
+    // Check permission
+    const canResend =
+      session.isAdmin ||
+      invite.memberGroups.some((mg) => session.ownerships.some((o) => o.groupId === mg.groupId)) ||
+      invite.ownerGroups.some((og) => session.ownerships.some((o) => o.groupId === og.groupId))
+    if (!canResend) {
+      throw new Error('Cannot resend this invite')
+    }
+
+    // Extend expiration by 7 days from now
+    await prisma.invite.update({
+      where: { id: invite.id },
+      data: { expiresAt: addDays(new Date(), 7) },
+    })
+
+    const appUrl = process.env.APP_URL ?? 'http://localhost:3000'
+    const inviteLink = `${appUrl}/accept-invite?token=${invite.token}`
+    const { html, subject } = await renderInviteEmail({
+      inviterName: invite.createdBy?.name ?? session.user.name,
+      inviteLink,
+    })
+    const { sent, error } = await sendEmail({
+      to: invite.email,
+      subject,
+      html,
+    })
+    if (!sent && error) {
+      console.error('[Invite] Failed to resend email:', error)
+    }
+
+    revalidatePath('/invites')
+    return { success: true, emailSent: sent }
   })
 
 const acceptInviteSchema = z.object({
@@ -230,10 +284,7 @@ export const acceptInviteAction = actionClient
 
     const existing = await prisma.user.findFirst({
       where: {
-        OR: [
-          { username: parsedInput.username },
-          { email: invite.email },
-        ],
+        OR: [{ username: parsedInput.username }, { email: invite.email }],
       },
     })
     if (existing) {
@@ -256,7 +307,7 @@ export const acceptInviteAction = actionClient
     const primaryGroupId =
       parsedInput.primaryGroupId && effectiveMemberGroupIds.includes(parsedInput.primaryGroupId)
         ? parsedInput.primaryGroupId
-        : invite.memberGroups[0]?.groupId ?? invite.ownerGroups[0]?.groupId ?? null
+        : (invite.memberGroups[0]?.groupId ?? invite.ownerGroups[0]?.groupId ?? null)
 
     const { user, ldapSyncEventId, discourseSyncEventId, discourseGroupSyncEventIds } =
       await prisma.$transaction(async (tx) => {
