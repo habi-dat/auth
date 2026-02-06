@@ -72,6 +72,7 @@
     "iconHint": "Square image (PNG, JPG, SVG, WebP), max 2MB",
     "logo": "Logo",
     "logoHint": "Displayed on the home screen, max 2MB",
+    "imagesHint": "Icon and logo for the app",
     "useIconAsLogo": "Use icon as logo",
     "iconUploaded": "Icon uploaded",
     "iconRemoved": "Icon removed",

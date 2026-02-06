@@ -19,7 +19,7 @@ export function FormPageLayout({
   className,
 }: FormPageLayoutProps) {
   return (
-    <div className={cn('mx-auto space-y-6', className ?? 'max-w-2xl')}>
+    <div className={cn('mx-auto space-y-6', className ?? 'max-w-4xl')}>
       <div className="flex items-center gap-4">
         <Link href={backHref}>
           <Button variant="ghost" size="icon" aria-label="Back">
@@ -28,9 +28,7 @@ export function FormPageLayout({
         </Link>
         <div>
           <h1 className="text-3xl font-bold">{title}</h1>
-          {description != null && (
-            <p className="text-muted-foreground mt-1">{description}</p>
-          )}
+          {description != null && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
       </div>
 

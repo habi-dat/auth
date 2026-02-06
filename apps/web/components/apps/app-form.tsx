@@ -31,20 +31,20 @@ const appFormSchema = z.object({
     .min(2)
     .regex(/^[a-zA-Z0-9-]+$/),
   name: z.string().min(2),
-  description: z.string().optional().nullable(),
+  description: z.string().catch(''),
   url: z.string().url(),
-  sortOrder: z.number().int().min(0),
+  sortOrder: z.coerce.number().int().min(0),
   useIconAsLogo: z.boolean(),
   samlEnabled: z.boolean(),
-  samlEntityId: z.string().optional().nullable(),
-  samlAcsUrl: z.string().url().optional().nullable(),
-  samlSloUrl: z.string().url().optional().nullable(),
-  samlCertificate: z.string().optional().nullable(),
+  samlEntityId: z.string().catch(''),
+  samlAcsUrl: z.string().catch(''),
+  samlSloUrl: z.string().catch(''),
+  samlCertificate: z.string().catch(''),
   oidcEnabled: z.boolean(),
-  oidcClientId: z.string().optional().nullable(),
-  oidcRedirectUris: z.string().optional().nullable(),
-  oidcClientSecret: z.string().optional().nullable(),
-  groupIds: z.array(z.string()).optional(),
+  oidcClientId: z.string().catch(''),
+  oidcRedirectUris: z.string().catch(''),
+  oidcClientSecret: z.string().catch(''),
+  groupIds: z.array(z.string()).default([]),
 })
 
 type AppFormValues = z.infer<typeof appFormSchema>
@@ -60,6 +60,12 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
+  // Local state for deferred uploads (creation mode)
+  const [iconFile, setIconFile] = useState<File | null>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
   const [iconUrl, setIconUrl] = useState(app?.iconUrl ?? null)
   const [logoUrl, setLogoUrl] = useState(app?.logoUrl ?? null)
   const [iconVersion, setIconVersion] = useState(0)
@@ -67,12 +73,8 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const isEditing = !!app
 
   const createAction = useAction(createAppAction, {
-    onSuccess: () => {
-      toast({ title: t('created') })
-      router.push('/apps')
-      router.refresh()
-    },
     onError: ({ error }) => {
+      setIsUploading(false)
       toast({
         variant: 'destructive',
         title: tCommon('error'),
@@ -111,24 +113,24 @@ export function AppForm({ app, allGroups }: AppFormProps) {
     },
   })
 
-  const form = useForm<AppFormValues, unknown, AppFormValues>({
-    resolver: zodResolver(appFormSchema),
+  const form = useForm<AppFormValues>({
+    resolver: zodResolver(appFormSchema) as any,
     defaultValues: {
       slug: app?.slug ?? '',
       name: app?.name ?? '',
       description: app?.description ?? '',
       url: app?.url ?? '',
       sortOrder: app?.sortOrder ?? 0,
-      useIconAsLogo: app?.useIconAsLogo ?? true,
+      useIconAsLogo: app?.useIconAsLogo ?? false,
       samlEnabled: app?.samlEnabled ?? false,
-      samlEntityId: app?.samlEntityId ?? null,
-      samlAcsUrl: app?.samlAcsUrl ?? null,
-      samlSloUrl: app?.samlSloUrl ?? null,
-      samlCertificate: app?.samlCertificate ?? null,
+      samlEntityId: app?.samlEntityId ?? '',
+      samlAcsUrl: app?.samlAcsUrl ?? '',
+      samlSloUrl: app?.samlSloUrl ?? '',
+      samlCertificate: app?.samlCertificate ?? '',
       oidcEnabled: app?.oidcEnabled ?? false,
-      oidcClientId: app?.oidcClientId ?? null,
-      oidcRedirectUris: app?.oidcRedirectUris ?? null,
-      oidcClientSecret: app?.oidcClientSecret ?? null,
+      oidcClientId: app?.oidcClientId ?? '',
+      oidcRedirectUris: app?.oidcRedirectUris ?? '',
+      oidcClientSecret: app?.oidcClientSecret ?? '',
       groupIds: app?.groupAccess.map((a) => a.groupId) ?? [],
     },
   })
@@ -138,9 +140,16 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const useIconAsLogo = form.watch('useIconAsLogo')
 
   const handleIconUpload = async (file: File) => {
-    if (!app?.id) {
-      throw new Error('Save the app first before uploading images')
+    if (!isEditing) {
+      // Defer upload
+      const url = URL.createObjectURL(file)
+      setIconUrl(url)
+      setIconFile(file)
+      return url
     }
+
+    // Direct upload
+    if (!app?.id) return
     const formData = new FormData()
     formData.set('appId', app.id)
     formData.set('imageType', 'icon')
@@ -156,6 +165,12 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   }
 
   const handleIconRemove = async () => {
+    if (!isEditing) {
+      setIconUrl(null)
+      setIconFile(null)
+      return
+    }
+
     if (!app?.id) return
     const result = await removeAppImageAction(app.id, 'icon')
     if (result.success) {
@@ -167,9 +182,14 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   }
 
   const handleLogoUpload = async (file: File) => {
-    if (!app?.id) {
-      throw new Error('Save the app first before uploading images')
+    if (!isEditing) {
+      const url = URL.createObjectURL(file)
+      setLogoUrl(url)
+      setLogoFile(file)
+      return url
     }
+
+    if (!app?.id) return
     const formData = new FormData()
     formData.set('appId', app.id)
     formData.set('imageType', 'logo')
@@ -185,6 +205,12 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   }
 
   const handleLogoRemove = async () => {
+    if (!isEditing) {
+      setLogoUrl(null)
+      setLogoFile(null)
+      return
+    }
+
     if (!app?.id) return
     const result = await removeAppImageAction(app.id, 'logo')
     if (result.success) {
@@ -195,38 +221,71 @@ export function AppForm({ app, allGroups }: AppFormProps) {
     throw new Error(result.error)
   }
 
-  const onSubmit = (data: AppFormValues) => {
+  const onSubmit = async (data: any) => {
     const payload = {
       slug: data.slug,
       name: data.name,
-      description: data.description ?? null,
+      description: data.description || null,
       url: data.url,
       iconUrl: iconUrl,
       logoUrl: logoUrl,
       useIconAsLogo: data.useIconAsLogo,
       sortOrder: data.sortOrder,
       samlEnabled: data.samlEnabled,
-      samlEntityId: data.samlEnabled ? (data.samlEntityId ?? null) : null,
-      samlAcsUrl: data.samlEnabled ? (data.samlAcsUrl ?? null) : null,
-      samlSloUrl: data.samlEnabled ? (data.samlSloUrl ?? null) : null,
-      samlCertificate: data.samlEnabled ? (data.samlCertificate ?? null) : null,
+      samlEntityId: data.samlEnabled ? data.samlEntityId || null : null,
+      samlAcsUrl: data.samlEnabled ? data.samlAcsUrl || null : null,
+      samlSloUrl: data.samlEnabled ? data.samlSloUrl || null : null,
+      samlCertificate: data.samlEnabled ? data.samlCertificate || null : null,
       oidcEnabled: data.oidcEnabled,
-      oidcClientId: data.oidcEnabled ? (data.oidcClientId ?? null) : null,
-      oidcRedirectUris: data.oidcEnabled ? (data.oidcRedirectUris ?? null) : null,
-      oidcClientSecret: data.oidcEnabled ? (data.oidcClientSecret ?? null) : null,
-      groupIds: data.groupIds ?? [],
+      oidcClientId: data.oidcEnabled ? data.oidcClientId || null : null,
+      oidcRedirectUris: data.oidcEnabled ? data.oidcRedirectUris || null : null,
+      oidcClientSecret: data.oidcEnabled ? data.oidcClientSecret || null : null,
+      groupIds: data.groupIds || [],
     }
+
     if (isEditing && app) {
       updateAction.execute({ ...payload, id: app.id })
     } else {
-      createAction.execute(payload)
+      setIsUploading(true)
+      const result = await createAction.executeAsync(payload)
+
+      if (result?.data?.app) {
+        const newAppId = result.data.app.id
+        const uploadPromises = []
+
+        if (iconFile) {
+          const formData = new FormData()
+          formData.set('appId', newAppId)
+          formData.set('imageType', 'icon')
+          formData.set('file', iconFile)
+          uploadPromises.push(uploadAppImageAction(formData))
+        }
+
+        if (logoFile && !data.useIconAsLogo) {
+          const formData = new FormData()
+          formData.set('appId', newAppId)
+          formData.set('imageType', 'logo')
+          formData.set('file', logoFile)
+          uploadPromises.push(uploadAppImageAction(formData))
+        }
+
+        await Promise.all(uploadPromises)
+
+        toast({ title: t('created') })
+        router.push('/apps')
+        router.refresh()
+      } else {
+        // Error handling is done in onError callback or checking result.serverError
+        setIsUploading(false)
+      }
     }
   }
 
   const isExecuting =
     createAction.status === 'executing' ||
     updateAction.status === 'executing' ||
-    deleteAction.status === 'executing'
+    deleteAction.status === 'executing' ||
+    isUploading
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -299,14 +358,16 @@ export function AppForm({ app, allGroups }: AppFormProps) {
         </CardContent>
       </Card>
 
-      {isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Bilder</CardTitle>
-            <CardDescription>Icon und Logo für die App</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-6 sm:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Bilder</CardTitle>
+          <CardDescription>
+            {isEditing ? t('imagesHint') : 'Bilder für die App hochladen'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-4">
               <ImageUpload
                 label={t('icon')}
                 value={iconUrl}
@@ -315,8 +376,23 @@ export function AppForm({ app, allGroups }: AppFormProps) {
                 hint={t('iconHint')}
                 size="md"
                 cacheKey={iconVersion}
+                disabled={isExecuting}
               />
-              {!useIconAsLogo && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="useIconAsLogo"
+                  checked={useIconAsLogo}
+                  onCheckedChange={(checked) => form.setValue('useIconAsLogo', !!checked)}
+                  disabled={isExecuting}
+                />
+                <Label htmlFor="useIconAsLogo" className="cursor-pointer">
+                  {t('useIconAsLogo')}
+                </Label>
+              </div>
+            </div>
+
+            {!useIconAsLogo && (
+              <div className="space-y-4">
                 <ImageUpload
                   label={t('logo')}
                   value={logoUrl}
@@ -325,23 +401,13 @@ export function AppForm({ app, allGroups }: AppFormProps) {
                   hint={t('logoHint')}
                   size="md"
                   cacheKey={logoVersion}
+                  disabled={isExecuting}
                 />
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="useIconAsLogo"
-                checked={useIconAsLogo}
-                onCheckedChange={(checked) => form.setValue('useIconAsLogo', !!checked)}
-                disabled={isExecuting}
-              />
-              <Label htmlFor="useIconAsLogo" className="cursor-pointer">
-                {t('useIconAsLogo')}
-              </Label>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -350,17 +416,16 @@ export function AppForm({ app, allGroups }: AppFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="samlEnabled"
-              {...form.register('samlEnabled')}
+              checked={samlEnabled}
+              onCheckedChange={(v) => form.setValue('samlEnabled', !!v)}
               disabled={isExecuting}
-              className="h-4 w-4 rounded border-input"
             />
             <Label htmlFor="samlEnabled">{t('samlEnabled')}</Label>
           </div>
           {samlEnabled && (
-            <>
+            <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label htmlFor="samlEntityId">{t('samlEntityId')}</Label>
                 <Input
@@ -401,7 +466,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
                   className="font-mono text-sm"
                 />
               </div>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -413,17 +478,16 @@ export function AppForm({ app, allGroups }: AppFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="oidcEnabled"
-              {...form.register('oidcEnabled')}
+              checked={oidcEnabled}
+              onCheckedChange={(v) => form.setValue('oidcEnabled', !!v)}
               disabled={isExecuting}
-              className="h-4 w-4 rounded border-input"
             />
             <Label htmlFor="oidcEnabled">{t('oidcEnabled')}</Label>
           </div>
           {oidcEnabled && (
-            <div className="space-y-4">
+            <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label htmlFor="oidcClientId">{t('oidcClientId')}</Label>
                 <Input
@@ -510,7 +574,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ id: app!.id })}
-          isPending={deleteAction.isPending}
+          isPending={deleteAction.status === 'executing'}
         />
       )}
     </form>
