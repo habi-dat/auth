@@ -1,12 +1,12 @@
 'use server'
-
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@/lib/auth/roles'
+import { getCurrentUserWithGroups } from '@/lib/auth/session'
 import { sendEmail } from '@/lib/email/send'
 import { renderInviteEmail } from '@/lib/email/templates'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import { createSyncEvent } from '@/lib/sync/create-sync-event'
-import { prisma } from '@habidat/db'
+import { type Prisma, prisma } from '@habidat/db'
 import { hashPassword } from 'better-auth/crypto'
 import { addDays } from 'date-fns'
 import { revalidatePath } from 'next/cache'
@@ -146,7 +146,20 @@ export async function getInviteByToken(token: string): Promise<InviteWithGroupsR
 }
 
 export async function getGroupsForSelect() {
+  const session = await getCurrentUserWithGroups()
+  if (!session) return []
+
+  const where: Prisma.GroupWhereInput = {}
+  if (!session.isAdmin) {
+    where.ownerships = {
+      some: {
+        userId: session.user.id,
+      },
+    }
+  }
+
   return prisma.group.findMany({
+    where,
     select: { id: true, name: true, slug: true },
     orderBy: { name: 'asc' },
   })

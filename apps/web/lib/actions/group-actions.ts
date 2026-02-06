@@ -2,13 +2,14 @@
 
 import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@/lib/auth/roles'
+import { getCurrentUserWithGroups } from '@/lib/auth/session'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import {
   createSyncEvent,
   dispatchDiscourseSyncAfterCommit,
   dispatchLdapSyncAfterCommit,
 } from '@/lib/sync/create-sync-event'
-import { prisma } from '@habidat/db'
+import { type Prisma, prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { adminAction, groupAdminAction } from './client'
@@ -844,16 +845,30 @@ export const removeOwnerAction = groupAdminAction
 
 // Get groups (for list page)
 export async function getGroups(search?: string) {
+  const session = await getCurrentUserWithGroups()
+  if (!session) return []
+
+  const where: Prisma.GroupWhereInput = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }
+    : {}
+
+  // If not system admin, restrict to owned groups
+  if (!session.isAdmin) {
+    where.ownerships = {
+      some: {
+        userId: session.user.id,
+      },
+    }
+  }
+
   return prisma.group.findMany({
-    where: search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { slug: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-          ],
-        }
-      : undefined,
+    where,
     include: {
       memberships: {
         include: {
