@@ -1,5 +1,6 @@
 import { getCurrentUserThemePreferences } from '@/lib/auth/session'
 import { getGeneralSettings } from '@/lib/settings/general'
+import { generateThemeVariables } from '@/lib/theme-generator'
 import type { Metadata } from 'next'
 import { getMessages } from 'next-intl/server'
 import { Inter } from 'next/font/google'
@@ -47,9 +48,31 @@ export default async function RootLayout({
   ])
 
   const initialColorMode = parseColorMode(themePrefs?.preferredColorMode) ?? 'system'
+  const themeClass =
+    initialColorMode === 'dark' ? 'dark' : initialColorMode === 'light' ? 'light' : ''
+
+  const lightVars = generateThemeVariables(settings.themeColor, 'light')
+  const darkVars = generateThemeVariables(settings.themeColor, 'dark')
+
+  const css = `
+    :root {
+      ${Object.entries(lightVars)
+        .map(([k, v]) => `${k}: ${v};`)
+        .join('\n      ')}
+    }
+    .dark {
+      ${Object.entries(darkVars)
+        .map(([k, v]) => `${k}: ${v};`)
+        .join('\n      ')}
+    }
+  `
 
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html lang="de" suppressHydrationWarning className={themeClass}>
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: needed */}
+        <style dangerouslySetInnerHTML={{ __html: css }} />
+      </head>
       <body className={inter.className}>
         <Providers
           messages={messages}
