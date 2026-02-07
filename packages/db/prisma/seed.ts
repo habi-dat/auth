@@ -408,6 +408,8 @@ async function main() {
         const didImport = await importFromLdap(ldap, prisma, ldapEnv.usersDn, ldapEnv.groupsDn)
         if (didImport) {
           console.log('LDAP import completed. Skipping admin creation.')
+          // Try importing JSON data first or alongside
+          await importJsonData(prisma)
           return
         }
       } finally {
@@ -635,6 +637,148 @@ async function main() {
     }
   } finally {
     await pool.end()
+  }
+}
+
+import { existsSync, readFileSync } from 'node:fs'
+
+// ... existing code ...
+
+async function importJsonData(prisma: PrismaClient) {
+  const importDir = '/app/import'
+  console.log(`Checking for import data in ${importDir}...`)
+
+  if (!existsSync(importDir)) {
+    console.log(`Import directory ${importDir} does not exist. Skipping JSON import.`)
+    return
+  }
+
+  // 1. Import Settings
+  const settingsPath = resolve(importDir, 'settingsStore.json')
+  if (existsSync(settingsPath)) {
+    try {
+      const settingsData = JSON.parse(readFileSync(settingsPath, 'utf-8'))
+      const platformName = settingsData.title
+      const themeColor = settingsData.theme?.primary
+
+      if (platformName || themeColor) {
+        const current = await prisma.setting.findUnique({ where: { key: 'general' } })
+        let value = (current?.value as object) || {}
+        if (platformName) value = { ...value, platformName }
+        if (themeColor) value = { ...value, themeColor }
+
+        await prisma.setting.upsert({
+          where: { key: 'general' },
+          create: { key: 'general', value },
+          update: { value },
+        })
+        console.log('Imported general settings from settingsStore.json')
+      }
+    } catch (e) {
+      console.error('Failed to import settingsStore.json:', e)
+    }
+  }
+
+  // 2. Import Apps
+  const appsPath = resolve(importDir, 'appStore.json')
+  if (existsSync(appsPath)) {
+    try {
+      const appsData = JSON.parse(readFileSync(appsPath, 'utf-8'))
+      if (Array.isArray(appsData)) {
+        for (const app of appsData) {
+          const slug = app.id
+          // Skip if exists
+          const exists = await prisma.app.findUnique({ where: { slug } })
+          if (exists) {
+            console.log(`App ${slug} already exists, skipping import.`)
+            continue
+          }
+
+          await prisma.app.create({
+            data: {
+              slug,
+              name: app.label,
+              url: app.url,
+              samlEnabled: app.saml?.samlEnabled || false,
+              samlEntityId: app.saml?.entityId,
+              samlAcsUrl: app.saml?.acs,
+              samlSloUrl: app.saml?.slo,
+            },
+          })
+          console.log(`Imported app: ${slug}`)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to import appStore.json:', e)
+    }
+  }
+
+  // 3. Import Invites
+  const invitesPath = resolve(importDir, 'activationStore.json')
+  if (existsSync(invitesPath)) {
+    try {
+      const invitesData = JSON.parse(readFileSync(invitesPath, 'utf-8'))
+      let inviteCount = 0
+      for (const token in invitesData) {
+        const record = invitesData[token]
+        if (record.type === 'invite' && record.data) {
+          const { mail, member = [], owner = [] } = record.data
+          const senderUsername = record.currentUser?.uid
+
+          if (!mail) continue
+
+          // Resolve sender
+          let createdById: string | undefined
+          if (senderUsername) {
+            const sender = await prisma.user.findUnique({ where: { username: senderUsername } })
+            createdById = sender?.id
+          }
+
+          if (!createdById) {
+            // If sender not found, skip invite (or assign to admin? User didn't specify. Skipping is safer for now)
+            console.log(`Sender ${senderUsername} not found for invite ${token}, skipping.`)
+            continue
+          }
+
+          // Resolve Groups (split member/owner)
+          const memberDns = (member || []) as string[]
+          const ownerDns = (owner || []) as string[]
+
+          const memberGroups = await prisma.group.findMany({
+            where: { ldapDn: { in: memberDns } },
+            select: { id: true },
+          })
+          const ownerGroups = await prisma.group.findMany({
+            where: { ldapDn: { in: ownerDns } },
+            select: { id: true },
+          })
+
+          // Create Invite
+          const existing = await prisma.invite.findUnique({ where: { token } })
+          if (!existing) {
+            await prisma.invite.create({
+              data: {
+                token,
+                email: mail,
+                createdById,
+                memberGroups: {
+                  create: memberGroups.map((g) => ({ groupId: g.id })),
+                },
+                ownerGroups: {
+                  create: ownerGroups.map((g) => ({ groupId: g.id })),
+                },
+                createdAt: new Date(record.created),
+                expiresAt: new Date(record.expires),
+              },
+            })
+            inviteCount++
+          }
+        }
+      }
+      console.log(`Imported ${inviteCount} invites from activationStore.json`)
+    } catch (e) {
+      console.error('Failed to import activationStore.json:', e)
+    }
   }
 }
 

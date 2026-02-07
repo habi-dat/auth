@@ -168,11 +168,11 @@ async function handleSyncUser(
       await ldap.updateUser(ldapUser.dn, {
         name: user.name,
         email: user.email,
-        location: user.location ?? undefined,
+        ...(user.location && user.location !== '' ? { location: user.location } : {}),
         preferredLanguage: user.preferredLanguage,
         storageQuota: user.storageQuota ?? undefined,
-        ...(primaryGroupName ? { title: primaryGroupName } : {}),
-        ...(primaryGroupLdapDn ? { ou: primaryGroupLdapDn } : {}),
+        ...(primaryGroupName && primaryGroupName !== '' ? { title: primaryGroupName } : {}),
+        ...(primaryGroupLdapDn && primaryGroupLdapDn !== '' ? { ou: primaryGroupLdapDn } : {}),
         ...(userPassword ? { userPassword } : {}),
       })
     } catch (updateErr) {
