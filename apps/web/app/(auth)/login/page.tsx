@@ -18,7 +18,6 @@ export default async function LoginPage() {
     <div className="flex w-full max-w-sm mx-auto flex-col items-center">
       {logoSrc ? (
         <div className="flex h-32 shrink-0 items-center justify-center overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logoSrc}
             alt=""

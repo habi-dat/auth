@@ -138,6 +138,7 @@ export function UserForm({ user, groups }: UserFormProps) {
     setValue,
     formState: { errors },
   } = useForm<CreateUserForm | UpdateUserForm>({
+    // biome-ignore lint/suspicious/noExplicitAny: too complex to fix
     resolver: zodResolver(isEditing ? updateUserSchema : createUserSchema) as any,
     defaultValues: isEditing
       ? {
