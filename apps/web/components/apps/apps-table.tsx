@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import { ExternalLink, Key, Lock } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
@@ -34,8 +35,7 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           {row.original.iconUrl ? (
-            // biome-ignore lint/performance/noImgElement: icons are not optimized
-            <img
+            <Image
               src={row.original.iconUrl}
               alt=""
               className="h-6 w-6 rounded object-contain"

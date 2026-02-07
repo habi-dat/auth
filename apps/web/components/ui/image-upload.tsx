@@ -1,6 +1,7 @@
 'use client'
 
 import { ImagePlus, Loader2, Trash2, Upload } from 'lucide-react'
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -153,8 +154,7 @@ export function ImageUpload({
               sizeClasses[size]
             )}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imageUrl!} alt="" className="h-full w-full object-contain" />
+            <Image src={imageUrl!} alt="" fill className="object-contain" />
             {(isUploading || isRemoving) && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

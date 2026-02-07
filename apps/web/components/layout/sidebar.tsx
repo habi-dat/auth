@@ -12,6 +12,7 @@ import {
   User,
   Users,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -64,13 +65,12 @@ export function Sidebar({
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
             <div className="flex h-16 w-16 p-2 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={logoUpdatedAt ? `${logoUrl}?v=${logoUpdatedAt}` : logoUrl}
                 alt=""
                 className="h-full w-full object-contain"
-                width={32}
-                height={32}
+                width={64}
+                height={64}
               />
             </div>
           ) : (

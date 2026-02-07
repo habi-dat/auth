@@ -12,6 +12,26 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+    localPatterns: [
+      {
+        pathname: '/uploads/**',
+      },
+      {
+        pathname: '/api/uploads/**',
+      },
+    ],
+  },
 }
 
 export default withNextIntl(nextConfig)

@@ -1,5 +1,6 @@
 import { requireUserWithGroups } from '@habidat/auth/session'
 import { ExternalLink } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
@@ -42,10 +43,11 @@ export default async function HomePage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
                       {displayImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={displayImage}
                           alt=""
+                          width={48}
+                          height={48}
                           className="h-12 w-12 shrink-0 rounded-lg object-contain bg-muted border"
                         />
                       ) : (

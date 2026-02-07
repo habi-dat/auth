@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { LoginForm } from '@/components/auth/login-form'
 import { getGeneralSettings } from '@/lib/settings/general'
 
@@ -18,12 +19,12 @@ export default async function LoginPage() {
     <div className="flex w-full max-w-sm mx-auto flex-col items-center">
       {logoSrc ? (
         <div className="flex h-32 shrink-0 items-center justify-center overflow-hidden">
-          <img
+          <Image
             src={logoSrc}
             alt=""
             className="h-full w-full object-contain"
-            width={96}
-            height={96}
+            width={256}
+            height={256}
           />
         </div>
       ) : null}
