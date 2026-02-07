@@ -48,12 +48,53 @@ export function createLogoutRequestRedirect(params: {
   app: AppSaml
   nameId: string
   sessionIndex?: string
+  relayState?: string
 }): string {
-  const { app, nameId, sessionIndex } = params
+  const { app, nameId, sessionIndex, relayState } = params
   const idp = getIdentityProvider()
   const sp = getServiceProvider(app)
   const binding = 'redirect'
   const user = { logoutNameID: nameId, sessionIndex }
-  const result = idp.createLogoutRequest(sp, binding, user, '')
+  const result = idp.createLogoutRequest(sp, binding, user, relayState ?? '')
   return (result as { context: string }).context
+}
+
+/**
+ * Encode logout state into RelayState for chaining.
+ */
+export function encodeLogoutState(state: {
+  remainingAppIds: string[]
+  initiatorAppId?: string
+  initiatorRelayState?: string
+  initiatorRequestId?: string
+}): string {
+  return Buffer.from(JSON.stringify(state)).toString('base64url')
+}
+
+/**
+ * Decode logout state from RelayState.
+ */
+export function decodeLogoutState(relayState: string | null): {
+  remainingAppIds: string[]
+  initiatorAppId?: string
+  initiatorRelayState?: string
+  initiatorRequestId?: string
+} | null {
+  if (!relayState) return null
+  try {
+    return JSON.parse(Buffer.from(relayState, 'base64url').toString('utf8'))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Creates a minimal ParsedLogoutRequest to satisfy Samlify's createLogoutResponse requirements
+ * when we are responding to an initiator after chaining through others.
+ */
+export function createMinimalParsedRequest(requestId: string): ParsedLogoutRequest {
+  return {
+    samlContent: '',
+    extract: { request: { id: requestId } },
+  }
 }

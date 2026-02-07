@@ -16,7 +16,11 @@ export type SamlUser = {
 
 const customValidator = {
   validate: async (xml: string) => {
-    return XMLValidator.validate(xml)
+    const result = XMLValidator.validate(xml)
+    if (result !== true) {
+      throw new Error(result.err.msg)
+    }
+    return 'success'
   },
 }
 
