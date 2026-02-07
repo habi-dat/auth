@@ -1,5 +1,5 @@
-import { getIdentityProvider, getServiceProvider } from './config'
 import type { AppSaml, SamlUser } from './config'
+import { getIdentityProvider, getServiceProvider } from './config'
 import { createTemplateCallback } from './template'
 
 export interface SamlLoginRequest {

@@ -1,12 +1,12 @@
 'use client'
 
+import type { ColumnDef } from '@tanstack/react-table'
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { AuditDetailsDialog } from '@/components/audit/audit-details-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import type { getAuditLogs } from '@/lib/audit'
-import type { ColumnDef } from '@tanstack/react-table'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { useState } from 'react'
 
 type AuditRow = Awaited<ReturnType<typeof getAuditLogs>>[number]
 

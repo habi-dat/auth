@@ -1,15 +1,15 @@
 'use client'
 
+import type { DiscourseCategoryApi } from '@habidat/discourse'
+import type { ColumnDef } from '@tanstack/react-table'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
 import { deleteCategoryAction } from '@/lib/actions/category-actions'
-import type { DiscourseCategoryApi } from '@habidat/discourse'
-import type { ColumnDef } from '@tanstack/react-table'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 export function CategoriesTable({
   categories,

@@ -5,11 +5,11 @@ import type {
   DiscourseCategoryApi,
   UpdateCategoryData,
 } from '@habidat/discourse'
-import { getGroupsForSelect } from '@/lib/actions/group-actions'
-import { adminAction } from '@/lib/actions/client'
-import { getDiscourseClient } from '@/lib/discourse/client'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { adminAction } from '@/lib/actions/client'
+import { getGroupsForSelect } from '@/lib/actions/group-actions'
+import { getDiscourseClient } from '@/lib/discourse/client'
 
 /** Fetch editable categories from Discourse API with full details (including group_permissions). Excludes system categories (can_edit === false). Returns null if Discourse not configured. */
 export async function getCategories(): Promise<DiscourseCategoryApi[] | null> {

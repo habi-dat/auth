@@ -1,11 +1,11 @@
+import { requireUserWithGroups } from '@habidat/auth/session'
+import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
+import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { requireUserWithGroups } from '@habidat/auth/session'
-import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
 
 export default async function ProfilePage() {
   const t = await getTranslations('profile')

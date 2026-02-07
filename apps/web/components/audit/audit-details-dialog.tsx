@@ -1,8 +1,8 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { getAuditLogs } from '@/lib/audit'
-import { useTranslations } from 'next-intl'
 
 type AuditRow = Awaited<ReturnType<typeof getAuditLogs>>[number]
 

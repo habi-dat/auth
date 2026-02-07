@@ -1,5 +1,11 @@
 'use client'
 
+import type { ColumnDef } from '@tanstack/react-table'
+import { Loader2, ShieldCheck, UserMinus, UserPlus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,12 +19,6 @@ import {
   removeMemberAction,
   removeOwnerAction,
 } from '@/lib/actions/group-actions'
-import type { ColumnDef } from '@tanstack/react-table'
-import { Loader2, ShieldCheck, UserMinus, UserPlus } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
 
 interface User {
   id: string

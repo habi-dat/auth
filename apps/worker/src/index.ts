@@ -4,11 +4,11 @@ import { DiscourseService } from '@habidat/discourse'
 import { workerEnv } from '@habidat/env/worker'
 import { LdapService } from '@habidat/ldap'
 import {
-  type DiscourseSyncJobData,
-  QUEUE_NAMES,
   closeQueues,
   closeRedisConnection,
+  type DiscourseSyncJobData,
   getRedisConnection,
+  QUEUE_NAMES,
 } from '@habidat/sync'
 import { Worker } from 'bullmq'
 import { createDiscourseProcessor } from './processors/discourse.processor'

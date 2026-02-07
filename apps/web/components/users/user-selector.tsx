@@ -1,5 +1,7 @@
 'use client'
 
+import { Check, ChevronsUpDown } from 'lucide-react'
+import * as React from 'react'
 import {
   Command,
   CommandEmpty,
@@ -11,8 +13,6 @@ import {
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown } from 'lucide-react'
-import * as React from 'react'
 
 export interface UserOption {
   id: string

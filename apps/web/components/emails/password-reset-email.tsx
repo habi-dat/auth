@@ -1,4 +1,3 @@
-import type { PasswordResetEmailConfig } from '@/lib/email/types'
 import {
   Body,
   Button,
@@ -12,6 +11,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import type { PasswordResetEmailConfig } from '@/lib/email/types'
 
 export interface PasswordResetEmailProps extends PasswordResetEmailConfig {
   subject: string

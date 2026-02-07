@@ -1,12 +1,12 @@
+import { requireAdmin } from '@habidat/auth/session'
+import { Loader2, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Suspense } from 'react'
 import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { Button } from '@/components/ui/button'
 import { UsersTable } from '@/components/users/users-table'
 import { getUsers } from '@/lib/actions/user-actions'
-import { requireAdmin } from '@habidat/auth/session'
-import { Loader2, Plus } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
-import { Suspense } from 'react'
 
 async function UsersTableWrapper() {
   const users = await getUsers()

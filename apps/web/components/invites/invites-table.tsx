@@ -1,5 +1,10 @@
 'use client'
 
+import type { ColumnDef } from '@tanstack/react-table'
+import { RefreshCw, ShieldCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import {
@@ -11,11 +16,6 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import type { getGroupsForSelect, getInvites } from '@/lib/actions/invite-actions'
 import { deleteInvitesAction, resendInviteAction } from '@/lib/actions/invite-actions'
-import type { ColumnDef } from '@tanstack/react-table'
-import { RefreshCw, ShieldCheck } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 type InviteRow = Awaited<ReturnType<typeof getInvites>>[number]
 type GroupRow = Awaited<ReturnType<typeof getGroupsForSelect>>[number]

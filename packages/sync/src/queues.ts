@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq'
-import { defaultJobOptions, JOB_NAMES, QUEUE_NAMES } from './constants'
 import { getRedisConnection } from './connection'
+import { defaultJobOptions, JOB_NAMES, QUEUE_NAMES } from './constants'
 
 export interface LdapSyncJobData {
   syncEventId: string

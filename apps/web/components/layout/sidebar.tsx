@@ -1,6 +1,5 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import {
   FileText,
   FolderTree,
@@ -13,9 +12,10 @@ import {
   User,
   Users,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/utils'
 
 interface SidebarProps {
   isAdmin?: boolean

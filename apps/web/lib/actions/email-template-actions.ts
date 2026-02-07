@@ -1,5 +1,8 @@
 'use server'
 
+import { render } from '@react-email/components'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { InviteEmail } from '@/components/emails/invite-email'
 import { PasswordResetEmail } from '@/components/emails/password-reset-email'
 import { getDefaultEmailCopy } from '@/lib/email/defaults'
@@ -9,9 +12,6 @@ import type {
   SingleLocaleEmailConfig,
   SupportedEmailLocale,
 } from '@/lib/email/types'
-import { render } from '@react-email/components'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 import { adminAction } from './client'
 
 const singleLocaleConfigSchema = z.object({

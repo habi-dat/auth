@@ -1,5 +1,5 @@
-import { getIdentityProvider, getServiceProvider } from './config'
 import type { AppSaml } from './config'
+import { getIdentityProvider, getServiceProvider } from './config'
 
 export interface SamlLogoutRequest {
   query: { SAMLRequest?: string; RelayState?: string }

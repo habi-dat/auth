@@ -1,5 +1,12 @@
 'use client'
 
+import { signOut } from '@habidat/auth/client'
+import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useTheme } from 'next-themes'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,13 +22,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { getLogoutUrlAction } from '@/lib/actions/auth-actions'
 import { updateProfileAction } from '@/lib/actions/user-actions'
-import { signOut } from '@habidat/auth/client'
-import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import { useTheme } from 'next-themes'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   user: {

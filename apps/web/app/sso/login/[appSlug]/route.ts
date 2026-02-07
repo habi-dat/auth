@@ -1,12 +1,11 @@
 import { getUserGroupSlugs } from '@habidat/auth/group-slugs'
 import { canAccessApp } from '@habidat/auth/roles'
-import { getSession } from '@habidat/auth/session'
-import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import {
-  type ParsedLoginRequest,
   createLoginResponse,
   generateSamlPostForm,
+  type ParsedLoginRequest,
   parseLoginRequest,
 } from '@habidat/saml'
 import { NextResponse } from 'next/server'

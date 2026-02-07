@@ -13,7 +13,7 @@ import { resolve } from 'node:path'
  * - If LDAP is empty or not set: create admin user/group in DB, then optionally bootstrap LDAP.
  * Imported users keep LDAP hashed passwords (SSHA); passwordHashType is set so they can still log in.
  */
-import { LdapService, hashPasswordSsha } from '@habidat/ldap'
+import { hashPasswordSsha, LdapService } from '@habidat/ldap'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { hashPassword } from 'better-auth/crypto'
 import { config } from 'dotenv'

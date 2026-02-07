@@ -1,11 +1,11 @@
 'use client'
 
-import { ThemeSchemeProvider } from '@/components/theme/theme-scheme-provider'
-import type { ColorMode } from '@/components/theme/theme-scheme-provider'
-import { Toaster } from '@/components/ui/toaster'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { NextIntlClientProvider } from 'next-intl'
 import { useState } from 'react'
+import type { ColorMode } from '@/components/theme/theme-scheme-provider'
+import { ThemeSchemeProvider } from '@/components/theme/theme-scheme-provider'
+import { Toaster } from '@/components/ui/toaster'
 
 export function Providers({
   children,

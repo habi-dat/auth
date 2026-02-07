@@ -1,5 +1,9 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { GroupSelector } from '@/components/groups/group-selector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,10 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { createInviteAction } from '@/lib/actions/invite-actions'
-import { Loader2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 export function InviteForm({ groups }: { groups: { id: string; name: string; slug: string }[] }) {
   const t = useTranslations('invites')

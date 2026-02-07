@@ -10,12 +10,12 @@
     "includes": [
       "**/*.ts",
       "**/*.tsx",
-      "!node_modules/**",
-      "!dist/**",
-      "!old/**",
-      "!.turbo/**",
+      "!node_modules",
+      "!**/dist",
+      "!old",
+      "!.turbo",
       "!*.json",
-      "!**/generated/**"
+      "!**/generated"
     ]
   },
   "formatter": {

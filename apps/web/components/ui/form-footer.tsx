@@ -1,10 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface FormFooterProps {
   /** Loading state for submit button */

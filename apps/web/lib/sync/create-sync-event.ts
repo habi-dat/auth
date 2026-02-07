@@ -1,5 +1,4 @@
-import type { PrismaClient } from '@habidat/db'
-import type { SyncTarget } from '@habidat/db'
+import type { PrismaClient, SyncTarget } from '@habidat/db'
 import { queueDiscourseSync, queueLdapSync } from '@habidat/sync'
 
 export type SyncEventPayload =

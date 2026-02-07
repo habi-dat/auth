@@ -1,10 +1,10 @@
 'use server'
 
-import { adminAction } from '@/lib/actions/client'
-import { createAuditLog } from '@/lib/audit'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { adminAction } from '@/lib/actions/client'
+import { createAuditLog } from '@/lib/audit'
 
 export async function getApps() {
   return prisma.app.findMany({

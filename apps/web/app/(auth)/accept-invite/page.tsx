@@ -1,5 +1,9 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,10 +16,6 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { acceptInviteAction, getInviteByToken } from '@/lib/actions/invite-actions'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
 
 export default function AcceptInvitePage() {
   const t = useTranslations('acceptInvite')

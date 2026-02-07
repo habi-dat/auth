@@ -2,11 +2,11 @@ import * as http from 'node:http'
 import Next from 'next'
 import Provider from 'oidc-provider'
 import {
-  OIDC_ISSUER,
-  getOidcConfiguration,
-  getOidcClientsFromDb,
   createFindAccount,
+  getOidcClientsFromDb,
+  getOidcConfiguration,
   OIDC_INTERACTION_PATH,
+  OIDC_ISSUER,
 } from './config'
 import { handleOidcInteraction } from './interaction'
 

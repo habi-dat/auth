@@ -1,9 +1,9 @@
-import { getGeneralSettings } from '@/lib/settings/general'
-import { generateThemeVariables } from '@/lib/theme-generator'
 import { getCurrentUserThemePreferences } from '@habidat/auth/session'
 import type { Metadata } from 'next'
-import { getMessages } from 'next-intl/server'
 import { Inter } from 'next/font/google'
+import { getMessages } from 'next-intl/server'
+import { getGeneralSettings } from '@/lib/settings/general'
+import { generateThemeVariables } from '@/lib/theme-generator'
 import './globals.css'
 import { Providers } from './providers'
 

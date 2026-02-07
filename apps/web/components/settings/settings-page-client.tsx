@@ -1,12 +1,12 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useTranslations } from 'next-intl'
 import { EmailTemplateForm } from '@/components/settings/email-template-form'
 import { GeneralSettingsForm } from '@/components/settings/general-settings-form'
-import type { GeneralSettings } from '@/lib/settings/general'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { EmailTemplateConfigByLocale } from '@/lib/email/types'
-import { useTranslations } from 'next-intl'
+import type { GeneralSettings } from '@/lib/settings/general'
 
 interface SettingsPageClientProps {
   generalSettings: GeneralSettings

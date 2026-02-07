@@ -96,7 +96,6 @@ async function createUserOrThrow(
     if (isNoSuchObjectError(err)) {
       const usersDn = ldap.getUsersDn()
       throw new Error(
-        // biome-ignore lint/style/useTemplate: readability
         `LDAP users container does not exist. Create this OU on the server first: ${usersDn}\n` +
           `Example LDIF:\n  dn: ${usersDn}\n  objectClass: organizationalUnit\n  ou: <ou-value>\n` +
           `Load with: ldapadd -x -D "your-admin-dn" -W -f users-ou.ldif`
@@ -281,7 +280,6 @@ async function handleSyncGroup(
       if (isNoSuchObjectError(err)) {
         const groupsDn = ldap.getGroupsDn()
         throw new Error(
-          // biome-ignore lint/style/useTemplate: readability
           `LDAP groups container does not exist. Create this OU on the server first: ${groupsDn}\n` +
             `Example LDIF:\n  dn: ${groupsDn}\n  objectClass: organizationalUnit\n  ou: <ou-value>\n` +
             `Load with: ldapadd -x -D "your-admin-dn" -W -f groups-ou.ldif`

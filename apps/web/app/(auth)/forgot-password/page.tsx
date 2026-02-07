@@ -1,5 +1,12 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -12,13 +19,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 export default function ForgotPasswordPage() {
   const t = useTranslations('auth.forgotPassword')

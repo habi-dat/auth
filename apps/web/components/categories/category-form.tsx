@@ -1,5 +1,13 @@
 'use client'
 
+import type { DiscourseCategoryApi } from '@habidat/discourse'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { GroupSelector } from '@/components/groups/group-selector'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -12,14 +20,6 @@ import {
   deleteCategoryAction,
   updateCategoryAction,
 } from '@/lib/actions/category-actions'
-import type { DiscourseCategoryApi } from '@habidat/discourse'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 const categoryFormSchema = z.object({
   name: z.string().min(1),

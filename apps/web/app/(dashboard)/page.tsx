@@ -1,9 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
-import { getUserApps } from '@/lib/actions/app-actions'
 import { requireUserWithGroups } from '@habidat/auth/session'
 import { ExternalLink } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import { getUserApps } from '@/lib/actions/app-actions'
 
 export default async function HomePage() {
   const t = await getTranslations('home')

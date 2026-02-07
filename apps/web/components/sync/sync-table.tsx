@@ -1,13 +1,13 @@
 'use client'
 
+import type { ColumnDef } from '@tanstack/react-table'
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { SyncDetailsDialog } from '@/components/sync/sync-details-dialog'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/ui/data-table'
 import type { getSyncEvents } from '@/lib/sync/get-sync-events'
-import type { ColumnDef } from '@tanstack/react-table'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { useState } from 'react'
 
 type SyncRow = Awaited<ReturnType<typeof getSyncEvents>>[number]
 

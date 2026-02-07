@@ -1,5 +1,14 @@
 'use client'
 
+import type { SessionUser } from '@habidat/auth/session'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -21,21 +30,12 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { updateProfileAction } from '@/lib/actions/user-actions'
-import type { SessionUser } from '@habidat/auth/session'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 type ProfileForm = {
   name: string
   location?: string
   preferredLanguage: string
-  preferredColorMode?: 'light' | 'dark' | 'system' | null
+  preferredColorMode?: 'light' | 'dark' | 'system'
   primaryGroupId?: string | null
 }
 
@@ -44,7 +44,7 @@ function defaultValuesFromUser(user: SessionUser): ProfileForm {
     name: user.name,
     location: user.location ?? '',
     preferredLanguage: user.preferredLanguage || 'de',
-    preferredColorMode: (user.preferredColorMode as 'light' | 'dark' | 'system') || 'system',
+    preferredColorMode: (user.preferredColorMode as 'light' | 'dark' | 'system') ?? 'system',
     primaryGroupId: user.primaryGroupId ?? null,
   }
 }
@@ -81,7 +81,7 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     name: z.string().min(2, tVal('nameMin')),
     location: z.string().optional(),
     preferredLanguage: z.string().default('de'),
-    preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
+    preferredColorMode: z.enum(['light', 'dark', 'system']),
     primaryGroupId: z.string().optional().nullable(),
   })
 
@@ -92,7 +92,7 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     watch,
     formState: { errors },
   } = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema) as any,
+    resolver: zodResolver(profileSchema),
     defaultValues: defaultValuesFromUser(initialUser),
   })
 
@@ -124,7 +124,7 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
       </div>
 
       <Card>
-        <form onSubmit={handleSubmit(onSubmit as any)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardHeader>
             <CardTitle>{t('personalInfo')}</CardTitle>
             <CardDescription>{t('personalInfoDescription')}</CardDescription>

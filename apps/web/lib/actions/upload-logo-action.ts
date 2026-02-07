@@ -3,8 +3,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { requireAdmin } from '@habidat/auth/session'
-import { updateGeneralSettings } from '@/lib/settings/general'
 import { revalidatePath } from 'next/cache'
+import { updateGeneralSettings } from '@/lib/settings/general'
 
 const UPLOADS_DIR = 'public/uploads'
 const LOGO_BASENAME = 'logo'

@@ -1,9 +1,9 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { ImagePlus, Loader2, Trash2, Upload } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useRef, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from './button'
 
 interface ImageUploadProps {

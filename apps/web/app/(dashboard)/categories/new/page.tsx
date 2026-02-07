@@ -1,10 +1,10 @@
+import { requireAdmin } from '@habidat/auth/session'
+import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { CategoryForm } from '@/components/categories/category-form'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { getCategories } from '@/lib/actions/category-actions'
 import { getGroupsForSelect } from '@/lib/actions/group-actions'
-import { requireAdmin } from '@habidat/auth/session'
-import { getTranslations } from 'next-intl/server'
-import { notFound } from 'next/navigation'
 
 export default async function NewCategoryPage() {
   const t = await getTranslations('categories')

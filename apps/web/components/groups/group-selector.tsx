@@ -1,5 +1,7 @@
 'use client'
 
+import { Check, ChevronsUpDown, X } from 'lucide-react'
+import * as React from 'react'
 import { Badge } from '@/components/ui/badge'
 import {
   Command,
@@ -12,8 +14,6 @@ import {
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown, X } from 'lucide-react'
-import * as React from 'react'
 
 export interface GroupOption {
   id: string

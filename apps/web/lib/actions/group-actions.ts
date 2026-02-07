@@ -1,17 +1,17 @@
 'use server'
 
-import { createAuditLog } from '@/lib/audit'
 import { canManageGroup } from '@habidat/auth/roles'
 import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { type Prisma, prisma } from '@habidat/db'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+import { createAuditLog } from '@/lib/audit'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import {
   createSyncEvent,
   dispatchDiscourseSyncAfterCommit,
   dispatchLdapSyncAfterCommit,
 } from '@/lib/sync/create-sync-event'
-import { type Prisma, prisma } from '@habidat/db'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 import { adminAction, groupAdminAction } from './client'
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]

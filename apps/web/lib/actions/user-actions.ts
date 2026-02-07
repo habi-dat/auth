@@ -1,11 +1,15 @@
 'use server'
 
+import { canManageGroup, canManageUser } from '@habidat/auth/roles'
+import { prisma } from '@habidat/db'
+import { hashPassword } from 'better-auth/crypto'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import {
   addUserToGroupAdmin,
   removeUserFromGroupAdminIfNoOwnership,
 } from '@/lib/actions/group-actions'
 import { createAuditLog } from '@/lib/audit'
-import { canManageGroup, canManageUser } from '@habidat/auth/roles'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import {
@@ -13,10 +17,6 @@ import {
   dispatchDiscourseSyncAfterCommit,
   dispatchLdapSyncAfterCommit,
 } from '@/lib/sync/create-sync-event'
-import { prisma } from '@habidat/db'
-import { hashPassword } from 'better-auth/crypto'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 import { groupAdminAction, userAction } from './client'
 
 // Schema definitions

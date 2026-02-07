@@ -1,14 +1,14 @@
 'use client'
+import type { ColumnDef } from '@tanstack/react-table'
+import { ShieldCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useAction } from 'next-safe-action/hooks'
+import { useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
 import { deleteUserAction, type getUsers } from '@/lib/actions/user-actions'
-import type { ColumnDef } from '@tanstack/react-table'
-import { ShieldCheck } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useAction } from 'next-safe-action/hooks'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 type UserRow = Awaited<ReturnType<typeof getUsers>>[number]
 

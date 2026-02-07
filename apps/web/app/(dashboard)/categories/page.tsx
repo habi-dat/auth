@@ -1,13 +1,13 @@
+import { requireAdmin } from '@habidat/auth/session'
+import { Loader2, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Suspense } from 'react'
 import { CategoriesTable } from '@/components/categories/categories-table'
 import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { Button } from '@/components/ui/button'
 import { getCategories } from '@/lib/actions/category-actions'
 import { isDiscourseConfigured } from '@/lib/discourse/client'
-import { requireAdmin } from '@habidat/auth/session'
-import { Loader2, Plus } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
-import { Suspense } from 'react'
 
 async function CategoriesTableWrapper() {
   const t = await getTranslations('categories')

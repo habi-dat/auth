@@ -1,13 +1,13 @@
+import { canManageGroup } from '@habidat/auth/roles'
+import { requireUserWithGroups } from '@habidat/auth/session'
+import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { GroupForm } from '@/components/groups/group-form'
 import { GroupMembers } from '@/components/groups/group-members'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getGroup, getGroupsForSelect } from '@/lib/actions/group-actions'
 import { getUsersForSelect } from '@/lib/actions/user-actions'
-import { canManageGroup } from '@habidat/auth/roles'
-import { requireUserWithGroups } from '@habidat/auth/session'
-import { getTranslations } from 'next-intl/server'
-import { notFound } from 'next/navigation'
 
 interface PageProps {
   params: Promise<{ id: string }>

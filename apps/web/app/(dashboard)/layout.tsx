@@ -1,8 +1,8 @@
+import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
-import { getCurrentUserWithGroups } from '@habidat/auth/session'
 import { getGeneralSettings } from '@/lib/settings/general'
-import { redirect } from 'next/navigation'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [session, generalSettings] = await Promise.all([

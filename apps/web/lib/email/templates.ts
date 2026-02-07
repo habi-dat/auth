@@ -1,3 +1,5 @@
+import { prisma } from '@habidat/db'
+import { render } from '@react-email/components'
 import { InviteEmail } from '@/components/emails/invite-email'
 import { PasswordResetEmail } from '@/components/emails/password-reset-email'
 import { getDefaultEmailCopy } from '@/lib/email/defaults'
@@ -10,8 +12,6 @@ import type {
   SupportedEmailLocale,
 } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
-import { prisma } from '@habidat/db'
-import { render } from '@react-email/components'
 
 export type { InviteEmailConfig, PasswordResetEmailConfig }
 

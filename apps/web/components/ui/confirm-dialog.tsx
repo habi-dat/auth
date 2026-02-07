@@ -1,5 +1,7 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
+import type { ButtonProps } from '@/components/ui/button'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
-import type { ButtonProps } from '@/components/ui/button'
 
 export interface ConfirmDialogProps {
   open: boolean

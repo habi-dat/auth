@@ -1,8 +1,8 @@
+import { requireAdmin } from '@habidat/auth/session'
+import { getTranslations } from 'next-intl/server'
 import { AppForm } from '@/components/apps/app-form'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { getGroups } from '@/lib/actions/group-actions'
-import { requireAdmin } from '@habidat/auth/session'
-import { getTranslations } from 'next-intl/server'
 
 export default async function NewAppPage() {
   const t = await getTranslations('apps')

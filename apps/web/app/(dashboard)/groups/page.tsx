@@ -1,12 +1,12 @@
+import { requireUserWithGroups } from '@habidat/auth/session'
+import { Loader2, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Suspense } from 'react'
 import { GroupsTable } from '@/components/groups/groups-table'
 import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { Button } from '@/components/ui/button'
 import { getGroups } from '@/lib/actions/group-actions'
-import { requireUserWithGroups } from '@habidat/auth/session'
-import { Loader2, Plus } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
-import { Suspense } from 'react'
 
 async function GroupsTableWrapper({ isAdmin }: { isAdmin: boolean }) {
   const groups = await getGroups()

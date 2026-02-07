@@ -1,8 +1,8 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { getSyncEvents } from '@/lib/sync/get-sync-events'
-import { useTranslations } from 'next-intl'
 
 type SyncRow = Awaited<ReturnType<typeof getSyncEvents>>[number]
 

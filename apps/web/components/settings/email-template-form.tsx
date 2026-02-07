@@ -1,10 +1,13 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/components/ui/use-toast'
 import {
   getEmailPreviewHtmlAction,
   updateEmailTemplateAction,
@@ -15,9 +18,6 @@ import type {
   SupportedEmailLocale,
 } from '@/lib/email/types'
 import { SUPPORTED_EMAIL_LOCALES } from '@/lib/email/types'
-import { useToast } from '@/components/ui/use-toast'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
 
 interface EmailTemplateFormProps {
   templateKey: EmailTemplateKey

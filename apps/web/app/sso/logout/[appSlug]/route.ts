@@ -2,12 +2,12 @@ import { auth } from '@habidat/auth'
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import {
-  type ParsedLogoutRequest,
   createLogoutRequestRedirect,
   createLogoutResponseRedirect,
   createMinimalParsedRequest,
   decodeLogoutState,
   encodeLogoutState,
+  type ParsedLogoutRequest,
   parseLogoutRequest,
 } from '@habidat/saml'
 import { headers } from 'next/headers'

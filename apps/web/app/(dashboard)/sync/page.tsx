@@ -1,10 +1,10 @@
-import { ListPageLayout } from '@/components/layout/list-page-layout'
-import { SyncTable } from '@/components/sync/sync-table'
-import { getSyncEvents } from '@/lib/sync/get-sync-events'
 import { requireAdmin } from '@habidat/auth/session'
 import { Loader2 } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { Suspense } from 'react'
+import { ListPageLayout } from '@/components/layout/list-page-layout'
+import { SyncTable } from '@/components/sync/sync-table'
+import { getSyncEvents } from '@/lib/sync/get-sync-events'
 
 async function SyncTableWrapper() {
   const events = await getSyncEvents({ limit: 200 })

@@ -1,9 +1,9 @@
-import { Badge, type BadgeProps } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 /* -------------------------------------------------------------------------- */
 /*                                Action Cells                                */
@@ -16,7 +16,8 @@ interface RowActionsProps {
 
 export function RowActions({ children, className }: RowActionsProps) {
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+    // biome-ignore lint/a11y/noStaticElementInteractions: needed to prevent row click event
+    // biome-ignore lint/a11y/useKeyWithClickEvents: needed to prevent row click event
     <div
       className={cn('flex items-center justify-end gap-1', className)}
       onClick={(e) => e.stopPropagation()}
@@ -120,7 +121,6 @@ export function BadgeList<T>({
 
   const getKey = (item: T, index: number) => {
     if (keyFn) return keyFn(item)
-    // @ts-ignore - opportunistic check
     if (item && typeof item === 'object' && 'id' in item) return item.id as string
     return index
   }

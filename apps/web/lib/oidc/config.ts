@@ -1,5 +1,5 @@
-import type { Configuration, FindAccount, ClientMetadata } from 'oidc-provider'
 import { prisma } from '@habidat/db'
+import type { ClientMetadata, Configuration, FindAccount } from 'oidc-provider'
 
 const APP_URL = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 export const OIDC_ISSUER = `${APP_URL}/oidc`
