@@ -31,7 +31,9 @@ export async function getOidcClientsFromDb(): Promise<ClientMetadata[]> {
       try {
         if (app.oidcRedirectUris) {
           const parsed = JSON.parse(app.oidcRedirectUris) as unknown
-          redirect_uris = Array.isArray(parsed) ? parsed.filter((u): u is string => typeof u === 'string') : []
+          redirect_uris = Array.isArray(parsed)
+            ? parsed.filter((u): u is string => typeof u === 'string')
+            : []
         }
       } catch {
         // ignore invalid JSON

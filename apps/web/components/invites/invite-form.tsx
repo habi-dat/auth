@@ -12,11 +12,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-export function InviteForm({
-  groups,
-}: {
-  groups: { id: string; name: string; slug: string }[]
-}) {
+export function InviteForm({ groups }: { groups: { id: string; name: string; slug: string }[] }) {
   const t = useTranslations('invites')
   const tCommon = useTranslations('common')
   const router = useRouter()

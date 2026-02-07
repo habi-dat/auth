@@ -16,13 +16,7 @@ import { useState } from 'react'
 
 type GroupRow = Awaited<ReturnType<typeof getGroups>>[number]
 
-export function GroupsTable({
-  groups,
-  isAdmin,
-}: {
-  groups: GroupRow[]
-  isAdmin: boolean
-}) {
+export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: boolean }) {
   const t = useTranslations('groups')
   const tCommon = useTranslations('common')
   const router = useRouter()

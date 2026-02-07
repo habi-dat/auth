@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { getSyncEvents } from '@/lib/sync/get-sync-events'
 import { useTranslations } from 'next-intl'
 
@@ -13,8 +8,7 @@ type SyncRow = Awaited<ReturnType<typeof getSyncEvents>>[number]
 
 function JsonBlock({ label, value }: { label: string; value: unknown }) {
   if (value === undefined || value === null) return null
-  const str =
-    typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+  const str = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
   return (
     <div className="space-y-1">
       <span className="text-muted-foreground text-sm font-medium">{label}</span>
@@ -82,9 +76,7 @@ export function SyncDetailsDialog({
             )}
           </div>
           <JsonBlock label={t('payload')} value={event.payload} />
-          {event.lastError != null && (
-            <JsonBlock label={t('lastError')} value={event.lastError} />
-          )}
+          {event.lastError != null && <JsonBlock label={t('lastError')} value={event.lastError} />}
         </div>
       </DialogContent>
     </Dialog>

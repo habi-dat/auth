@@ -51,12 +51,7 @@ export function ConfirmDialog({
           >
             {cancelLabel}
           </Button>
-          <Button
-            type="button"
-            variant={variant}
-            onClick={onConfirm}
-            disabled={isPending}
-          >
+          <Button type="button" variant={variant} onClick={onConfirm} disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmLabel}
           </Button>

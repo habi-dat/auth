@@ -20,13 +20,7 @@ import { useState } from 'react'
 type InviteRow = Awaited<ReturnType<typeof getInvites>>[number]
 type GroupRow = Awaited<ReturnType<typeof getGroupsForSelect>>[number]
 
-export function InvitesTable({
-  invites,
-  groups,
-}: {
-  invites: InviteRow[]
-  groups: GroupRow[]
-}) {
+export function InvitesTable({ invites, groups }: { invites: InviteRow[]; groups: GroupRow[] }) {
   const t = useTranslations('invites')
   const tCommon = useTranslations('common')
   const router = useRouter()

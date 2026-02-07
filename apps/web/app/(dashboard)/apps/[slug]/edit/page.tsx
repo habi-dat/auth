@@ -6,11 +6,7 @@ import { requireAdmin } from '@habidat/auth/session'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-export default async function EditAppPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function EditAppPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const t = await getTranslations('apps')
   await requireAdmin()

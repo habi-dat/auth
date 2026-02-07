@@ -242,7 +242,8 @@ async function importFromLdap(
           data: {
             slug: 'groupadmin',
             name: 'Group Admins',
-            description: 'System group: all users who are admin of any group (managed automatically)',
+            description:
+              'System group: all users who are admin of any group (managed automatically)',
             isSystem: true,
           },
         })
@@ -451,9 +452,13 @@ async function main() {
           isSystem: true,
         },
       })
-      console.log(`Created groupadmin system group: ${groupAdminGroup.name} (${groupAdminGroup.slug})`)
+      console.log(
+        `Created groupadmin system group: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
+      )
     } else {
-      console.log(`Groupadmin system group already exists: ${groupAdminGroup.name} (${groupAdminGroup.slug})`)
+      console.log(
+        `Groupadmin system group already exists: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
+      )
     }
 
     let adminUser = await prisma.user.findUnique({

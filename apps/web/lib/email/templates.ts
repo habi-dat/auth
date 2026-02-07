@@ -85,10 +85,7 @@ async function getEmailBranding(): Promise<{
       : logoUrlRaw
     : `${appUrl}/logo.png`
   return {
-    platformName:
-      general.platformName?.trim() ||
-      process.env.NEXT_PUBLIC_APP_NAME ||
-      'Habidat',
+    platformName: general.platformName?.trim() || process.env.NEXT_PUBLIC_APP_NAME || 'Habidat',
     appUrl,
     logoUrl,
   }

@@ -25,15 +25,9 @@ export async function getSyncEvents(
     take: Math.min(limit, 500),
   })
 
-  const userIds = [
-    ...new Set(
-      events.filter((e) => e.entityType === 'USER').map((e) => e.entityId)
-    ),
-  ]
+  const userIds = [...new Set(events.filter((e) => e.entityType === 'USER').map((e) => e.entityId))]
   const groupIds = [
-    ...new Set(
-      events.filter((e) => e.entityType === 'GROUP').map((e) => e.entityId)
-    ),
+    ...new Set(events.filter((e) => e.entityType === 'GROUP').map((e) => e.entityId)),
   ]
 
   const [users, groups] = await Promise.all([

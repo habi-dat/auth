@@ -13,7 +13,9 @@ export interface DiscourseSyncJobData {
 let ldapQueue: Queue<LdapSyncJobData, void, typeof JOB_NAMES.LDAP_SYNC> | null = null
 let discourseQueue: Queue<DiscourseSyncJobData, void, typeof JOB_NAMES.DISCOURSE_SYNC> | null = null
 
-export function getLdapQueue(redisUrl?: string): Queue<LdapSyncJobData, void, typeof JOB_NAMES.LDAP_SYNC> {
+export function getLdapQueue(
+  redisUrl?: string
+): Queue<LdapSyncJobData, void, typeof JOB_NAMES.LDAP_SYNC> {
   if (!ldapQueue) {
     ldapQueue = new Queue(QUEUE_NAMES.LDAP_SYNC, {
       connection: getRedisConnection(redisUrl),

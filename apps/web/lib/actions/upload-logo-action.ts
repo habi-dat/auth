@@ -9,13 +9,7 @@ import { revalidatePath } from 'next/cache'
 const UPLOADS_DIR = 'public/uploads'
 const LOGO_BASENAME = 'logo'
 const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
-const ALLOWED_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/svg+xml',
-  'image/webp',
-]
+const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp']
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/png': '.png',

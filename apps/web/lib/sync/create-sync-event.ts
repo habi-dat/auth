@@ -18,7 +18,10 @@ export interface CreateSyncEventParams {
   payload: SyncEventPayload
 }
 
-type Transaction = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>
+type Transaction = Omit<
+  PrismaClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>
 
 export interface CreatedSyncEvent {
   id: string
@@ -49,7 +52,10 @@ export async function createSyncEvent(
  * Call after the transaction has committed to dispatch the LDAP sync job.
  * Only queues when target is LDAP.
  */
-export async function dispatchLdapSyncAfterCommit(syncEventId: string, target: SyncTarget): Promise<void> {
+export async function dispatchLdapSyncAfterCommit(
+  syncEventId: string,
+  target: SyncTarget
+): Promise<void> {
   if (target === 'LDAP') {
     await queueLdapSync(syncEventId)
   }

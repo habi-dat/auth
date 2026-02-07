@@ -100,10 +100,7 @@ export function SyncTable({ events }: { events: SyncRow[] }) {
           )
         }
         return (
-          <span
-            className="text-muted-foreground"
-            title={row.original.entityId}
-          >
+          <span className="text-muted-foreground" title={row.original.entityId}>
             {displayName}
           </span>
         )
@@ -114,9 +111,7 @@ export function SyncTable({ events }: { events: SyncRow[] }) {
       accessorKey: 'status',
       header: t('status'),
       cell: ({ row }) => (
-        <Badge variant={statusVariant(row.original.status)}>
-          {row.original.status}
-        </Badge>
+        <Badge variant={statusVariant(row.original.status)}>{row.original.status}</Badge>
       ),
     },
     {
@@ -135,10 +130,7 @@ export function SyncTable({ events }: { events: SyncRow[] }) {
         const err = row.original.lastError
         if (!err) return <span className="text-muted-foreground">—</span>
         return (
-          <span
-            className="max-w-[180px] truncate block text-destructive text-sm"
-            title={err}
-          >
+          <span className="max-w-[180px] truncate block text-destructive text-sm" title={err}>
             {err}
           </span>
         )

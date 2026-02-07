@@ -14,7 +14,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" aria-hidden />
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]"
+        aria-hidden
+      />
       <div className="relative w-full max-w-md">{children}</div>
     </div>
   )

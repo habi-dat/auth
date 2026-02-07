@@ -17,9 +17,7 @@ export async function getCategories(): Promise<DiscourseCategoryApi[] | null> {
   if (!client) return null
   const list = await client.listCategories(true)
   const editable = list.filter((c) => c.can_edit !== false)
-  const withDetails = await Promise.all(
-    editable.map((c) => client.getCategory(c.id))
-  )
+  const withDetails = await Promise.all(editable.map((c) => client.getCategory(c.id)))
   return withDetails
 }
 
@@ -37,8 +35,14 @@ export async function getCategory(id: number): Promise<DiscourseCategoryApi | nu
 const createCategorySchema = z.object({
   name: z.string().min(1),
   slug: z.string().optional(),
-  color: z.string().regex(/^[0-9a-fA-F]{6}$/).optional(),
-  text_color: z.string().regex(/^[0-9a-fA-F]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^[0-9a-fA-F]{6}$/)
+    .optional(),
+  text_color: z
+    .string()
+    .regex(/^[0-9a-fA-F]{6}$/)
+    .optional(),
   parent_category_id: z.number().int().positive().optional().nullable(),
   group_ids: z.array(z.string().cuid()).optional(),
 })
@@ -75,7 +79,8 @@ export const createCategoryAction = adminAction
       permissions: buildPermissions(groupSlugs),
     }
     if (parsedInput.slug) data.slug = parsedInput.slug
-    if (parsedInput.parent_category_id != null) data.parent_category_id = parsedInput.parent_category_id
+    if (parsedInput.parent_category_id != null)
+      data.parent_category_id = parsedInput.parent_category_id
     const id = await client.createCategory(data)
     revalidatePath('/categories')
     return { id }

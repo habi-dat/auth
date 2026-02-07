@@ -57,7 +57,19 @@ export class LdapService {
       const results = await client.search(this.config.usersDn, {
         filter,
         scope: 'one',
-        attributes: ['dn', 'uid', 'cn', 'mail', 'l', 'preferredLanguage', 'description', 'uidNumber', 'userPassword', 'title', 'ou'],
+        attributes: [
+          'dn',
+          'uid',
+          'cn',
+          'mail',
+          'l',
+          'preferredLanguage',
+          'description',
+          'uidNumber',
+          'userPassword',
+          'title',
+          'ou',
+        ],
         sizeLimit: 1,
       })
       if (!results || results.length === 0) return null
@@ -75,7 +87,19 @@ export class LdapService {
       const results = await client.search(dn, {
         scope: 'base',
         filter: '(objectClass=*)',
-        attributes: ['dn', 'uid', 'cn', 'mail', 'l', 'preferredLanguage', 'description', 'uidNumber', 'userPassword', 'title', 'ou'],
+        attributes: [
+          'dn',
+          'uid',
+          'cn',
+          'mail',
+          'l',
+          'preferredLanguage',
+          'description',
+          'uidNumber',
+          'userPassword',
+          'title',
+          'ou',
+        ],
         sizeLimit: 1,
       })
       if (!results || results.length === 0) return null
@@ -112,7 +136,20 @@ export class LdapService {
       const results = await client.search(this.config.usersDn, {
         filter: '(objectClass=inetOrgPerson)',
         scope: 'one',
-        attributes: ['dn', 'uid', 'cn', 'sn', 'mail', 'l', 'preferredLanguage', 'description', 'uidNumber', 'userPassword', 'title', 'ou'],
+        attributes: [
+          'dn',
+          'uid',
+          'cn',
+          'sn',
+          'mail',
+          'l',
+          'preferredLanguage',
+          'description',
+          'uidNumber',
+          'userPassword',
+          'title',
+          'ou',
+        ],
       })
       if (!results || results.length === 0) return []
       return results.map((entry) => mapSearchEntryToUser(entry as Record<string, unknown>))
@@ -176,18 +213,22 @@ export class LdapService {
 
     if (data.name !== undefined)
       changes.push({ operation: 'replace', modification: { cn: data.name, sn: data.name } })
-    if (data.email !== undefined) changes.push({ operation: 'replace', modification: { mail: data.email } })
-    if (data.location !== undefined) changes.push({ operation: 'replace', modification: { l: data.location ?? '' } })
+    if (data.email !== undefined)
+      changes.push({ operation: 'replace', modification: { mail: data.email } })
+    if (data.location !== undefined)
+      changes.push({ operation: 'replace', modification: { l: data.location ?? '' } })
     if (data.preferredLanguage !== undefined)
-      changes.push({ operation: 'replace', modification: { preferredLanguage: data.preferredLanguage } })
+      changes.push({
+        operation: 'replace',
+        modification: { preferredLanguage: data.preferredLanguage },
+      })
     if (data.storageQuota !== undefined)
       changes.push({ operation: 'replace', modification: { description: data.storageQuota } })
     if (data.userPassword !== undefined)
       changes.push({ operation: 'replace', modification: { userPassword: data.userPassword } })
     if (data.title !== undefined)
       changes.push({ operation: 'replace', modification: { title: data.title } })
-    if (data.ou !== undefined)
-      changes.push({ operation: 'replace', modification: { ou: data.ou } })
+    if (data.ou !== undefined) changes.push({ operation: 'replace', modification: { ou: data.ou } })
 
     for (const change of changes) {
       await client.modify(dn, change)
@@ -219,9 +260,13 @@ export class LdapService {
 
   async updateGroup(dn: string, data: UpdateGroupData): Promise<void> {
     const client = this.ensureConnected()
-    const changes: Array<{ operation: 'replace'; modification: Record<string, string | string[]> }> = []
+    const changes: Array<{
+      operation: 'replace'
+      modification: Record<string, string | string[]>
+    }> = []
 
-    if (data.name !== undefined) changes.push({ operation: 'replace', modification: { o: data.name } })
+    if (data.name !== undefined)
+      changes.push({ operation: 'replace', modification: { o: data.name } })
     if (data.description !== undefined)
       changes.push({ operation: 'replace', modification: { description: data.description } })
     if (data.memberDns !== undefined) {
@@ -294,7 +339,8 @@ function escapeDnComponent(value: string): string {
 }
 
 function mapSearchEntryToUser(entry: Record<string, unknown>): LdapUserEntry {
-  const getStr = (k: string) => (Array.isArray(entry[k]) ? (entry[k] as string[])[0] : (entry[k] as string))
+  const getStr = (k: string) =>
+    Array.isArray(entry[k]) ? (entry[k] as string[])[0] : (entry[k] as string)
   return {
     dn: getStr('dn'),
     uid: getStr('uid'),
@@ -311,8 +357,10 @@ function mapSearchEntryToUser(entry: Record<string, unknown>): LdapUserEntry {
 }
 
 function mapSearchEntryToGroup(entry: Record<string, unknown>): LdapGroupEntry {
-  const getStr = (k: string) => (Array.isArray(entry[k]) ? (entry[k] as string[])[0] : (entry[k] as string))
-  const getArr = (k: string) => (Array.isArray(entry[k]) ? (entry[k] as string[]) : entry[k] ? [getStr(k)] : [])
+  const getStr = (k: string) =>
+    Array.isArray(entry[k]) ? (entry[k] as string[])[0] : (entry[k] as string)
+  const getArr = (k: string) =>
+    Array.isArray(entry[k]) ? (entry[k] as string[]) : entry[k] ? [getStr(k)] : []
   return {
     dn: getStr('dn'),
     cn: getStr('cn'),

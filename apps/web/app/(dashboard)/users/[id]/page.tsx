@@ -24,11 +24,7 @@ export default async function EditUserPage({ params }: PageProps) {
   }
 
   return (
-    <FormPageLayout
-      backHref="/users"
-      title={user.name}
-      description={`@${user.username}`}
-    >
+    <FormPageLayout backHref="/users" title={user.name} description={`@${user.username}`}>
       <UserForm user={user} groups={groups} />
     </FormPageLayout>
   )

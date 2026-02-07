@@ -11,10 +11,7 @@ import { Plus } from 'lucide-react'
 export default async function InvitesPage() {
   await requireGroupAdmin()
   const t = await getTranslations('invites')
-  const [invites, groups] = await Promise.all([
-    getInvites(),
-    getGroupsForSelect(),
-  ])
+  const [invites, groups] = await Promise.all([getInvites(), getGroupsForSelect()])
 
   return (
     <ListPageLayout

@@ -13,9 +13,7 @@ export function ListPageLayout({ title, description, actions, children }: ListPa
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">{title}</h1>
-          {description != null && (
-            <p className="text-muted-foreground mt-1">{description}</p>
-          )}
+          {description != null && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
         {actions}
       </div>

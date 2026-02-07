@@ -94,14 +94,8 @@ export function DataTable<TData, TValue>({
   const pageCount = table.getPageCount()
   const filteredRowCount = table.getFilteredRowModel().rows.length
   const isFiltered = globalFilter.length > 0
-  const start =
-    filteredRowCount === 0
-      ? 0
-      : pagination.pageIndex * pagination.pageSize + 1
-  const end = Math.min(
-    pagination.pageIndex * pagination.pageSize + rows.length,
-    filteredRowCount
-  )
+  const start = filteredRowCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1
+  const end = Math.min(pagination.pageIndex * pagination.pageSize + rows.length, filteredRowCount)
 
   const showSearch = searchPlaceholder !== ''
   const emptyMsg = emptyMessage ?? t('noResults')
@@ -136,26 +130,19 @@ export function DataTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      header.column.getCanSort() &&
-                        'cursor-pointer select-none hover:bg-muted/50',
+                      header.column.getCanSort() && 'cursor-pointer select-none hover:bg-muted/50',
                       (header.column.columnDef.meta as { className?: string })?.className
                     )}
                     onClick={
                       header.column.getCanSort()
-                        ? () =>
-                            header.column.toggleSorting(
-                              header.column.getIsSorted() === 'asc'
-                            )
+                        ? () => header.column.toggleSorting(header.column.getIsSorted() === 'asc')
                         : undefined
                     }
                   >
                     <div className="flex items-center gap-1.5">
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getCanSort() && (
                         <span className="text-muted-foreground">
                           {header.column.getIsSorted() === 'asc' ? (
@@ -203,14 +190,10 @@ export function DataTable<TData, TValue>({
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        (cell.column.columnDef.meta as { className?: string })
-                          ?.className
+                        (cell.column.columnDef.meta as { className?: string })?.className
                       )}
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -224,10 +207,7 @@ export function DataTable<TData, TValue>({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>
-              {filteredRowCount === 0
-                ? '0'
-                : `${start}–${end}`}{' '}
-              {t('of')} {filteredRowCount}
+              {filteredRowCount === 0 ? '0' : `${start}–${end}`} {t('of')} {filteredRowCount}
               {isFiltered &&
                 data.length !== filteredRowCount &&
                 ` (${t('filteredFrom', { count: data.length })})`}

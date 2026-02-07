@@ -1,12 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -47,28 +42,28 @@ export function EmailTemplateForm({
 }: EmailTemplateFormProps) {
   const t = useTranslations('settings.templates')
   const [activeLocale, setActiveLocale] = useState<SupportedEmailLocale>('de')
-  const [configByLocale, setConfigByLocale] = useState<
-    Record<string, SingleLocaleEmailConfig>
-  >(() => {
-    const initial: Record<string, SingleLocaleEmailConfig> = {}
-    const hasLocaleKeys = SUPPORTED_EMAIL_LOCALES.some(
-      (locale) => initialConfigByLocale[locale] != null
-    )
-    if (hasLocaleKeys) {
-      for (const locale of SUPPORTED_EMAIL_LOCALES) {
-        initial[locale] = { ...initialConfigByLocale[locale] }
+  const [configByLocale, setConfigByLocale] = useState<Record<string, SingleLocaleEmailConfig>>(
+    () => {
+      const initial: Record<string, SingleLocaleEmailConfig> = {}
+      const hasLocaleKeys = SUPPORTED_EMAIL_LOCALES.some(
+        (locale) => initialConfigByLocale[locale] != null
+      )
+      if (hasLocaleKeys) {
+        for (const locale of SUPPORTED_EMAIL_LOCALES) {
+          initial[locale] = { ...initialConfigByLocale[locale] }
+        }
+      } else {
+        const flat = initialConfigByLocale as unknown as SingleLocaleEmailConfig
+        if (flat && typeof flat.greeting === 'string') {
+          initial.de = { ...flat }
+        }
+        for (const locale of SUPPORTED_EMAIL_LOCALES) {
+          if (!initial[locale]) initial[locale] = {}
+        }
       }
-    } else {
-      const flat = initialConfigByLocale as unknown as SingleLocaleEmailConfig
-      if (flat && typeof flat.greeting === 'string') {
-        initial.de = { ...flat }
-      }
-      for (const locale of SUPPORTED_EMAIL_LOCALES) {
-        if (!initial[locale]) initial[locale] = {}
-      }
+      return initial
     }
-    return initial
-  })
+  )
   const [enabled, setEnabled] = useState(initialEnabled)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewHtml, setPreviewHtml] = useState('')
@@ -185,9 +180,7 @@ export function EmailTemplateForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`${templateKey}-${activeLocale}-footerHelp`}>
-            {t('footerHelp')}
-          </Label>
+          <Label htmlFor={`${templateKey}-${activeLocale}-footerHelp`}>{t('footerHelp')}</Label>
           <Textarea
             id={`${templateKey}-${activeLocale}-footerHelp`}
             value={config.footerHelp ?? ''}
@@ -224,11 +217,7 @@ export function EmailTemplateForm({
           <Button type="submit" disabled={isPending}>
             {isPending ? '…' : t('save')}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handlePreview}
-          >
+          <Button type="button" variant="outline" onClick={handlePreview}>
             {t('preview')}
           </Button>
         </div>

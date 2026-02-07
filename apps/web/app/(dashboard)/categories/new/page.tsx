@@ -10,10 +10,7 @@ export default async function NewCategoryPage() {
   const t = await getTranslations('categories')
   await requireAdmin()
 
-  const [categories, groups] = await Promise.all([
-    getCategories(),
-    getGroupsForSelect(),
-  ])
+  const [categories, groups] = await Promise.all([getCategories(), getGroupsForSelect()])
 
   if (!categories) {
     notFound()

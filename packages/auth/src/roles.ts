@@ -64,10 +64,7 @@ export type AppWithGroupAccess = {
 }
 
 /** Check if user can access an app. Empty groupAccess = all users. */
-export function canAccessApp(
-  session: SessionWithGroups,
-  app: AppWithGroupAccess
-): boolean {
+export function canAccessApp(session: SessionWithGroups, app: AppWithGroupAccess): boolean {
   if (app.groupAccess.length === 0) return true
   const allowedGroupIds = app.groupAccess.map((a) => a.groupId)
   const userGroupIds = new Set([

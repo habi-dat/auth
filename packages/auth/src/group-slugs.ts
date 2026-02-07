@@ -21,11 +21,7 @@ export async function getGroupSlugAndAncestorSlugs(
     select: { parentGroupId: true },
   })
   for (const p of parents) {
-    const ancestorSlugs = await getGroupSlugAndAncestorSlugs(
-      prisma,
-      p.parentGroupId,
-      visited
-    )
+    const ancestorSlugs = await getGroupSlugAndAncestorSlugs(prisma, p.parentGroupId, visited)
     for (const s of ancestorSlugs) result.push(s)
   }
   return result

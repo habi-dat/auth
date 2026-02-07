@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { getAuditLogs } from '@/lib/audit'
 import { useTranslations } from 'next-intl'
 
@@ -26,15 +21,9 @@ const entityTypeKeys: Record<AuditRow['entityType'], string> = {
   SETTING: 'entitySetting',
 }
 
-function JsonBlock({
-  label,
-  value,
-}: { label: string; value: unknown }) {
+function JsonBlock({ label, value }: { label: string; value: unknown }) {
   if (value === undefined || value === null) return null
-  const str =
-    typeof value === 'string'
-      ? value
-      : JSON.stringify(value, null, 2)
+  const str = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
   return (
     <div className="space-y-1">
       <span className="text-muted-foreground text-sm font-medium">{label}</span>
@@ -79,7 +68,7 @@ export function AuditDetailsDialog({
               })}
             </dd>
             <dt className="text-muted-foreground">{t('actor')}</dt>
-            <dd>{log.actor ? log.actor.name ?? log.actor.email : t('system')}</dd>
+            <dd>{log.actor ? (log.actor.name ?? log.actor.email) : t('system')}</dd>
             <dt className="text-muted-foreground">{t('action')}</dt>
             <dd>{t(actionKeys[log.action])}</dd>
             <dt className="text-muted-foreground">{t('entityType')}</dt>
@@ -92,21 +81,13 @@ export function AuditDetailsDialog({
             <div className="space-y-4 border-t pt-4">
               <h4 className="text-sm font-medium">{t('changes')}</h4>
               <div className="grid gap-4 sm:grid-cols-2">
-                {hasOld && (
-                  <JsonBlock label={t('before')} value={log.oldValue} />
-                )}
-                {hasNew && (
-                  <JsonBlock label={t('after')} value={log.newValue} />
-                )}
+                {hasOld && <JsonBlock label={t('before')} value={log.oldValue} />}
+                {hasNew && <JsonBlock label={t('after')} value={log.newValue} />}
               </div>
-              {hasMetadata && (
-                <JsonBlock label={t('metadata')} value={log.metadata} />
-              )}
+              {hasMetadata && <JsonBlock label={t('metadata')} value={log.metadata} />}
             </div>
           ) : (
-            <p className="border-t pt-4 text-muted-foreground text-sm">
-              {t('noChanges')}
-            </p>
+            <p className="border-t pt-4 text-muted-foreground text-sm">{t('noChanges')}</p>
           )}
         </div>
       </DialogContent>

@@ -29,16 +29,8 @@ export default async function EditCategoryPage({ params }: PageProps) {
   }
 
   return (
-    <FormPageLayout
-      backHref="/categories"
-      title={category.name}
-      description={category.slug}
-    >
-      <CategoryForm
-        category={category}
-        categories={categories}
-        groups={groups}
-      />
+    <FormPageLayout backHref="/categories" title={category.name} description={category.slug}>
+      <CategoryForm category={category} categories={categories} groups={groups} />
     </FormPageLayout>
   )
 }

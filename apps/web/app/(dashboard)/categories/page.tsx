@@ -11,10 +11,7 @@ import { Suspense } from 'react'
 
 async function CategoriesTableWrapper() {
   const t = await getTranslations('categories')
-  const [categories, configured] = await Promise.all([
-    getCategories(),
-    isDiscourseConfigured(),
-  ])
+  const [categories, configured] = await Promise.all([getCategories(), isDiscourseConfigured()])
 
   if (!configured) {
     return (
@@ -32,12 +29,7 @@ async function CategoriesTableWrapper() {
     )
   }
 
-  return (
-    <CategoriesTable
-      categories={categories}
-      emptyMessage={t('empty')}
-    />
-  )
+  return <CategoriesTable categories={categories} emptyMessage={t('empty')} />
 }
 
 export default async function CategoriesPage() {

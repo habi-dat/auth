@@ -1,9 +1,6 @@
 import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { SettingsPageClient } from '@/components/settings/settings-page-client'
-import {
-  getDefaultEmailCopy,
-  getSupportedEmailLocales,
-} from '@/lib/email/defaults'
+import { getDefaultEmailCopy, getSupportedEmailLocales } from '@/lib/email/defaults'
 import { getEmailTemplates } from '@/lib/email/templates'
 import type { EmailTemplateConfigByLocale, SupportedEmailLocale } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
@@ -18,8 +15,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   await requireAdmin()
   const t = await getTranslations('settings')
   const params = await searchParams
-  const defaultTab =
-    params.tab === 'templates' ? ('templates' as const) : ('general' as const)
+  const defaultTab = params.tab === 'templates' ? ('templates' as const) : ('general' as const)
 
   const [generalSettings, templates] = await Promise.all([
     getGeneralSettings(),
@@ -33,10 +29,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const defaultCopyInvite = Object.fromEntries(
     locales.map((locale) => [
       locale,
-      getDefaultEmailCopy(locale as SupportedEmailLocale, 'invite') as Record<
-        string,
-        string
-      >,
+      getDefaultEmailCopy(locale as SupportedEmailLocale, 'invite') as Record<string, string>,
     ])
   ) as Record<string, Record<string, string>>
   const defaultCopyPasswordReset = Object.fromEntries(
@@ -49,8 +42,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     ])
   ) as Record<string, Record<string, string>>
 
-  const inviteConfigByLocale =
-    (inviteTemplate?.config as EmailTemplateConfigByLocale | null) ?? {}
+  const inviteConfigByLocale = (inviteTemplate?.config as EmailTemplateConfigByLocale | null) ?? {}
   const passwordResetConfigByLocale =
     (passwordResetTemplate?.config as EmailTemplateConfigByLocale | null) ?? {}
 
