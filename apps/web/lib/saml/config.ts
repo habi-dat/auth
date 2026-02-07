@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { XMLValidator } from 'fast-xml-parser'
 import { IdentityProvider, ServiceProvider, setSchemaValidator } from 'samlify'
 import { buildLoginResponseTemplate } from './template'
 
@@ -12,11 +13,15 @@ export type SamlUser = {
   /** Group slugs (member groups + ancestor groups). Included in SAML attribute "groups". */
   groups?: string[]
 }
-// The doc says: "Your application is potentially vulnerable because no validation function found."
-// We follow the old implementation here and skip validation.
-setSchemaValidator({
-  validate: () => Promise.resolve('skipped'),
-})
+
+const customValidator = {
+  validate: async (xml: string) => {
+    return XMLValidator.validate(xml)
+  },
+}
+
+// Enable XML schema validation
+setSchemaValidator(customValidator)
 
 const BINDING_REDIRECT = 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
 const BINDING_POST = 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
