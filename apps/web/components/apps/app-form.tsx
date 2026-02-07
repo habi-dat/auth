@@ -29,23 +29,23 @@ const appFormSchema = z.object({
     .min(2)
     .regex(/^[a-zA-Z0-9-]+$/),
   name: z.string().min(2),
-  description: z.string().catch(''),
-  url: z.string().url(),
+  description: z.string().default(''),
+  url: z.url(),
   sortOrder: z.coerce.number().int().min(0),
   useIconAsLogo: z.boolean(),
   samlEnabled: z.boolean(),
-  samlEntityId: z.string().catch(''),
-  samlAcsUrl: z.string().catch(''),
-  samlSloUrl: z.string().catch(''),
-  samlCertificate: z.string().catch(''),
+  samlEntityId: z.string().default(''),
+  samlAcsUrl: z.string().default(''),
+  samlSloUrl: z.string().default(''),
+  samlCertificate: z.string().default(''),
   oidcEnabled: z.boolean(),
-  oidcClientId: z.string().catch(''),
-  oidcRedirectUris: z.string().catch(''),
-  oidcClientSecret: z.string().catch(''),
+  oidcClientId: z.string().default(''),
+  oidcRedirectUris: z.string().default(''),
+  oidcClientSecret: z.string().default(''),
   groupIds: z.array(z.string()).default([]),
 })
 
-type AppFormValues = z.infer<typeof appFormSchema>
+type AppFormValues = z.output<typeof appFormSchema>
 
 interface AppFormProps {
   app?: AppRow
@@ -112,6 +112,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   })
 
   const form = useForm<AppFormValues>({
+    // biome-ignore lint/suspicious/noExplicitAny: too complex to fix
     resolver: zodResolver(appFormSchema) as any,
     defaultValues: {
       slug: app?.slug ?? '',

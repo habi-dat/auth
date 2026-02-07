@@ -34,6 +34,7 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           {row.original.iconUrl ? (
+            // biome-ignore lint/performance/noImgElement: icons are not optimized
             <img
               src={row.original.iconUrl}
               alt=""
@@ -103,7 +104,6 @@ export function AppsTable({ apps }: { apps: AppRow[] }) {
       id: 'actions',
       header: () => <span className="sr-only">{t('actions')}</span>,
       cell: ({ row }) => (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
         <RowActions>
           <EditAction href={`/apps/${row.original.slug}/edit`} title={t('edit')} />
           <DeleteAction onClick={() => setDeleteTarget(row.original)} title={t('delete')} />

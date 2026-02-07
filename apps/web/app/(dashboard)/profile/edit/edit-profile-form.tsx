@@ -31,13 +31,15 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { updateProfileAction } from '@/lib/actions/user-actions'
 
-type ProfileForm = {
-  name: string
-  location?: string
-  preferredLanguage: string
-  preferredColorMode?: 'light' | 'dark' | 'system'
-  primaryGroupId?: string | null
-}
+const baseProfileSchema = z.object({
+  name: z.string(),
+  location: z.string().optional(),
+  preferredLanguage: z.string(),
+  preferredColorMode: z.enum(['light', 'dark', 'system']),
+  primaryGroupId: z.string().optional().nullable(),
+})
+
+type ProfileForm = z.infer<typeof baseProfileSchema>
 
 function defaultValuesFromUser(user: SessionUser): ProfileForm {
   return {
@@ -77,12 +79,8 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     },
   })
 
-  const profileSchema = z.object({
+  const profileSchema = baseProfileSchema.extend({
     name: z.string().min(2, tVal('nameMin')),
-    location: z.string().optional(),
-    preferredLanguage: z.string().default('de'),
-    preferredColorMode: z.enum(['light', 'dark', 'system']),
-    primaryGroupId: z.string().optional().nullable(),
   })
 
   const {
