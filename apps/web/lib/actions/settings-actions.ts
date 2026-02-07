@@ -15,6 +15,8 @@ const updateGeneralSettingsSchema = z.object({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),
+  dashboardTitle: z.string().optional(),
+  dashboardDescription: z.string().optional(),
 })
 
 export const updateGeneralSettingsAction = adminAction

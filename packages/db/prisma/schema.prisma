@@ -266,6 +266,8 @@ model App {
   // SAML sessions
   samlSessions SamlSessionApp[]
 
+  isMain Boolean @default(true)
+
   @@index([slug])
 }
 

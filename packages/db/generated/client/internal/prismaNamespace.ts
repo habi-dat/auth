@@ -2113,7 +2113,8 @@ export const AppScalarFieldEnum = {
   oidcEnabled: 'oidcEnabled',
   oidcClientId: 'oidcClientId',
   oidcRedirectUris: 'oidcRedirectUris',
-  oidcClientSecret: 'oidcClientSecret'
+  oidcClientSecret: 'oidcClientSecret',
+  isMain: 'isMain'
 } as const
 
 export type AppScalarFieldEnum = (typeof AppScalarFieldEnum)[keyof typeof AppScalarFieldEnum]

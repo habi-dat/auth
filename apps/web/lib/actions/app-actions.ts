@@ -36,6 +36,7 @@ export async function getUserApps(userGroupIds: string[]) {
       iconUrl: true,
       logoUrl: true,
       useIconAsLogo: true,
+      isMain: true,
     },
   })
 }
@@ -61,7 +62,8 @@ const appSchema = z.object({
   oidcClientId: z.string().optional().nullable(),
   oidcRedirectUris: z.string().optional().nullable(),
   oidcClientSecret: z.string().optional().nullable(),
-  groupIds: z.array(z.string().cuid()).optional(),
+  groupIds: z.array(z.string()).optional(),
+  isMain: z.boolean().default(true),
 })
 
 export const createAppAction = adminAction
@@ -91,6 +93,7 @@ export const createAppAction = adminAction
         samlCertificate: parsedInput.samlCertificate ?? undefined,
         oidcEnabled: parsedInput.oidcEnabled,
         oidcClientId: parsedInput.oidcClientId ?? undefined,
+        isMain: parsedInput.isMain,
         groupAccess: {
           create: (parsedInput.groupIds ?? []).map((groupId) => ({ groupId })),
         },
@@ -139,6 +142,7 @@ export const updateAppAction = adminAction
           oidcClientId: parsedInput.oidcClientId ?? undefined,
           oidcRedirectUris: parsedInput.oidcRedirectUris ?? undefined,
           oidcClientSecret: parsedInput.oidcClientSecret ?? undefined,
+          isMain: parsedInput.isMain,
         },
       })
       await tx.appGroupAccess.deleteMany({

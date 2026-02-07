@@ -33,7 +33,10 @@
   },
   "home": {
     "title": "Home",
+    "welcome": "Welcome, {name}!",
     "description": "Your applications and services",
+    "mainApps": "Main Applications",
+    "otherApps": "Other Applications",
     "noApps": "No apps available. Contact an administrator."
   },
   "auth": {
@@ -247,6 +250,10 @@
       "themeColor": "Theme Color",
       "resetColor": "Reset Color",
       "themeColorHelp": "Choose a primary color for the platform's theme.",
+      "dashboardTitle": "Dashboard Title",
+      "dashboardTitlePlaceholder": "e.g. Welcome, {name}! (supports {name} placeholder)",
+      "dashboardDescription": "Dashboard Description",
+      "dashboardDescriptionPlaceholder": "Short text shown below the title",
       "save": "Save",
       "saved": "Saved"
     },
@@ -382,7 +389,9 @@
     "iconUploaded": "Icon uploaded",
     "iconRemoved": "Icon removed",
     "logoUploaded": "Logo uploaded",
-    "logoRemoved": "Logo removed"
+    "logoRemoved": "Logo removed",
+    "isMain": "Main App",
+    "editApp": "Edit app"
   },
   "users": {
     "title": "Users",

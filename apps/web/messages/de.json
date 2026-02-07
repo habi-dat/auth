@@ -33,7 +33,10 @@
   },
   "home": {
     "title": "Home",
+    "welcome": "Willkommen, {name}!",
     "description": "Deine verfügbaren Anwendungen",
+    "mainApps": "Hauptanwendungen",
+    "otherApps": "Weitere Anwendungen",
     "noApps": "Keine Apps verfügbar. Kontaktiere einen Administrator."
   },
   "auth": {
@@ -247,6 +250,10 @@
       "themeColor": "Hauptfarbe",
       "resetColor": "Farbe zurücksetzen",
       "themeColorHelp": "Wähle eine Hauptfarbe für das Farbschema der Plattform.",
+      "dashboardTitle": "Dashboard-Titel",
+      "dashboardTitlePlaceholder": "z.B. Willkommen, {name}! (unterstützt {name} Platzhalter)",
+      "dashboardDescription": "Dashboard-Beschreibung",
+      "dashboardDescriptionPlaceholder": "Kurzer Text unter dem Titel",
       "save": "Speichern",
       "saved": "Gespeichert"
     },
@@ -382,7 +389,9 @@
     "iconUploaded": "Icon hochgeladen",
     "iconRemoved": "Icon entfernt",
     "logoUploaded": "Logo hochgeladen",
-    "logoRemoved": "Logo entfernt"
+    "logoRemoved": "Logo entfernt",
+    "isMain": "Haupt-App",
+    "editApp": "App bearbeiten"
   },
   "users": {
     "title": "Benutzer",

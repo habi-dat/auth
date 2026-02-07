@@ -55,6 +55,7 @@ export type AppMinAggregateOutputType = {
   oidcClientId: string | null
   oidcRedirectUris: string | null
   oidcClientSecret: string | null
+  isMain: boolean | null
 }
 
 export type AppMaxAggregateOutputType = {
@@ -78,6 +79,7 @@ export type AppMaxAggregateOutputType = {
   oidcClientId: string | null
   oidcRedirectUris: string | null
   oidcClientSecret: string | null
+  isMain: boolean | null
 }
 
 export type AppCountAggregateOutputType = {
@@ -101,6 +103,7 @@ export type AppCountAggregateOutputType = {
   oidcClientId: number
   oidcRedirectUris: number
   oidcClientSecret: number
+  isMain: number
   _all: number
 }
 
@@ -134,6 +137,7 @@ export type AppMinAggregateInputType = {
   oidcClientId?: true
   oidcRedirectUris?: true
   oidcClientSecret?: true
+  isMain?: true
 }
 
 export type AppMaxAggregateInputType = {
@@ -157,6 +161,7 @@ export type AppMaxAggregateInputType = {
   oidcClientId?: true
   oidcRedirectUris?: true
   oidcClientSecret?: true
+  isMain?: true
 }
 
 export type AppCountAggregateInputType = {
@@ -180,6 +185,7 @@ export type AppCountAggregateInputType = {
   oidcClientId?: true
   oidcRedirectUris?: true
   oidcClientSecret?: true
+  isMain?: true
   _all?: true
 }
 
@@ -290,6 +296,7 @@ export type AppGroupByOutputType = {
   oidcClientId: string | null
   oidcRedirectUris: string | null
   oidcClientSecret: string | null
+  isMain: boolean
   _count: AppCountAggregateOutputType | null
   _avg: AppAvgAggregateOutputType | null
   _sum: AppSumAggregateOutputType | null
@@ -336,6 +343,7 @@ export type AppWhereInput = {
   oidcClientId?: Prisma.StringNullableFilter<"App"> | string | null
   oidcRedirectUris?: Prisma.StringNullableFilter<"App"> | string | null
   oidcClientSecret?: Prisma.StringNullableFilter<"App"> | string | null
+  isMain?: Prisma.BoolFilter<"App"> | boolean
   groupAccess?: Prisma.AppGroupAccessListRelationFilter
   samlSessions?: Prisma.SamlSessionAppListRelationFilter
 }
@@ -361,6 +369,7 @@ export type AppOrderByWithRelationInput = {
   oidcClientId?: Prisma.SortOrderInput | Prisma.SortOrder
   oidcRedirectUris?: Prisma.SortOrderInput | Prisma.SortOrder
   oidcClientSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMain?: Prisma.SortOrder
   groupAccess?: Prisma.AppGroupAccessOrderByRelationAggregateInput
   samlSessions?: Prisma.SamlSessionAppOrderByRelationAggregateInput
 }
@@ -389,6 +398,7 @@ export type AppWhereUniqueInput = Prisma.AtLeast<{
   oidcClientId?: Prisma.StringNullableFilter<"App"> | string | null
   oidcRedirectUris?: Prisma.StringNullableFilter<"App"> | string | null
   oidcClientSecret?: Prisma.StringNullableFilter<"App"> | string | null
+  isMain?: Prisma.BoolFilter<"App"> | boolean
   groupAccess?: Prisma.AppGroupAccessListRelationFilter
   samlSessions?: Prisma.SamlSessionAppListRelationFilter
 }, "id" | "slug">
@@ -414,6 +424,7 @@ export type AppOrderByWithAggregationInput = {
   oidcClientId?: Prisma.SortOrderInput | Prisma.SortOrder
   oidcRedirectUris?: Prisma.SortOrderInput | Prisma.SortOrder
   oidcClientSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  isMain?: Prisma.SortOrder
   _count?: Prisma.AppCountOrderByAggregateInput
   _avg?: Prisma.AppAvgOrderByAggregateInput
   _max?: Prisma.AppMaxOrderByAggregateInput
@@ -445,6 +456,7 @@ export type AppScalarWhereWithAggregatesInput = {
   oidcClientId?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
   oidcRedirectUris?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
   oidcClientSecret?: Prisma.StringNullableWithAggregatesFilter<"App"> | string | null
+  isMain?: Prisma.BoolWithAggregatesFilter<"App"> | boolean
 }
 
 export type AppCreateInput = {
@@ -468,6 +480,7 @@ export type AppCreateInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   groupAccess?: Prisma.AppGroupAccessCreateNestedManyWithoutAppInput
   samlSessions?: Prisma.SamlSessionAppCreateNestedManyWithoutAppInput
 }
@@ -493,6 +506,7 @@ export type AppUncheckedCreateInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   groupAccess?: Prisma.AppGroupAccessUncheckedCreateNestedManyWithoutAppInput
   samlSessions?: Prisma.SamlSessionAppUncheckedCreateNestedManyWithoutAppInput
 }
@@ -518,6 +532,7 @@ export type AppUpdateInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupAccess?: Prisma.AppGroupAccessUpdateManyWithoutAppNestedInput
   samlSessions?: Prisma.SamlSessionAppUpdateManyWithoutAppNestedInput
 }
@@ -543,6 +558,7 @@ export type AppUncheckedUpdateInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupAccess?: Prisma.AppGroupAccessUncheckedUpdateManyWithoutAppNestedInput
   samlSessions?: Prisma.SamlSessionAppUncheckedUpdateManyWithoutAppNestedInput
 }
@@ -568,6 +584,7 @@ export type AppCreateManyInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
 }
 
 export type AppUpdateManyMutationInput = {
@@ -591,6 +608,7 @@ export type AppUpdateManyMutationInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type AppUncheckedUpdateManyInput = {
@@ -614,6 +632,7 @@ export type AppUncheckedUpdateManyInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type AppCountOrderByAggregateInput = {
@@ -637,6 +656,7 @@ export type AppCountOrderByAggregateInput = {
   oidcClientId?: Prisma.SortOrder
   oidcRedirectUris?: Prisma.SortOrder
   oidcClientSecret?: Prisma.SortOrder
+  isMain?: Prisma.SortOrder
 }
 
 export type AppAvgOrderByAggregateInput = {
@@ -664,6 +684,7 @@ export type AppMaxOrderByAggregateInput = {
   oidcClientId?: Prisma.SortOrder
   oidcRedirectUris?: Prisma.SortOrder
   oidcClientSecret?: Prisma.SortOrder
+  isMain?: Prisma.SortOrder
 }
 
 export type AppMinOrderByAggregateInput = {
@@ -687,6 +708,7 @@ export type AppMinOrderByAggregateInput = {
   oidcClientId?: Prisma.SortOrder
   oidcRedirectUris?: Prisma.SortOrder
   oidcClientSecret?: Prisma.SortOrder
+  isMain?: Prisma.SortOrder
 }
 
 export type AppSumOrderByAggregateInput = {
@@ -755,6 +777,7 @@ export type AppCreateWithoutGroupAccessInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   samlSessions?: Prisma.SamlSessionAppCreateNestedManyWithoutAppInput
 }
 
@@ -779,6 +802,7 @@ export type AppUncheckedCreateWithoutGroupAccessInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   samlSessions?: Prisma.SamlSessionAppUncheckedCreateNestedManyWithoutAppInput
 }
 
@@ -819,6 +843,7 @@ export type AppUpdateWithoutGroupAccessInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   samlSessions?: Prisma.SamlSessionAppUpdateManyWithoutAppNestedInput
 }
 
@@ -843,6 +868,7 @@ export type AppUncheckedUpdateWithoutGroupAccessInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   samlSessions?: Prisma.SamlSessionAppUncheckedUpdateManyWithoutAppNestedInput
 }
 
@@ -867,6 +893,7 @@ export type AppCreateWithoutSamlSessionsInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   groupAccess?: Prisma.AppGroupAccessCreateNestedManyWithoutAppInput
 }
 
@@ -891,6 +918,7 @@ export type AppUncheckedCreateWithoutSamlSessionsInput = {
   oidcClientId?: string | null
   oidcRedirectUris?: string | null
   oidcClientSecret?: string | null
+  isMain?: boolean
   groupAccess?: Prisma.AppGroupAccessUncheckedCreateNestedManyWithoutAppInput
 }
 
@@ -931,6 +959,7 @@ export type AppUpdateWithoutSamlSessionsInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupAccess?: Prisma.AppGroupAccessUpdateManyWithoutAppNestedInput
 }
 
@@ -955,6 +984,7 @@ export type AppUncheckedUpdateWithoutSamlSessionsInput = {
   oidcClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcRedirectUris?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oidcClientSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isMain?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupAccess?: Prisma.AppGroupAccessUncheckedUpdateManyWithoutAppNestedInput
 }
 
@@ -1019,6 +1049,7 @@ export type AppSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   oidcClientId?: boolean
   oidcRedirectUris?: boolean
   oidcClientSecret?: boolean
+  isMain?: boolean
   groupAccess?: boolean | Prisma.App$groupAccessArgs<ExtArgs>
   samlSessions?: boolean | Prisma.App$samlSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.AppCountOutputTypeDefaultArgs<ExtArgs>
@@ -1045,6 +1076,7 @@ export type AppSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   oidcClientId?: boolean
   oidcRedirectUris?: boolean
   oidcClientSecret?: boolean
+  isMain?: boolean
 }, ExtArgs["result"]["app"]>
 
 export type AppSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1068,6 +1100,7 @@ export type AppSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   oidcClientId?: boolean
   oidcRedirectUris?: boolean
   oidcClientSecret?: boolean
+  isMain?: boolean
 }, ExtArgs["result"]["app"]>
 
 export type AppSelectScalar = {
@@ -1091,9 +1124,10 @@ export type AppSelectScalar = {
   oidcClientId?: boolean
   oidcRedirectUris?: boolean
   oidcClientSecret?: boolean
+  isMain?: boolean
 }
 
-export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "url" | "iconUrl" | "logoUrl" | "useIconAsLogo" | "sortOrder" | "createdAt" | "updatedAt" | "samlEnabled" | "samlEntityId" | "samlAcsUrl" | "samlSloUrl" | "samlCertificate" | "oidcEnabled" | "oidcClientId" | "oidcRedirectUris" | "oidcClientSecret", ExtArgs["result"]["app"]>
+export type AppOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "url" | "iconUrl" | "logoUrl" | "useIconAsLogo" | "sortOrder" | "createdAt" | "updatedAt" | "samlEnabled" | "samlEntityId" | "samlAcsUrl" | "samlSloUrl" | "samlCertificate" | "oidcEnabled" | "oidcClientId" | "oidcRedirectUris" | "oidcClientSecret" | "isMain", ExtArgs["result"]["app"]>
 export type AppInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupAccess?: boolean | Prisma.App$groupAccessArgs<ExtArgs>
   samlSessions?: boolean | Prisma.App$samlSessionsArgs<ExtArgs>
@@ -1129,6 +1163,7 @@ export type $AppPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     oidcClientId: string | null
     oidcRedirectUris: string | null
     oidcClientSecret: string | null
+    isMain: boolean
   }, ExtArgs["result"]["app"]>
   composites: {}
 }
@@ -1574,6 +1609,7 @@ export interface AppFieldRefs {
   readonly oidcClientId: Prisma.FieldRef<"App", 'String'>
   readonly oidcRedirectUris: Prisma.FieldRef<"App", 'String'>
   readonly oidcClientSecret: Prisma.FieldRef<"App", 'String'>
+  readonly isMain: Prisma.FieldRef<"App", 'Boolean'>
 }
     
 

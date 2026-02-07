@@ -8,6 +8,10 @@ export interface GeneralSettings {
   loginPageText?: string
   /** Base brand color (hex) for dynamic theme generation. Defaults to "#0088cc" if not set. */
   themeColor?: string
+  /** Dashboard title (supports {name} placeholder). */
+  dashboardTitle?: string
+  /** Dashboard description text. */
+  dashboardDescription?: string
   /** ISO date string of Setting.updatedAt; use as cache-buster for logo (e.g. ?v=...) */
   logoUpdatedAt?: string
 }
@@ -27,6 +31,9 @@ export async function getGeneralSettings(): Promise<GeneralSettings> {
     supportEmail: typeof v.supportEmail === 'string' ? v.supportEmail : undefined,
     loginPageText: typeof v.loginPageText === 'string' ? v.loginPageText : undefined,
     themeColor: typeof v.themeColor === 'string' ? v.themeColor : undefined,
+    dashboardTitle: typeof v.dashboardTitle === 'string' ? v.dashboardTitle : undefined,
+    dashboardDescription:
+      typeof v.dashboardDescription === 'string' ? v.dashboardDescription : undefined,
     logoUpdatedAt: logoUrl && row.updatedAt ? row.updatedAt.toISOString() : undefined,
   }
 }

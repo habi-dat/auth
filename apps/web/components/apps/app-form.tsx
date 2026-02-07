@@ -43,6 +43,7 @@ const appFormSchema = z.object({
   oidcRedirectUris: z.string().default(''),
   oidcClientSecret: z.string().default(''),
   groupIds: z.array(z.string()).default([]),
+  isMain: z.boolean().default(true),
 })
 
 type AppFormValues = z.output<typeof appFormSchema>
@@ -131,6 +132,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
       oidcRedirectUris: app?.oidcRedirectUris ?? '',
       oidcClientSecret: app?.oidcClientSecret ?? '',
       groupIds: app?.groupAccess.map((a) => a.groupId) ?? [],
+      isMain: app?.isMain ?? true,
     },
   })
 
@@ -240,6 +242,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
       oidcRedirectUris: data.oidcEnabled ? data.oidcRedirectUris || null : null,
       oidcClientSecret: data.oidcEnabled ? data.oidcClientSecret || null : null,
       groupIds: data.groupIds || [],
+      isMain: data.isMain,
     }
 
     if (isEditing && app) {
@@ -353,6 +356,17 @@ export function AppForm({ app, allGroups }: AppFormProps) {
               min={0}
               className="w-24"
             />
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <Checkbox
+              id="isMain"
+              checked={form.watch('isMain')}
+              onCheckedChange={(checked) => form.setValue('isMain', !!checked)}
+              disabled={isExecuting}
+            />
+            <Label htmlFor="isMain" className="cursor-pointer">
+              {t('isMain')}
+            </Label>
           </div>
         </CardContent>
       </Card>

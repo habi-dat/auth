@@ -28,6 +28,10 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [supportEmail, setSupportEmail] = useState(initialSettings.supportEmail ?? '')
   const [loginPageText, setLoginPageText] = useState(initialSettings.loginPageText ?? '')
   const [themeColor, setThemeColor] = useState(initialSettings.themeColor ?? '#0088cc')
+  const [dashboardTitle, setDashboardTitle] = useState(initialSettings.dashboardTitle ?? '')
+  const [dashboardDescription, setDashboardDescription] = useState(
+    initialSettings.dashboardDescription ?? ''
+  )
   const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +42,8 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
       supportEmail: supportEmail.trim() || undefined,
       loginPageText: loginPageText.trim() || undefined,
       themeColor,
+      dashboardTitle: dashboardTitle.trim() || undefined,
+      dashboardDescription: dashboardDescription.trim() || undefined,
     })
     setIsPending(false)
     if (result?.data?.success) {
@@ -145,6 +151,28 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">{t('themeColorHelp')}</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dashboardTitle">{t('dashboardTitle')}</Label>
+        <Input
+          id="dashboardTitle"
+          value={dashboardTitle}
+          onChange={(e) => setDashboardTitle(e.target.value)}
+          placeholder={t('dashboardTitlePlaceholder', { name: '{name}' })}
+          maxLength={100}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dashboardDescription">{t('dashboardDescription')}</Label>
+        <Input
+          id="dashboardDescription"
+          value={dashboardDescription}
+          onChange={(e) => setDashboardDescription(e.target.value)}
+          placeholder={t('dashboardDescriptionPlaceholder')}
+          maxLength={200}
+        />
       </div>
       <FormFooter isLoading={isPending} submitLabel={t('save')} className="flex justify-end" />
     </form>
