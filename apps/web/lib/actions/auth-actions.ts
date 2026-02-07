@@ -1,6 +1,6 @@
 'use server'
 
-import { getSession } from '@/lib/auth/session'
+import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 
 export async function getLogoutUrlAction() {

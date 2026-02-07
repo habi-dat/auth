@@ -1,14 +1,14 @@
-import { getUserGroupSlugs } from '@/lib/auth/group-slugs'
-import { canAccessApp } from '@/lib/auth/roles'
-import { getSession } from '@/lib/auth/session'
-import { getCurrentUserWithGroups } from '@/lib/auth/session'
+import { getUserGroupSlugs } from '@habidat/auth/group-slugs'
+import { canAccessApp } from '@habidat/auth/roles'
+import { getSession } from '@habidat/auth/session'
+import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { prisma } from '@habidat/db'
 import {
   type ParsedLoginRequest,
   createLoginResponse,
   generateSamlPostForm,
   parseLoginRequest,
-} from '@/lib/saml/response'
-import { prisma } from '@habidat/db'
+} from '@habidat/saml'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request, context: { params: Promise<{ appSlug: string }> }) {
@@ -70,7 +70,9 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
     return NextResponse.json({ error: 'App ACS URL not configured' }, { status: 400 })
   }
 
-  const memberGroupIds = sessionWithGroups.memberships.map((m) => m.group.id)
+  const memberGroupIds = sessionWithGroups.memberships.map(
+    (m: { group: { id: string } }) => m.group.id
+  )
   const groups = await getUserGroupSlugs(prisma, memberGroupIds)
   const user = {
     id: sessionWithGroups.user.id,

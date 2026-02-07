@@ -1,4 +1,4 @@
-import { requireUserWithGroups } from '@/lib/auth/session'
+import { requireUserWithGroups } from '@habidat/auth/session'
 import { EditProfileForm } from './edit-profile-form'
 
 export default async function EditProfilePage() {

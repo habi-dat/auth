@@ -1,5 +1,5 @@
 {
-  "extends": "@habidat/typescript-config/node.json",
+  "extends": "@habidat/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

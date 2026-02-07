@@ -5,7 +5,7 @@ import {
   removeUserFromGroupAdminIfNoOwnership,
 } from '@/lib/actions/group-actions'
 import { createAuditLog } from '@/lib/audit'
-import { canManageGroup, canManageUser } from '@/lib/auth/roles'
+import { canManageGroup, canManageUser } from '@habidat/auth/roles'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import {

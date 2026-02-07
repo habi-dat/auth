@@ -1,8 +1,8 @@
 'use server'
 
 import { createAuditLog } from '@/lib/audit'
-import { canManageGroup } from '@/lib/auth/roles'
-import { getCurrentUserWithGroups } from '@/lib/auth/session'
+import { canManageGroup } from '@habidat/auth/roles'
+import { getCurrentUserWithGroups } from '@habidat/auth/session'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import {
   createSyncEvent,

@@ -13,9 +13,11 @@
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
+    "@habidat/auth": "workspace:*",
     "@habidat/db": "workspace:*",
     "@habidat/discourse": "workspace:*",
     "@habidat/env": "workspace:*",
+    "@habidat/saml": "workspace:*",
     "@habidat/sync": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.6",

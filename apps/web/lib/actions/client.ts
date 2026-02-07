@@ -3,7 +3,7 @@ import {
   requireAdmin,
   requireGroupAdmin,
   requireUserWithGroups,
-} from '@/lib/auth/session'
+} from '@habidat/auth/session'
 import { DEFAULT_SERVER_ERROR_MESSAGE, createSafeActionClient } from 'next-safe-action'
 
 // Base action client with error handling

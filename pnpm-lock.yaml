@@ -23,6 +23,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@habidat/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@habidat/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -32,6 +35,9 @@ importers:
       '@habidat/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@habidat/saml':
+        specifier: workspace:*
+        version: link:../../packages/saml
       '@habidat/sync':
         specifier: workspace:*
         version: link:../../packages/sync
@@ -224,6 +230,40 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/auth:
+    dependencies:
+      '@habidat/db':
+        specifier: workspace:*
+        version: link:../db
+      '@habidat/env':
+        specifier: workspace:*
+        version: link:../env
+      '@habidat/ldap':
+        specifier: workspace:*
+        version: link:../ldap
+      better-auth:
+        specifier: ^1.4.18
+        version: 1.4.18(@prisma/client@7.3.0(prisma@7.3.0(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(mysql2@3.15.3)(next@16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(prisma@7.3.0(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next:
+        specifier: ^16.1.6
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.4
+    devDependencies:
+      '@habidat/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.19.9
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.13
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/db:
     dependencies:
       '@habidat/ldap':
@@ -303,6 +343,31 @@ importers:
       ldapjs-client:
         specifier: ^0.1.7
         version: 0.1.7
+    devDependencies:
+      '@habidat/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.19.9
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/saml:
+    dependencies:
+      '@habidat/db':
+        specifier: workspace:*
+        version: link:../db
+      '@habidat/env':
+        specifier: workspace:*
+        version: link:../env
+      fast-xml-parser:
+        specifier: ^5.3.4
+        version: 5.3.4
+      samlify:
+        specifier: ^2.10.2
+        version: 2.10.2
     devDependencies:
       '@habidat/typescript-config':
         specifier: workspace:*
@@ -5181,7 +5246,7 @@ snapshots:
 
   '@types/pg@8.16.0':
     dependencies:
-      '@types/node': 22.19.9
+      '@types/node': 25.2.1
       pg-protocol: 1.11.0
       pg-types: 2.2.0
 

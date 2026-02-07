@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { updateProfileAction } from '@/lib/actions/user-actions'
-import type { SessionUser } from '@/lib/auth/session'
+import type { SessionUser } from '@habidat/auth/session'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'

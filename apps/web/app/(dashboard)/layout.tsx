@@ -1,6 +1,6 @@
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
-import { getCurrentUserWithGroups } from '@/lib/auth/session'
+import { getCurrentUserWithGroups } from '@habidat/auth/session'
 import { getGeneralSettings } from '@/lib/settings/general'
 import { redirect } from 'next/navigation'
 

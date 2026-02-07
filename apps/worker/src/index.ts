@@ -1,17 +1,18 @@
-import './load-env.js'
+import './load-env'
 import { prisma } from '@habidat/db'
 import { DiscourseService } from '@habidat/discourse'
 import { workerEnv } from '@habidat/env/worker'
 import { LdapService } from '@habidat/ldap'
 import {
+  type DiscourseSyncJobData,
+  QUEUE_NAMES,
   closeQueues,
   closeRedisConnection,
   getRedisConnection,
-  QUEUE_NAMES,
 } from '@habidat/sync'
 import { Worker } from 'bullmq'
-import { createDiscourseProcessor } from './processors/discourse.processor.js'
-import { createLdapProcessor } from './processors/ldap.processor.js'
+import { createDiscourseProcessor } from './processors/discourse.processor'
+import { createLdapProcessor } from './processors/ldap.processor'
 
 const env = workerEnv
 
@@ -39,7 +40,7 @@ const hasDiscourse =
   env.DISCOURSE_API_USERNAME &&
   env.DISCOURSE_SSO_SECRET
 
-let discourseWorker: Worker | null = null
+let discourseWorker: Worker<DiscourseSyncJobData, void, 'discourse:sync'> | null = null
 if (hasDiscourse) {
   const discourseService = new DiscourseService({
     url: env.DISCOURSE_URL!,

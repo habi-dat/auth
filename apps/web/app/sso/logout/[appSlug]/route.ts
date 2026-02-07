@@ -1,5 +1,6 @@
-import { auth } from '@/lib/auth'
-import { getSession } from '@/lib/auth/session'
+import { auth } from '@habidat/auth'
+import { getSession } from '@habidat/auth/session'
+import { prisma } from '@habidat/db'
 import {
   type ParsedLogoutRequest,
   createLogoutRequestRedirect,
@@ -8,8 +9,7 @@ import {
   decodeLogoutState,
   encodeLogoutState,
   parseLogoutRequest,
-} from '@/lib/saml/logout'
-import { prisma } from '@habidat/db'
+} from '@habidat/saml'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 

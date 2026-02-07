@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { getLogoutUrlAction } from '@/lib/actions/auth-actions'
 import { updateProfileAction } from '@/lib/actions/user-actions'
-import { signOut } from '@/lib/auth-client'
+import { signOut } from '@habidat/auth/client'
 import { LogOut, Moon, Settings, Sun, User } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'

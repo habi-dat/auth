@@ -1,6 +1,6 @@
-import { verifyPasswordSsha } from '@/lib/ldap/password'
 import { prisma } from '@habidat/db'
 import { webEnv } from '@habidat/env/web'
+import { verifyPasswordSsha } from '@habidat/ldap'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'

@@ -1,6 +1,6 @@
-import { getCurrentUserThemePreferences } from '@/lib/auth/session'
 import { getGeneralSettings } from '@/lib/settings/general'
 import { generateThemeVariables } from '@/lib/theme-generator'
+import { getCurrentUserThemePreferences } from '@habidat/auth/session'
 import type { Metadata } from 'next'
 import { getMessages } from 'next-intl/server'
 import { Inter } from 'next/font/google'

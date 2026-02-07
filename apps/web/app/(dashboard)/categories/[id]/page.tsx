@@ -2,7 +2,7 @@ import { CategoryForm } from '@/components/categories/category-form'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { getCategories, getCategory } from '@/lib/actions/category-actions'
 import { getGroupsForSelect } from '@/lib/actions/group-actions'
-import { requireAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@habidat/auth/session'
 import { notFound } from 'next/navigation'
 
 interface PageProps {

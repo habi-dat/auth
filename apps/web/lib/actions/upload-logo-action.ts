@@ -2,7 +2,7 @@
 
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { requireAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@habidat/auth/session'
 import { updateGeneralSettings } from '@/lib/settings/general'
 import { revalidatePath } from 'next/cache'
 

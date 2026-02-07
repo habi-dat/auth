@@ -2,9 +2,11 @@
   "extends": "@habidat/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "module": "ESNext",
-    "moduleResolution": "bundler"
+    "types": ["node"],
+    "paths": {
+      "@habidat/auth": ["./src/index.ts"],
+      "@habidat/auth/*": ["./src/*.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

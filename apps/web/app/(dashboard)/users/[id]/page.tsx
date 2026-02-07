@@ -2,8 +2,8 @@ import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { UserForm } from '@/components/users/user-form'
 import { getGroupsForSelect } from '@/lib/actions/group-actions'
 import { getUser } from '@/lib/actions/user-actions'
-import { canManageUser } from '@/lib/auth/roles'
-import { requireGroupAdmin } from '@/lib/auth/session'
+import { canManageUser } from '@habidat/auth/roles'
+import { requireGroupAdmin } from '@habidat/auth/session'
 import { notFound } from 'next/navigation'
 
 interface PageProps {

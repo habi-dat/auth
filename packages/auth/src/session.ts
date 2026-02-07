@@ -1,8 +1,8 @@
-import { auth } from '@/lib/auth'
 import { prisma } from '@habidat/db'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+import { auth } from './index'
 
 export type SessionUser = {
   id: string

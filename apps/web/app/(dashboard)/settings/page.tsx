@@ -7,7 +7,7 @@ import {
 import { getEmailTemplates } from '@/lib/email/templates'
 import type { EmailTemplateConfigByLocale, SupportedEmailLocale } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
-import { requireAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@habidat/auth/session'
 import { getTranslations } from 'next-intl/server'
 
 interface SettingsPageProps {

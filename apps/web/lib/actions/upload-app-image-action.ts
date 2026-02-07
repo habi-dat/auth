@@ -2,7 +2,7 @@
 
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { requireAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 
