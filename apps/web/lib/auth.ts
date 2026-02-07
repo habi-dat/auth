@@ -1,5 +1,6 @@
 import { verifyPasswordSsha } from '@/lib/ldap/password'
 import { prisma } from '@habidat/db'
+import { webEnv } from '@habidat/env/web'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
@@ -16,18 +17,15 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
-  // Accept baseURL, habidat.local subdomains (wildcard), and the request's Origin (for proxy/Docker)
-  trustedOrigins: (request) => {
-    const origins = [
-      baseURL,
-      `${baseURL}/`,
-      'http://localhost:3000',
-      'http://localhost:3000/',
-      'https://*.habidat.local',
-      'http://*.habidat.local',
-    ]
-    const origin = request?.headers?.get?.('origin')
-    if (origin) origins.push(origin)
+  // Accept baseURL, localhost (dev), and configured TRUSTED_ORIGINS environment variable
+  trustedOrigins: () => {
+    const origins = [baseURL, 'http://localhost:3000']
+
+    const envOrigins = webEnv.TRUSTED_ORIGINS
+    if (envOrigins) {
+      origins.push(...envOrigins.split(',').map((o) => o.trim()))
+    }
+
     return origins
   },
   emailAndPassword: {

@@ -62,11 +62,5 @@ export const createTemplateCallback =
       context: SamlLib.replaceTagsByValue(template, tvalue),
     }
 
-    console.log('createTemplateCallback returning:', {
-      id: result.id,
-      contextType: typeof result.context,
-      contextLength: result.context?.length,
-    })
-
     return result
   }
