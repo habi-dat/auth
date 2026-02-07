@@ -80,7 +80,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
 
   const createAction = useAction(createGroupAction, {
     onSuccess: () => {
-      toast({ title: t('created'), description: t('createdDescription') })
+      toast({ title: t('form.created'), description: t('form.createdDescription') })
       router.push('/groups')
     },
     onError: ({ error }) => {
@@ -94,7 +94,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
 
   const updateAction = useAction(updateGroupAction, {
     onSuccess: () => {
-      toast({ title: t('updated'), description: t('updatedDescription') })
+      toast({ title: t('form.updated'), description: t('form.updatedDescription') })
       router.push('/groups')
     },
     onError: ({ error }) => {
@@ -108,7 +108,10 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
 
   const deleteAction = useAction(deleteGroupAction, {
     onSuccess: () => {
-      toast({ title: t('deleted'), description: t('deletedDescription') })
+      toast({
+        title: t('deleteConfirm.success'),
+        description: t('deleteConfirm.successDescription'),
+      })
       router.push('/groups')
     },
     onError: ({ error }) => {
@@ -164,7 +167,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
-          <CardTitle>{isEditing ? t('editGroup') : t('newGroupForm')}</CardTitle>
+          <CardTitle>{isEditing ? t('form.titleEdit') : t('form.titleCreate')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -189,7 +192,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="description">{t('description')}</Label>
+            <Label htmlFor="description">{t('descriptionLabel')}</Label>
             <Textarea
               id="description"
               {...register('description')}
@@ -247,8 +250,8 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          title={t('deleteTitle')}
-          description={group ? t('deleteDescription', { name: group.name }) : ''}
+          title={t('deleteConfirm.title')}
+          description={group ? t('deleteConfirm.description', { name: group.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ groupId: group!.id })}

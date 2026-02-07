@@ -70,12 +70,16 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
   const { toast } = useToast()
   const { execute: executeUpdateProfile, status } = useAction(updateProfileAction, {
     onSuccess: () => {
-      toast({ title: t('updated'), description: t('updatedDescription') })
+      toast({ title: t('form.updated'), description: t('form.updatedDescription') })
       router.push('/')
       router.refresh()
     },
     onError: () => {
-      toast({ variant: 'destructive', title: tCommon('error'), description: t('updateFailed') })
+      toast({
+        variant: 'destructive',
+        title: tCommon('error'),
+        description: t('form.updateFailed'),
+      })
     },
   })
 

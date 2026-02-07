@@ -83,7 +83,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
 
   const updateAction = useAction(updateAppAction, {
     onSuccess: () => {
-      toast({ title: t('updated') })
+      toast({ title: t('form.updated') })
       router.push('/apps')
       router.refresh()
     },
@@ -98,7 +98,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
 
   const deleteAction = useAction(deleteAppAction, {
     onSuccess: () => {
-      toast({ title: t('deleted') })
+      toast({ title: t('deleteConfirm.success') })
       router.push('/apps')
       router.refresh()
     },
@@ -270,7 +270,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
 
         await Promise.all(uploadPromises)
 
-        toast({ title: t('created') })
+        toast({ title: t('form.created') })
         router.push('/apps')
         router.refresh()
       } else {
@@ -551,8 +551,8 @@ export function AppForm({ app, allGroups }: AppFormProps) {
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          title={t('deleteTitle')}
-          description={app ? t('deleteDescription', { name: app.name }) : ''}
+          title={t('deleteConfirm.title')}
+          description={app ? t('deleteConfirm.description', { name: app.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ id: app!.id })}

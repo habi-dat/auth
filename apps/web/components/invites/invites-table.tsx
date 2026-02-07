@@ -92,8 +92,10 @@ export function InvitesTable({ invites, groups }: { invites: InviteRow[]; groups
               setResendingId(null)
               if (result?.data?.success) {
                 toast({
-                  title: t('resent'),
-                  description: result.data.emailSent ? t('resentDescription') : t('emailNotSent'),
+                  title: t('form.resent'),
+                  description: result.data.emailSent
+                    ? t('form.resentDescription')
+                    : t('form.emailNotSent'),
                 })
                 router.refresh()
               }
@@ -152,8 +154,8 @@ export function InvitesTable({ invites, groups }: { invites: InviteRow[]; groups
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t('deleteTitle')}
-        description={t('deleteDescription', { email: deleteTarget?.email ?? '' })}
+        title={t('deleteConfirm.title')}
+        description={t('deleteConfirm.description', { email: deleteTarget?.email ?? '' })}
         confirmLabel={t('delete')}
         cancelLabel={tCommon('cancel')}
         onConfirm={handleDelete}

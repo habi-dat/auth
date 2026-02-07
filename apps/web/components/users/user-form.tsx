@@ -91,7 +91,7 @@ export function UserForm({ user, groups }: UserFormProps) {
 
   const createAction = useAction(createUserAction, {
     onSuccess: () => {
-      toast({ title: t('created'), description: t('createdDescription') })
+      toast({ title: t('form.created'), description: t('form.createdDescription') })
       router.push('/users')
     },
     onError: ({ error }) => {
@@ -105,7 +105,7 @@ export function UserForm({ user, groups }: UserFormProps) {
 
   const updateAction = useAction(updateUserAction, {
     onSuccess: () => {
-      toast({ title: t('updated'), description: t('updatedDescription') })
+      toast({ title: t('form.updated'), description: t('form.updatedDescription') })
       router.push('/users')
     },
     onError: ({ error }) => {
@@ -119,7 +119,7 @@ export function UserForm({ user, groups }: UserFormProps) {
 
   const deleteAction = useAction(deleteUserAction, {
     onSuccess: () => {
-      toast({ title: t('deleted'), description: t('deletedDescription') })
+      toast({ title: t('delete.success'), description: t('delete.successDescription') })
       router.push('/users')
     },
     onError: ({ error }) => {
@@ -230,7 +230,7 @@ export function UserForm({ user, groups }: UserFormProps) {
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
-          <CardTitle>{isEditing ? t('userFormEditTitle') : t('userFormTitle')}</CardTitle>
+          <CardTitle>{isEditing ? t('form.titleEdit') : t('form.titleCreate')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -393,8 +393,8 @@ export function UserForm({ user, groups }: UserFormProps) {
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          title={t('deleteTitle')}
-          description={user ? t('deleteDescription', { name: user.name }) : ''}
+          title={t('deleteConfirm.title')}
+          description={user ? t('deleteConfirm.description', { name: user.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
           onConfirm={() => deleteAction.execute({ userId: user!.id })}

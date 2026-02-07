@@ -57,7 +57,7 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
 
   const createAction = useAction(createCategoryAction, {
     onSuccess: () => {
-      toast({ title: t('created') })
+      toast({ title: t('form.created') })
       router.push('/categories')
     },
     onError: ({ error }) => {
@@ -71,7 +71,7 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
 
   const updateAction = useAction(updateCategoryAction, {
     onSuccess: () => {
-      toast({ title: t('updated') })
+      toast({ title: t('form.updated') })
       router.push('/categories')
     },
     onError: ({ error }) => {
@@ -86,7 +86,7 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
   const deleteAction = useAction(deleteCategoryAction, {
     onSuccess: () => {
       setDeleteDialogOpen(false)
-      toast({ title: t('deleted') })
+      toast({ title: t('deleteConfirm.success') })
       router.push('/categories')
     },
     onError: ({ error }) => {
@@ -163,7 +163,7 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
       <Card>
         <form onSubmit={onSubmit}>
           <CardHeader>
-            <CardTitle>{isEditing ? t('editCategory') : t('newCategory')}</CardTitle>
+            <CardTitle>{isEditing ? t('form.titleEdit') : t('form.titleCreate')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -266,8 +266,8 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title={t('deleteTitle')}
-        description={category ? t('deleteDescription', { name: category.name }) : ''}
+        title={t('deleteConfirm.title')}
+        description={category ? t('deleteConfirm.description', { name: category.name }) : ''}
         confirmLabel={t('delete')}
         cancelLabel={tCommon('cancel')}
         onConfirm={handleConfirmDelete}

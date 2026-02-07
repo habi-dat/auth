@@ -35,8 +35,8 @@ export function InviteForm({ groups }: { groups: { id: string; name: string; slu
     setIsPending(false)
     if (result?.data?.invite) {
       toast({
-        title: t('created'),
-        description: result.data.emailSent ? t('createdDescription') : t('emailNotSent'),
+        title: t('form.created'),
+        description: result.data.emailSent ? t('form.createdDescription') : t('form.emailNotSent'),
       })
       router.push('/invites')
       router.refresh()
@@ -54,7 +54,7 @@ export function InviteForm({ groups }: { groups: { id: string; name: string; slu
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>{t('newInvite')}</CardTitle>
+          <CardTitle>{t('form.titleCreate')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

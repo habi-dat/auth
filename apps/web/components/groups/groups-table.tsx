@@ -145,8 +145,10 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t('deleteTitle')}
-        description={deleteTarget ? t('deleteDescription', { name: deleteTarget.name }) : ''}
+        title={t('deleteConfirm.title')}
+        description={
+          deleteTarget ? t('deleteConfirm.description', { name: deleteTarget.name }) : ''
+        }
         confirmLabel={t('delete')}
         cancelLabel={tCommon('cancel')}
         onConfirm={() => deleteTarget && deleteAction.execute({ groupId: deleteTarget.id })}
