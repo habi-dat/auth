@@ -13,12 +13,16 @@ import {
 } from '@react-email/components'
 import type { PasswordResetEmailConfig } from '@/lib/email/types'
 
+const DEFAULT_BUTTON_COLOR = '#2563eb'
+
 export interface PasswordResetEmailProps extends PasswordResetEmailConfig {
   subject: string
   resetLink: string
   platformName: string
   appUrl: string
   logoUrl?: string
+  /** Optional primary/brand color (hex) for the CTA button. From platform theme settings. */
+  primaryColor?: string
 }
 
 const defaults: Required<
@@ -48,7 +52,12 @@ export function PasswordResetEmail({
   footer = defaults.footer,
   footerHelp = defaults.footerHelp,
   disclaimer = defaults.disclaimer,
+  primaryColor,
 }: PasswordResetEmailProps) {
+  const buttonStyle = {
+    ...button,
+    backgroundColor: primaryColor ?? DEFAULT_BUTTON_COLOR,
+  }
   const replacePlaceholders = (s: string) =>
     s
       .replace(/\{\{?\s*platformName\s*\}\}?/gi, platformName)
@@ -79,7 +88,7 @@ export function PasswordResetEmail({
           <Section style={bodySection}>
             <Text style={text}>{mainTextR}</Text>
             <Section style={buttonContainer}>
-              <Button style={button} href={resetLink}>
+              <Button style={buttonStyle} href={resetLink}>
                 {ctaTextR}
               </Button>
             </Section>

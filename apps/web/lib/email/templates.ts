@@ -71,10 +71,13 @@ function mergeLocaleConfig(
 const appUrlFallback =
   process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
+const HEX_COLOR_REGEX = /^#?[0-9a-fA-F]{6}$/
+
 async function getEmailBranding(): Promise<{
   platformName: string
   appUrl: string
   logoUrl?: string
+  primaryColor?: string
 }> {
   const general = await getGeneralSettings()
   const appUrl = appUrlFallback
@@ -84,10 +87,19 @@ async function getEmailBranding(): Promise<{
       ? `${appUrl}${logoUrlRaw}`
       : logoUrlRaw
     : `${appUrl}/logo.png`
+  const themeColorRaw = general.themeColor?.trim()
+  const normalizedTheme = themeColorRaw
+    ? themeColorRaw.startsWith('#')
+      ? themeColorRaw
+      : `#${themeColorRaw}`
+    : ''
+  const primaryColor =
+    normalizedTheme && HEX_COLOR_REGEX.test(normalizedTheme) ? normalizedTheme : undefined
   return {
     platformName: general.platformName?.trim() || process.env.NEXT_PUBLIC_APP_NAME || 'Habidat',
     appUrl,
     logoUrl,
+    primaryColor,
   }
 }
 
@@ -115,6 +127,7 @@ export async function renderInviteEmail(params: {
       platformName: branding.platformName,
       appUrl: branding.appUrl,
       logoUrl: branding.logoUrl,
+      primaryColor: branding.primaryColor,
       greeting: config.greeting,
       mainText: config.mainText,
       ctaText: config.ctaText,
@@ -138,8 +151,12 @@ export async function renderPasswordResetEmail(params: {
   const configByLocale = (template?.config as EmailTemplateConfigByLocale | null) ?? null
   const config = mergeLocaleConfig(locale, 'passwordReset', configByLocale)
 
-  const subject = params.subject ?? config.subject ?? template?.subject ?? 'Reset your password'
   const branding = await getEmailBranding()
+  const rawSubject =
+    params.subject ?? config.subject ?? template?.subject ?? 'Reset your password'
+  const subject = rawSubject
+    .replace(/\{\{?\s*platformName\s*\}\}?/gi, branding.platformName)
+    .replace(/\{\{?\s*appUrl\s*\}\}?/gi, branding.appUrl)
 
   const html = await render(
     PasswordResetEmail({
@@ -148,6 +165,7 @@ export async function renderPasswordResetEmail(params: {
       platformName: branding.platformName,
       appUrl: branding.appUrl,
       logoUrl: branding.logoUrl,
+      primaryColor: branding.primaryColor,
       greeting: config.greeting,
       mainText: config.mainText,
       ctaText: config.ctaText,

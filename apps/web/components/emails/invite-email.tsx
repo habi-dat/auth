@@ -13,6 +13,8 @@ import {
 } from '@react-email/components'
 import type { InviteEmailConfig } from '@/lib/email/types'
 
+const DEFAULT_BUTTON_COLOR = '#2563eb'
+
 export interface InviteEmailProps extends InviteEmailConfig {
   subject: string
   inviterName: string
@@ -21,6 +23,8 @@ export interface InviteEmailProps extends InviteEmailConfig {
   appUrl: string
   /** Optional logo URL (e.g. `${appUrl}/logo.svg`). Omit to hide logo. */
   logoUrl?: string
+  /** Optional primary/brand color (hex) for the CTA button. From platform theme settings. */
+  primaryColor?: string
 }
 
 const defaults: Required<
@@ -50,7 +54,12 @@ export function InviteEmail({
   footerHelp = defaults.footerHelp,
   disclaimer = defaults.disclaimer,
   logoUrl,
+  primaryColor,
 }: InviteEmailProps) {
+  const buttonStyle = {
+    ...button,
+    backgroundColor: primaryColor ?? DEFAULT_BUTTON_COLOR,
+  }
   const replacePlaceholders = (s: string) =>
     s
       .replace(/\{\{?\s*platformName\s*\}\}?/gi, platformName)
@@ -82,7 +91,7 @@ export function InviteEmail({
           <Section style={bodySection}>
             <Text style={text}>{mainTextR}</Text>
             <Section style={buttonContainer}>
-              <Button style={button} href={inviteLink}>
+              <Button style={buttonStyle} href={inviteLink}>
                 {ctaTextR}
               </Button>
             </Section>

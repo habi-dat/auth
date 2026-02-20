@@ -1,4 +1,3 @@
-import { auth } from '@habidat/auth'
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import {
@@ -12,6 +11,7 @@ import {
 } from '@habidat/saml'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 
 const appUrl = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 

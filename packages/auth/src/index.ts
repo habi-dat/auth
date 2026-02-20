@@ -12,100 +12,74 @@ const baseURL = (
   'http://localhost:3000'
 ).replace(/\/$/, '')
 
-export const auth = betterAuth({
-  baseURL,
-  database: prismaAdapter(prisma, {
-    provider: 'postgresql',
-  }),
-  // Accept baseURL, localhost (dev), and configured TRUSTED_ORIGINS environment variable
-  trustedOrigins: () => {
-    const origins = [baseURL, 'http://localhost:3000']
+export type SendResetPasswordParams = {
+  user: { id: string; email: string; name: string }
+  url: string
+  token: string
+}
 
-    const envOrigins = webEnv.TRUSTED_ORIGINS
-    if (envOrigins) {
-      origins.push(...envOrigins.split(',').map((o) => o.trim()))
-    }
+export type CreateAuthOverrides = {
+  sendResetPassword?: (params: SendResetPasswordParams) => Promise<void>
+}
 
-    return origins
-  },
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false,
-    minPasswordLength: 8,
-    password: {
-      hash: async (password) => hashPassword(password),
-      verify: async (data: { hash: string; password: string }) => {
-        const { hash: hashedPassword, password: plainPassword } = data
-        // LDAP-imported users store {SSHA}...; app-created users use scrypt
-        if (hashedPassword.startsWith('{SSHA}')) {
-          return verifyPasswordSsha(hashedPassword, plainPassword)
-        }
-        return verifyPassword({ hash: hashedPassword, password: plainPassword })
-      },
+export function createAuth(overrides: CreateAuthOverrides = {}) {
+  return betterAuth({
+    baseURL,
+    database: prismaAdapter(prisma, {
+      provider: 'postgresql',
+    }),
+    trustedOrigins: () => {
+      const origins = [baseURL, 'http://localhost:3000']
+      const envOrigins = webEnv.TRUSTED_ORIGINS
+      if (envOrigins) {
+        origins.push(...envOrigins.split(',').map((o) => o.trim()))
+      }
+      return origins
     },
-  },
-  session: {
-    expiresIn: 60 * 60 * 12, // 12 hours
-    updateAge: 60 * 60, // Update session every hour
-    cookieCache: {
+    emailAndPassword: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
-  },
-  user: {
-    additionalFields: {
-      username: {
-        type: 'string',
-        required: true,
-        unique: true,
-      },
-      location: {
-        type: 'string',
-        required: false,
-      },
-      preferredLanguage: {
-        type: 'string',
-        required: false,
-        defaultValue: 'de',
-      },
-      preferredTheme: {
-        type: 'string',
-        required: false,
-      },
-      preferredColorMode: {
-        type: 'string',
-        required: false,
-      },
-      storageQuota: {
-        type: 'string',
-        required: false,
-        defaultValue: '1 GB',
-      },
-      primaryGroupId: {
-        type: 'string',
-        required: false,
-      },
-      ldapDn: {
-        type: 'string',
-        required: false,
-      },
-      ldapUidNumber: {
-        type: 'number',
-        required: false,
-      },
-      ldapSynced: {
-        type: 'boolean',
-        required: false,
-        defaultValue: false,
-      },
-      ldapSyncedAt: {
-        type: 'date',
-        required: false,
+      requireEmailVerification: false,
+      minPasswordLength: 8,
+      ...(overrides.sendResetPassword && { sendResetPassword: overrides.sendResetPassword }),
+      password: {
+        hash: async (password) => hashPassword(password),
+        verify: async (data: { hash: string; password: string }) => {
+          const { hash: hashedPassword, password: plainPassword } = data
+          if (hashedPassword.startsWith('{SSHA}')) {
+            return verifyPasswordSsha(hashedPassword, plainPassword)
+          }
+          return verifyPassword({ hash: hashedPassword, password: plainPassword })
+        },
       },
     },
-  },
-  plugins: [nextCookies()],
-})
+    session: {
+      expiresIn: 60 * 60 * 12,
+      updateAge: 60 * 60,
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60,
+      },
+    },
+    user: {
+      additionalFields: {
+        username: { type: 'string', required: true, unique: true },
+        location: { type: 'string', required: false },
+        preferredLanguage: { type: 'string', required: false, defaultValue: 'de' },
+        preferredTheme: { type: 'string', required: false },
+        preferredColorMode: { type: 'string', required: false },
+        storageQuota: { type: 'string', required: false, defaultValue: '1 GB' },
+        primaryGroupId: { type: 'string', required: false },
+        ldapDn: { type: 'string', required: false },
+        ldapUidNumber: { type: 'number', required: false },
+        ldapSynced: { type: 'boolean', required: false, defaultValue: false },
+        ldapSyncedAt: { type: 'date', required: false },
+      },
+    },
+    plugins: [nextCookies()],
+  })
+}
+
+export const auth = createAuth()
 
 export type Session = typeof auth.$Infer.Session
 export type User = typeof auth.$Infer.Session.user
