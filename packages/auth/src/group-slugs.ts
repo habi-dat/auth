@@ -41,3 +41,33 @@ export async function getUserGroupSlugs(
   }
   return [...slugs]
 }
+
+/**
+ * Returns a Set of ancestor (parent) group IDs for the given group IDs.
+ * Recursively traverses the hierarchy. Does NOT include the input group IDs themselves.
+ */
+export async function getAncestorGroupIds(
+  prisma: PrismaClient,
+  groupIds: string[]
+): Promise<Set<string>> {
+  const result = new Set<string>()
+  const visited = new Set<string>()
+
+  async function collectAncestors(childId: string) {
+    if (visited.has(childId)) return
+    visited.add(childId)
+    const parents = await prisma.groupHierarchy.findMany({
+      where: { childGroupId: childId },
+      select: { parentGroupId: true },
+    })
+    for (const p of parents) {
+      result.add(p.parentGroupId)
+      await collectAncestors(p.parentGroupId)
+    }
+  }
+
+  for (const groupId of groupIds) {
+    await collectAncestors(groupId)
+  }
+  return result
+}

@@ -141,8 +141,8 @@ importers:
         specifier: ^19.1.0
         version: 19.2.4(react@19.2.4)
       react-email:
-        specifier: ^5.2.7
-        version: 5.2.7
+        specifier: ^5.2.8
+        version: 5.2.8
       react-hook-form:
         specifier: ^7.54.2
         version: 7.71.1(react@19.2.4)
@@ -150,8 +150,8 @@ importers:
         specifier: ^2.10.2
         version: 2.10.2
       tailwind-merge:
-        specifier: ^3.0.1
-        version: 3.4.0
+        specifier: ^3.5.0
+        version: 3.5.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -3301,8 +3301,8 @@ packages:
     peerDependencies:
       react: ^19.2.4
 
-  react-email@5.2.7:
-    resolution: {integrity: sha512-qTRqN+Ftvc6k8COSDM3IROmimbBWMykWFWxk4FKDKjoLw9bMfwavXJSeACmkwoiv+7jws/Pm1xNf9eoR7blt8g==}
+  react-email@5.2.8:
+    resolution: {integrity: sha512-noPcnpl78vsyBnhiKCzxK9Mdsv7ncAYI80osS5kbMgaKH2IgPtPab5BzLJX6INXuiNk5ju+9YRnCjPoPTOHZjA==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -3517,8 +3517,8 @@ packages:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
     engines: {node: '>=20'}
 
-  tailwind-merge@3.4.0:
-    resolution: {integrity: sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g==}
+  tailwind-merge@3.5.0:
+    resolution: {integrity: sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A==}
 
   tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
@@ -6293,7 +6293,7 @@ snapshots:
       react: 19.2.4
       scheduler: 0.27.0
 
-  react-email@5.2.7:
+  react-email@5.2.8:
     dependencies:
       '@babel/parser': 7.29.0
       '@babel/traverse': 7.29.0
@@ -6526,7 +6526,7 @@ snapshots:
 
   tagged-tag@1.0.0: {}
 
-  tailwind-merge@3.4.0: {}
+  tailwind-merge@3.5.0: {}
 
   tailwindcss@4.1.18: {}
 

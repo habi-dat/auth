@@ -9,7 +9,7 @@ interface ListPageLayoutProps {
 
 export function ListPageLayout({ title, description, actions, children }: ListPageLayoutProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mx-auto max-w-7xl">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">{title}</h1>

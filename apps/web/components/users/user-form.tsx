@@ -45,9 +45,10 @@ interface UserFormProps {
     ownerships: Array<{ group: GroupWithSlug }>
   }
   groups: GroupWithSlug[]
+  isAdmin: boolean
 }
 
-export function UserForm({ user, groups }: UserFormProps) {
+export function UserForm({ user, groups, isAdmin }: UserFormProps) {
   const t = useTranslations('users')
   const tVal = useTranslations('auth.validation')
   const tCommon = useTranslations('common')
@@ -58,15 +59,20 @@ export function UserForm({ user, groups }: UserFormProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!user
 
+  const nameRegex = /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/
+
   const createUserSchema = z.object({
-    name: z.string().min(2, tVal('nameMin')),
+    name: z
+      .string()
+      .min(3, tVal('nameMin'))
+      .regex(nameRegex, tVal('nameRegex')),
     username: z
       .string()
       .min(3, tVal('usernameMin'))
       .regex(/^[a-zA-Z0-9_-]+$/, tVal('usernameRegex')),
     email: z.string().email(tVal('emailInvalid')),
     password: z.string().min(8, tVal('passwordMin')),
-    location: z.string().optional(),
+    location: z.string().min(1, tVal('locationRequired')),
     preferredLanguage: z.string().default('de'),
     storageQuota: z.string().default('1 GB'),
     memberGroupIds: z.array(z.string()),
@@ -76,9 +82,12 @@ export function UserForm({ user, groups }: UserFormProps) {
 
   const updateUserSchema = z.object({
     id: z.string(),
-    name: z.string().min(2, tVal('nameMin')),
+    name: z
+      .string()
+      .min(3, tVal('nameMin'))
+      .regex(nameRegex, tVal('nameRegex')),
     email: z.string().email(tVal('emailInvalid')),
-    location: z.string().optional().nullable(),
+    location: z.string().min(1, tVal('locationRequired')).optional().nullable(),
     preferredLanguage: z.string(),
     storageQuota: z.string(),
     memberGroupIds: z.array(z.string()),
@@ -215,6 +224,8 @@ export function UserForm({ user, groups }: UserFormProps) {
   }
 
   const isLoading = createAction.isPending || updateAction.isPending || deleteAction.isPending
+  // Group admins editing an existing user can only change group-related fields
+  const profileFieldsDisabled = isEditing && !isAdmin
   // groupadmin system group cannot be assigned/removed on user form (membership is automatic)
   const selectableGroups = groups.filter((g) => g.slug !== GROUPADMIN_GROUP_SLUG)
   const primaryGroupOptions = selectableGroups.filter((g) => memberGroupIds.includes(g.id))
@@ -236,7 +247,7 @@ export function UserForm({ user, groups }: UserFormProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">{t('name')}</Label>
-              <Input id="name" {...register('name')} disabled={isLoading} />
+              <Input id="name" {...register('name')} disabled={isLoading || profileFieldsDisabled} />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
 
@@ -256,7 +267,7 @@ export function UserForm({ user, groups }: UserFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="email">{t('email')}</Label>
-              <Input id="email" type="email" {...register('email')} disabled={isLoading} />
+              <Input id="email" type="email" {...register('email')} disabled={isLoading || profileFieldsDisabled} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
@@ -293,7 +304,7 @@ export function UserForm({ user, groups }: UserFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('location')}</Label>
-              <Input id="location" {...register('location')} disabled={isLoading} />
+              <Input id="location" {...register('location')} disabled={isLoading || profileFieldsDisabled} />
             </div>
 
             <div className="space-y-2">
@@ -301,7 +312,7 @@ export function UserForm({ user, groups }: UserFormProps) {
               <Select
                 value={preferredLanguage}
                 onValueChange={(v) => setValue('preferredLanguage', v)}
-                disabled={isLoading}
+                disabled={isLoading || profileFieldsDisabled}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -318,7 +329,7 @@ export function UserForm({ user, groups }: UserFormProps) {
               <Select
                 value={storageQuota}
                 onValueChange={(v) => setValue('storageQuota', v)}
-                disabled={isLoading}
+                disabled={isLoading || profileFieldsDisabled}
               >
                 <SelectTrigger>
                   <SelectValue />

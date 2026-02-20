@@ -10,7 +10,7 @@ import {
   removeUserFromGroupAdminIfNoOwnership,
 } from '@/lib/actions/group-actions'
 import { createAuditLog } from '@/lib/audit'
-import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
+import { ADMIN_GROUP_SLUG, GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { hashPasswordSsha } from '@/lib/ldap/password'
 import {
   createSyncEvent,
@@ -19,9 +19,16 @@ import {
 } from '@/lib/sync/create-sync-event'
 import { groupAdminAction, userAction } from './client'
 
+const SYSTEM_GROUP_SLUGS = [ADMIN_GROUP_SLUG, GROUPADMIN_GROUP_SLUG]
+
+const NAME_REGEX = /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/
+
 // Schema definitions
 const createUserSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z
+    .string()
+    .min(3, 'Name must be at least 3 characters')
+    .regex(NAME_REGEX, 'Name must be at least 3 characters and cannot contain "(),=<>'),
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')
@@ -31,7 +38,7 @@ const createUserSchema = z.object({
     ),
   email: z.email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  location: z.string().optional(),
+  location: z.string().min(1, 'Location is required'),
   preferredLanguage: z.string().default('de'),
   storageQuota: z.string().default('1 GB'),
   memberGroupIds: z.array(z.string()),
@@ -41,9 +48,13 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   id: z.string(),
-  name: z.string().min(2).optional(),
+  name: z
+    .string()
+    .min(3)
+    .regex(NAME_REGEX)
+    .optional(),
   email: z.email().optional(),
-  location: z.string().optional().nullable(),
+  location: z.string().min(1).optional().nullable(),
   preferredLanguage: z.string().optional(),
   storageQuota: z.string().optional(),
   memberGroupIds: z.array(z.string()).optional(),
@@ -52,8 +63,11 @@ const updateUserSchema = z.object({
 })
 
 const updateProfileSchema = z.object({
-  name: z.string().min(2),
-  location: z.string().optional().nullable(),
+  name: z
+    .string()
+    .min(3)
+    .regex(NAME_REGEX),
+  location: z.string().min(1).optional().nullable(),
   preferredLanguage: z.string(),
   preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
   primaryGroupId: z.string().optional().nullable(),
@@ -255,30 +269,47 @@ export const updateUserAction = groupAdminAction
 
     const existingUser = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.id },
-      include: { memberships: true, ownerships: true },
+      include: {
+        memberships: { include: { group: { select: { id: true, slug: true, isSystem: true } } } },
+        ownerships: true,
+      },
     })
 
     if (!canManageUser(session, existingUser.memberships)) {
       throw new Error('You do not have permission to update this user')
     }
 
-    // groupadmin system group cannot be assigned or removed manually (membership is automatic)
-    const groupAdminGroup = await prisma.group.findUnique({
-      where: { slug: GROUPADMIN_GROUP_SLUG },
-      select: { id: true },
+    const systemGroups = await prisma.group.findMany({
+      where: { isSystem: true },
+      select: { id: true, slug: true },
     })
-    const groupAdminId = groupAdminGroup?.id ?? null
+    const systemGroupIds = new Set(systemGroups.map((g) => g.id))
+
+    // Group admins can only change group memberships, ownerships, and primaryGroupId -- not profile fields
+    const isActorAdmin = session.isAdmin
+    const profileData = isActorAdmin
+      ? {
+          name: parsedInput.name,
+          email: parsedInput.email,
+          location: parsedInput.location,
+          preferredLanguage: parsedInput.preferredLanguage,
+          storageQuota: parsedInput.storageQuota,
+        }
+      : {}
+
+    // Filter out system groups from input
     const memberGroupIds = parsedInput.memberGroupIds
-      ? groupAdminId
-        ? parsedInput.memberGroupIds.filter((id) => id !== groupAdminId)
-        : parsedInput.memberGroupIds
+      ? parsedInput.memberGroupIds.filter((id) => !systemGroupIds.has(id))
       : undefined
     const ownerGroupIds = parsedInput.ownerGroupIds
-      ? groupAdminId
-        ? parsedInput.ownerGroupIds.filter((id) => id !== groupAdminId)
-        : parsedInput.ownerGroupIds
+      ? parsedInput.ownerGroupIds.filter((id) => !systemGroupIds.has(id))
       : undefined
     const primaryGroupId = parsedInput.primaryGroupId
+
+    // Managed group IDs for the acting user (used to scope group admin changes)
+    const managedGroupIds = isActorAdmin
+      ? null
+      : new Set(session.ownerships.map((o) => o.groupId))
 
     const beforeGroupIds = [
       ...new Set([
@@ -294,9 +325,51 @@ export const updateUserAction = groupAdminAction
       discourseSyncEventId,
       discourseGroupSyncEventIds,
     } = await prisma.$transaction(async (tx) => {
+      // Compute effective membership/ownership lists, scoped to the actor's permissions
+      let effectiveMemberGroupIds: string[] | undefined
+      if (memberGroupIds !== undefined) {
+        if (managedGroupIds) {
+          // Group admin: only modify groups they own, preserve all others
+          const preservedMemberships = existingUser.memberships
+            .filter((m) => !managedGroupIds.has(m.groupId))
+            .map((m) => m.groupId)
+          effectiveMemberGroupIds = [...new Set([...preservedMemberships, ...memberGroupIds])]
+          for (const groupId of memberGroupIds) {
+            if (!canManageGroup(session, groupId)) {
+              throw new Error('You cannot add users to this group')
+            }
+          }
+        } else {
+          effectiveMemberGroupIds = memberGroupIds
+        }
+      }
+
+      let effectiveOwnerGroupIds: string[] | undefined
+      if (ownerGroupIds !== undefined) {
+        if (managedGroupIds) {
+          const preservedOwnerships = existingUser.ownerships
+            .filter((o) => !managedGroupIds.has(o.groupId))
+            .map((o) => o.groupId)
+          effectiveOwnerGroupIds = [...new Set([...preservedOwnerships, ...ownerGroupIds])]
+          for (const groupId of ownerGroupIds) {
+            if (!canManageGroup(session, groupId)) {
+              throw new Error('You cannot change ownership for this group')
+            }
+          }
+        } else {
+          effectiveOwnerGroupIds = ownerGroupIds
+        }
+      }
+
+      // Ensure owners are also members
+      const allMemberIds =
+        effectiveMemberGroupIds !== undefined
+          ? [...new Set([...effectiveMemberGroupIds, ...(effectiveOwnerGroupIds ?? [])])]
+          : undefined
+
       const afterGroupIdsForPrimary =
-        memberGroupIds !== undefined
-          ? [...new Set([...memberGroupIds, ...(ownerGroupIds ?? [])])]
+        allMemberIds !== undefined
+          ? allMemberIds
           : [
               ...new Set([
                 ...existingUser.memberships.map((m) => m.groupId),
@@ -307,34 +380,31 @@ export const updateUserAction = groupAdminAction
         primaryGroupId == null ||
         (afterGroupIdsForPrimary.length > 0 && afterGroupIdsForPrimary.includes(primaryGroupId))
       if (!primaryGroupIdValid) {
-        throw new Error('Primary group must be one of the user’s member groups')
+        throw new Error("Primary group must be one of the user's member groups")
       }
 
       const updated = await tx.user.update({
         where: { id: parsedInput.id },
         data: {
-          name: parsedInput.name,
-          email: parsedInput.email,
-          location: parsedInput.location,
-          preferredLanguage: parsedInput.preferredLanguage,
-          storageQuota: parsedInput.storageQuota,
+          ...profileData,
           ...(primaryGroupId !== undefined ? { primaryGroupId } : {}),
         },
       })
 
       let afterGroupIds: string[] | null = null
-      if (memberGroupIds !== undefined) {
-        afterGroupIds = [...new Set([...memberGroupIds, ...(ownerGroupIds ?? [])])]
-        // Remove only non-system memberships so groupadmin membership (managed automatically) is preserved
+      if (allMemberIds !== undefined) {
+        afterGroupIds = allMemberIds
+        // Remove non-system memberships and re-create (system group memberships are preserved)
         await tx.groupMembership.deleteMany({
           where: {
             userId: parsedInput.id,
-            ...(groupAdminId ? { groupId: { not: groupAdminId } } : {}),
+            group: { isSystem: false },
           },
         })
-        if (afterGroupIds.length > 0) {
+        const nonSystemMemberIds = allMemberIds.filter((id) => !systemGroupIds.has(id))
+        if (nonSystemMemberIds.length > 0) {
           await tx.groupMembership.createMany({
-            data: afterGroupIds.map((groupId) => ({
+            data: nonSystemMemberIds.map((groupId) => ({
               userId: parsedInput.id,
               groupId,
             })),
@@ -342,13 +412,13 @@ export const updateUserAction = groupAdminAction
         }
       }
 
-      if (ownerGroupIds !== undefined) {
+      if (effectiveOwnerGroupIds !== undefined) {
         await tx.groupOwnership.deleteMany({
           where: { userId: parsedInput.id },
         })
-        if (ownerGroupIds.length > 0) {
+        if (effectiveOwnerGroupIds.length > 0) {
           await tx.groupOwnership.createMany({
-            data: ownerGroupIds.map((groupId) => ({
+            data: effectiveOwnerGroupIds.map((groupId) => ({
               userId: parsedInput.id,
               groupId,
             })),
@@ -356,12 +426,14 @@ export const updateUserAction = groupAdminAction
         }
         if (!afterGroupIds) {
           afterGroupIds = [
-            ...new Set([...existingUser.memberships.map((m) => m.groupId), ...ownerGroupIds]),
+            ...new Set([
+              ...existingUser.memberships.map((m) => m.groupId),
+              ...effectiveOwnerGroupIds,
+            ]),
           ]
         }
-        // Sync groupadmin system group: remove if no ownerships, add if has ownerships
         await removeUserFromGroupAdminIfNoOwnership(tx, parsedInput.id)
-        if (ownerGroupIds.length > 0) {
+        if (effectiveOwnerGroupIds.length > 0) {
           await addUserToGroupAdmin(tx, parsedInput.id)
         }
       }
@@ -547,16 +619,39 @@ export const deleteUserAction = groupAdminAction
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.userId },
-      include: { memberships: true, ownerships: true },
+      include: {
+        memberships: { include: { group: { select: { id: true, slug: true, name: true, isSystem: true } } } },
+        ownerships: true,
+      },
     })
-
-    if (!canManageUser(session, user.memberships)) {
-      throw new Error('You do not have permission to delete this user')
-    }
 
     // Prevent deleting yourself
     if (user.id === session.user.id) {
       throw new Error('You cannot delete your own account')
+    }
+
+    if (!session.isAdmin) {
+      // Group admins cannot delete users who are in any system group
+      const systemMemberships = user.memberships.filter((m) =>
+        SYSTEM_GROUP_SLUGS.includes(m.group.slug)
+      )
+      if (systemMemberships.length > 0) {
+        throw new Error(
+          'This user is a member of system groups and can only be deleted by a system admin'
+        )
+      }
+
+      // Group admins can only delete users whose non-system groups are ALL owned by the actor
+      const ownedGroupIds = new Set(session.ownerships.map((o) => o.groupId))
+      const nonOwnedGroups = user.memberships
+        .filter((m) => !m.group.isSystem && !ownedGroupIds.has(m.groupId))
+        .map((m) => m.group.name)
+      if (nonOwnedGroups.length > 0) {
+        throw new Error(
+          `User is a member of groups you do not manage (${nonOwnedGroups.join(', ')}). ` +
+            'Contact the group admins of those groups, or remove the user from your groups instead of deleting.'
+        )
+      }
     }
 
     const oldValue = {

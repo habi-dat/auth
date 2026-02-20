@@ -6,12 +6,12 @@ import { getGroupsForSelect } from '@/lib/actions/group-actions'
 
 export default async function NewUserPage() {
   const t = await getTranslations('users')
-  await requireGroupAdmin()
+  const session = await requireGroupAdmin()
   const groups = await getGroupsForSelect()
 
   return (
     <FormPageLayout backHref="/users" title={t('newUser')}>
-      <UserForm groups={groups} />
+      <UserForm groups={groups} isAdmin={session.isAdmin} />
     </FormPageLayout>
   )
 }

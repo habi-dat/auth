@@ -1,4 +1,4 @@
-import { getUserGroupSlugs } from '@habidat/auth/group-slugs'
+import { getAncestorGroupIds, getUserGroupSlugs } from '@habidat/auth/group-slugs'
 import { canAccessApp } from '@habidat/auth/roles'
 import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
@@ -44,7 +44,12 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
     return NextResponse.redirect(loginUrl)
   }
 
-  if (!canAccessApp(sessionWithGroups, app)) {
+  const memberGroupIds = sessionWithGroups.memberships.map(
+    (m: { group: { id: string } }) => m.group.id
+  )
+  const ancestorGroupIds = await getAncestorGroupIds(prisma, memberGroupIds)
+
+  if (!canAccessApp(sessionWithGroups, app, ancestorGroupIds)) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
@@ -69,9 +74,6 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
     return NextResponse.json({ error: 'App ACS URL not configured' }, { status: 400 })
   }
 
-  const memberGroupIds = sessionWithGroups.memberships.map(
-    (m: { group: { id: string } }) => m.group.id
-  )
   const groups = await getUserGroupSlugs(prisma, memberGroupIds)
   const user = {
     id: sessionWithGroups.user.id,

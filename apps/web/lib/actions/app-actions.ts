@@ -1,5 +1,6 @@
 'use server'
 
+import { getAncestorGroupIds } from '@habidat/auth/group-slugs'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -15,15 +16,16 @@ export async function getApps() {
   })
 }
 
-/** Get apps accessible to a user based on their group memberships */
+/** Get apps accessible to a user based on their group memberships (including ancestor groups via hierarchy) */
 export async function getUserApps(userGroupIds: string[]) {
+  const ancestorIds = await getAncestorGroupIds(prisma, userGroupIds)
+  const allGroupIds = [...new Set([...userGroupIds, ...ancestorIds])]
+
   return prisma.app.findMany({
     where: {
       OR: [
-        // Apps with no group restrictions (open to all)
         { groupAccess: { none: {} } },
-        // Apps where user is in one of the allowed groups
-        { groupAccess: { some: { groupId: { in: userGroupIds } } } },
+        { groupAccess: { some: { groupId: { in: allGroupIds } } } },
       ],
     },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],

@@ -1,0 +1,35 @@
+FROM node:20-alpine AS base
+
+FROM base AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install turbo --global
+COPY . .
+RUN turbo prune --scope=@habidat/worker --docker
+
+FROM base AS installer
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN pnpm install
+
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN pnpm turbo build --filter=@habidat/worker...
+
+FROM base AS runner
+WORKDIR /app
+
+# Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 worker
+USER worker
+
+COPY --from=installer --chown=worker:nodejs /app .
+
+CMD node apps/worker/dist/index.js

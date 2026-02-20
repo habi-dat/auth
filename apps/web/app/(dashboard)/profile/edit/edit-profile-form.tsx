@@ -83,8 +83,9 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
     },
   })
 
+  const nameRegex = /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/
   const profileSchema = baseProfileSchema.extend({
-    name: z.string().min(2, tVal('nameMin')),
+    name: z.string().min(3, tVal('nameMin')).regex(nameRegex, tVal('nameRegex')),
   })
 
   const {

@@ -38,22 +38,24 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
       cell: ({ row }) => (
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-medium">{row.original.name}</span>
+            <span className="font-bold">{row.original.name}</span>
             {row.original.isSystem && (
               <Badge variant="outline" className="text-xs">
                 {t('system')}
               </Badge>
             )}
           </div>
-          <span className="text-sm text-muted-foreground">@{row.original.slug}</span>
+          <span className="text-sm text-muted-foreground">{row.original.slug}</span>
         </div>
       ),
     },
     {
       accessorKey: 'description',
-      header: t('description'),
+      header: t('descriptionLabel'),
       cell: ({ row }) => (
-        <span className="max-w-[200px] truncate block">{row.original.description}</span>
+        <span className="line-clamp-2  whitespace-normal max-w-[300px]">
+          {row.original.description}
+        </span>
       ),
     },
     {

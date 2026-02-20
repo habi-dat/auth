@@ -63,13 +63,24 @@ export type AppWithGroupAccess = {
   groupAccess: Array<{ groupId: string }>
 }
 
-/** Check if user can access an app. Empty groupAccess = all users. */
-export function canAccessApp(session: SessionWithGroups, app: AppWithGroupAccess): boolean {
+/**
+ * Check if user can access an app. Empty groupAccess = all users.
+ * Pass `ancestorGroupIds` to include parent groups resolved from the hierarchy.
+ */
+export function canAccessApp(
+  session: SessionWithGroups,
+  app: AppWithGroupAccess,
+  ancestorGroupIds?: Set<string>
+): boolean {
   if (app.groupAccess.length === 0) return true
+  if (session.isAdmin) return true
   const allowedGroupIds = app.groupAccess.map((a) => a.groupId)
   const userGroupIds = new Set([
     ...session.memberships.map((m) => m.groupId),
     ...session.ownerships.map((o) => o.groupId),
   ])
-  return allowedGroupIds.some((gid) => userGroupIds.has(gid)) || session.isAdmin
+  if (ancestorGroupIds) {
+    for (const id of ancestorGroupIds) userGroupIds.add(id)
+  }
+  return allowedGroupIds.some((gid) => userGroupIds.has(gid))
 }

@@ -97,7 +97,7 @@ export default function AcceptInvitePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                minLength={2}
+                minLength={3}
               />
             </div>
             <div className="space-y-2">

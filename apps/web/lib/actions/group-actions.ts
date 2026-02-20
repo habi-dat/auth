@@ -297,7 +297,7 @@ export const updateGroupAction = groupAdminAction
           }
         }
 
-        if (parsedInput.ownerUserIds && session.isAdmin) {
+        if (parsedInput.ownerUserIds) {
           const oldOwnerIds = existingGroup.ownerships.map((o) => o.userId)
           await tx.groupOwnership.deleteMany({
             where: { groupId: parsedInput.id },
@@ -318,6 +318,14 @@ export const updateGroupAction = groupAdminAction
               await removeUserFromGroupAdminIfNoOwnership(tx, userId)
             }
           }
+        }
+
+        // Only admins can change group hierarchy
+        if (parsedInput.parentGroupIds && !session.isAdmin) {
+          throw new Error('Only admins can change group hierarchy')
+        }
+        if (parsedInput.childGroupIds && !session.isAdmin) {
+          throw new Error('Only admins can change group hierarchy')
         }
 
         if (parsedInput.parentGroupIds) {

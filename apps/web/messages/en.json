@@ -106,10 +106,12 @@
     "validation": {
       "emailInvalid": "Please enter a valid email address",
       "passwordRequired": "Please enter your password",
-      "nameMin": "Name must be at least 2 characters long",
+      "nameMin": "Name must be at least 3 characters long",
+      "nameRegex": "Name must not contain any of the following characters: \"(),=<>",
       "usernameMin": "Username must be at least 3 characters long",
       "usernameRegex": "Only letters, numbers, _ and - are allowed",
       "passwordMin": "Password must be at least 8 characters long",
+      "locationRequired": "Location must not be empty",
       "passwordsMismatch": "Passwords do not match",
       "currentPasswordRequired": "Please enter your current password",
       "newPasswordDifferent": "New password must be different from the current one"

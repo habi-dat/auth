@@ -268,7 +268,13 @@ export const resendInviteAction = groupAdminAction
 
 const acceptInviteSchema = z.object({
   token: z.string().min(1),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z
+    .string()
+    .min(3, 'Name must be at least 3 characters')
+    .regex(
+      /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/,
+      'Name must not contain "(),=<>'
+    ),
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')

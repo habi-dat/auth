@@ -90,7 +90,7 @@ This starts PostgreSQL, Redis, Mailhog, the web app and the worker in one go. Th
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL + Prisma
 - **Auth**: better-auth
