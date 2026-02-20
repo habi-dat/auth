@@ -31,4 +31,6 @@ USER worker
 
 COPY --from=installer --chown=worker:nodejs /app .
 
+RUN mkdir -p /app/import && chown worker:nodejs /app/import
+
 CMD ["node", "apps/worker/dist/index.js"]

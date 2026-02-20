@@ -1,6 +1,7 @@
 {
   "name": "habidat-auth",
   "private": true,
+  "version": "2.0.0",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev:web": "pnpm --filter @habidat/web dev",

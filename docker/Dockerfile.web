@@ -27,8 +27,8 @@ COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 # Skip env validation at build time (vars provided at runtime)
-ENV SKIP_ENV_VALIDATION=1
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV SKIP_ENV_VALIDATION 1
+ENV NEXT_TELEMETRY_DISABLED 1
 ENV DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
 
 # Uncomment and use build args to enable remote caching
@@ -42,23 +42,16 @@ RUN pnpm turbo build --filter=@habidat/web...
 FROM base AS runner
 WORKDIR /app
 
-# Don't run production as root
+# Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-USER nextjs
 
-COPY --from=installer /app/apps/web/next.config.ts .
-COPY --from=installer /app/apps/web/package.json .
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
+# Copy the standalone build and static files
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
-# Also copy import folder for seeding?
-# The user might want to mount it, so we create the dir
-USER root
-RUN mkdir -p /app/import && chown nextjs:nodejs /app/import
+
+
 USER nextjs
 
-CMD node apps/web/server.js
+CMD ["node", "apps/web/server.js"]
