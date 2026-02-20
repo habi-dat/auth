@@ -19,6 +19,8 @@
     "typecheck": "turbo typecheck",
     "db:generate": "pnpm --filter @habidat/db generate",
     "db:migrate": "pnpm --filter @habidat/db migrate",
+    "db:migrate:reset": "pnpm --filter @habidat/db migrate:reset",
+    "db:migrate:deploy": "pnpm --filter @habidat/db migrate:deploy",
     "db:push": "pnpm --filter @habidat/db push",
     "db:seed": "pnpm --filter @habidat/db seed",
     "db:studio": "pnpm --filter @habidat/db studio",
