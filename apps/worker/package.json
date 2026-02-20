@@ -16,8 +16,12 @@
     "@habidat/env": "workspace:*",
     "@habidat/ldap": "workspace:*",
     "@habidat/sync": "workspace:*",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "better-auth": "^1.4.18",
     "bullmq": "^5.34.5",
     "dotenv": "^16.4.7",
+    "pg": "^8.13.1",
     "prisma": "^7.3.0",
     "tsx": "^4.19.2"
   },
