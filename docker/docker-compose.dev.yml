@@ -71,6 +71,11 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       LDAP_URL: ldap://ldap:389
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
+      LDAP_BIND_PASSWORD: ${LDAP_BIND_PASSWORD}
+      LDAP_USERS_DN: ou=users,${LDAP_BASE_DN}
+      LDAP_GROUPS_DN: ou=groups,${LDAP_BASE_DN}
       TRUSTED_ORIGINS: https://*.${DOMAIN},http://*.${DOMAIN}
       DISCOURSE_URL: http://${DOCKER_PREFIX}-discourse:80
       DISCOURSE_API_KEY: ${DISCOURSE_API_KEY:-}
