@@ -1,0 +1,35 @@
+{
+  "name": "habidat-auth",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @habidat/web dev",
+    "dev:worker": "pnpm --filter @habidat/worker dev",
+    "dev:docker": "docker compose -f docker/docker-compose.dev.yml --project-directory . -p habidat-auth",
+    "dev": "docker compose -f docker/docker-compose.dev.yml --project-directory . -p habidat-auth up --no-attach db --no-attach redis --no-attach mailhog",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@habidat/web",
+    "build:worker": "turbo build --filter=@habidat/worker",
+    "build:docker:web": "docker build -t habidat/auth -f docker/Dockerfile.web .",
+    "build:docker:worker": "docker build -t habidat/auth-worker -f docker/Dockerfile.worker .",
+    "lint": "turbo lint",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "turbo typecheck",
+    "db:generate": "pnpm --filter @habidat/db generate",
+    "db:migrate": "pnpm --filter @habidat/db migrate",
+    "db:push": "pnpm --filter @habidat/db push",
+    "db:seed": "pnpm --filter @habidat/db seed",
+    "db:studio": "pnpm --filter @habidat/db studio",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
+    "tsx": "^4.19.2",
+    "turbo": "^2.8.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

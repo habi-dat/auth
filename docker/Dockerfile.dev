@@ -1,0 +1,15 @@
+# Development image for habidat-auth web app (monorepo)
+# Build from repo root: docker build -f docker/Dockerfile.dev .
+FROM node:22-alpine
+
+# pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
+WORKDIR /app
+
+
+# Next.js dev server (listen on all interfaces for Docker)
+ENV HOSTNAME=0.0.0.0
+EXPOSE 3000
+
+CMD ["pnpm", "dev:web"]

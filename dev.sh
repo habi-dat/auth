@@ -1,1 +1,0 @@
-docker compose -p habidat-auth -f docker/dev/docker-compose.dev.yml "$@"
