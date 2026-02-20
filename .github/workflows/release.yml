@@ -7,6 +7,15 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image: habidat/auth
+            dockerfile: docker/Dockerfile.web
+            cache-scope: habidat-auth-web
+          - image: habidat/auth-worker
+            dockerfile: docker/Dockerfile.worker
+            cache-scope: habidat-auth-worker
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,40 +32,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Web
-        id: meta_web
+      - name: Extract metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
-          images: habidat/auth
+          images: ${{ matrix.image }}
 
-      - name: Build and push Web
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/Dockerfile.web
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            habidat/auth:${{ github.event.release.tag_name }}
-            habidat/auth:2
-          labels: ${{ steps.meta_web.outputs.labels }}
-          cache-from: type=gha,scope=habidat-auth-web
-          cache-to: type=gha,scope=habidat-auth-web,mode=max
-
-      - name: Extract metadata (tags, labels) for Worker
-        id: meta_worker
-        uses: docker/metadata-action@v5
-        with:
-          images: habidat/auth-worker
-
-      - name: Build and push Worker
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile.worker
-          push: true
-          tags: |
-            habidat/auth-worker:${{ github.event.release.tag_name }}
-            habidat/auth-worker:2
-          labels: ${{ steps.meta_worker.outputs.labels }}
-          cache-from: type=gha,scope=habidat-auth-worker
-          cache-to: type=gha,scope=habidat-auth-worker,mode=max
+            ${{ matrix.image }}:${{ github.event.release.tag_name }}
+            ${{ matrix.image }}:2
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.cache-scope }}
+          cache-to: type=gha,scope=${{ matrix.cache-scope }},mode=max
