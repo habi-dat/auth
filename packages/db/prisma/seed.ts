@@ -125,13 +125,24 @@ async function importFromLdap(
 
         const storedPassword = (u.userPassword ?? '').trim()
         if (storedPassword) {
-          const passwordHashType = storedPassword.startsWith('{SSHA}') ? 'ssha' : 'scrypt'
+          let password: string
+          let passwordHashType: string
+          if (storedPassword.startsWith('{SSHA}')) {
+            password = storedPassword
+            passwordHashType = 'ssha'
+          } else if (storedPassword.startsWith('$scrypt$') || storedPassword.startsWith('$2')) {
+            password = storedPassword
+            passwordHashType = 'scrypt'
+          } else {
+            password = await hashPassword(storedPassword)
+            passwordHashType = 'scrypt'
+          }
           await tx.account.create({
             data: {
               userId: user.id,
               accountId: user.id,
               providerId: 'credential',
-              password: storedPassword,
+              password,
               passwordHashType,
             },
           })
