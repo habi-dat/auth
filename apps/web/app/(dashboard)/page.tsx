@@ -26,7 +26,7 @@ export default async function HomePage() {
   const description = settings.dashboardDescription || t('description')
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 max-w-7xl mx-auto">
       <div className="relative overflow-hidden py-6 ">
         <div className="relative z-10">
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">{title}</h1>
@@ -89,7 +89,9 @@ function AppCard({ app, variant }: { app: App; variant: 'main' | 'compact' }) {
             : 'hover:border-primary/30'
         )}
       >
-        <CardHeader className={cn('pb-3', variant === 'main' ? 'pt-6' : 'pt-4')}>
+        <CardHeader
+          className={cn(variant === 'main' ? 'pb-6' : 'pb-4', variant === 'main' ? 'pt-6' : 'pt-4')}
+        >
           <div
             className={cn(
               'flex items-center gap-4',
