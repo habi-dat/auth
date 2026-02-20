@@ -1,6 +1,7 @@
 # Development stack: DB, Redis, Mailhog + habidat-auth web app + worker
 # Run from repo root: pnpm dev:docker
-# Requires .env with SESSION_SECRET, BETTER_AUTH_SECRET; worker also needs LDAP_* and optional DISCOURSE_*
+# No env_file is used here on purpose; all app env is explicitly declared below.
+# Values are provided via ${VAR} interpolation (for local shell/.env usage).
 # Web app: http://localhost:3000  |  Mailhog UI: http://localhost:8025
 
 services:
@@ -21,7 +22,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - habidat-user
+      - habidat-user-dev
 
   redis:
     image: redis:7-alpine
@@ -38,7 +39,7 @@ services:
       TZ: Europe/Berlin
     command: redis-server --appendonly yes
     networks:
-      - habidat-user
+      - habidat-user-dev
 
   mailhog:
     image: mailhog/mailhog
@@ -46,32 +47,41 @@ services:
       - "1025:1025"
       - "8025:8025"
     networks:
-      - habidat-user
+      - habidat-user-dev
 
   auth-web:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
+    container_name: ${DOCKER_PREFIX}-user-dev
     ports:
       - "3000:3000"
-    env_file:
-      - .env
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@db:5432/habidat_auth
       REDIS_URL: redis://redis:6379
-      APP_URL: https://auth.habidat.local
-      NEXT_PUBLIC_APP_URL: https://auth.habidat.local
+      APP_URL: https://user.${DOMAIN}
+      NEXT_PUBLIC_APP_URL: https://user.${DOMAIN}
       HOSTNAME: 0.0.0.0
-      VIRTUAL_HOST: auth.habidat.local
-      LETSENCRYPT_HOST: auth.habidat.local
-      CERT_NAME: habidat.local
+      VIRTUAL_HOST: user.${DOMAIN}
+      LETSENCRYPT_HOST: user.${DOMAIN}
+      CERT_NAME: ${DOMAIN}
+      SESSION_SECRET: ${SESSION_SECRET}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       LDAP_URL: ldap://ldap:389
-      TRUSTED_ORIGINS: "*.habidat.local"
+      TRUSTED_ORIGINS: https://*.${DOMAIN},http://*.${DOMAIN}
+      DISCOURSE_URL: http://${DOCKER_PREFIX}-discourse:80
+      DISCOURSE_API_KEY: ${DISCOURSE_API_KEY:-}
+      DISCOURSE_API_USERNAME: system
+      DISCOURSE_SSO_SECRET: ${DISCOURSE_SSO_SECRET:-}
+      SAML_PRIVATE_KEY: ${SAML_PRIVATE_KEY:-}
+      SAML_CERTIFICATE: ${SAML_CERTIFICATE:-}
       TZ: Europe/Berlin
     volumes:
       - .:/app
-      - /home/florian/sources/habidat-setup/store/auth/cert/saml:/app/saml
+      - ${HABIDAT_STORE_DIR}/auth/cert/saml:/app/saml
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -79,24 +89,32 @@ services:
     networks:
       - habidat-backend
       - habidat-proxy
-      - habidat-user
+      - habidat-user-dev
 
   auth-worker:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
-    env_file:
-      - .env
+    container_name: ${DOCKER_PREFIX}-user-worker-dev
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@db:5432/habidat_auth
       REDIS_URL: redis://redis:6379
-      APP_URL: https://auth.habidat.local
+      APP_URL: https://auth.${DOMAIN}
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
       SMTP_SECURE: "false"
-      SMTP_FROM: dev@habidat.local
+      SMTP_FROM: dev@${DOMAIN}
       LDAP_URL: ldap://ldap:389
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
+      LDAP_BIND_PASSWORD: ${LDAP_BIND_PASSWORD}
+      LDAP_USERS_DN: ou=users,${LDAP_BASE_DN}
+      LDAP_GROUPS_DN: ou=groups,${LDAP_BASE_DN}
+      DISCOURSE_URL: http://${DOCKER_PREFIX}-discourse:80
+      DISCOURSE_API_KEY: ${DISCOURSE_API_KEY:-}
+      DISCOURSE_API_USERNAME: system
+      DISCOURSE_SSO_SECRET: ${DISCOURSE_SSO_SECRET:-}
       TZ: Europe/Berlin
     depends_on:
       db: { condition: service_healthy }
@@ -107,7 +125,7 @@ services:
       - .:/app
     networks:
       - habidat-backend
-      - habidat-user
+      - habidat-user-dev
 
 volumes:
   postgres_data_dev:
@@ -116,8 +134,8 @@ volumes:
 networks:
   habidat-backend:
     external: true
-    name: habidat-backend
+    name: ${DOCKER_PREFIX}-backend
   habidat-proxy:
     external: true
-    name: habidat-proxy
-  habidat-user:
+    name: ${DOCKER_PREFIX}-proxy
+  habidat-user-dev:

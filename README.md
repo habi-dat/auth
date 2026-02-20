@@ -7,7 +7,7 @@ User management and identity provider for habidat groupware.
 This is a monorepo containing:
 
 - `apps/web` - Next.js 15 web application
-- `apps/worker` - BullMQ worker for background jobs (coming soon)
+- `apps/worker` - BullMQ worker for background jobs
 - `packages/db` - Prisma database schema and client
 - `packages/env` - Environment variable validation
 - `packages/typescript-config` - Shared TypeScript configurations
@@ -17,60 +17,87 @@ This is a monorepo containing:
 - Node.js 20+
 - pnpm 9+
 - Docker & Docker Compose
+- A local clone of `soudis/habidat-setup`
 
-## Getting Started
+## Development setup (with habidat-setup)
 
-### 1. Install dependencies
+This project is designed to run against a local `habidat-setup` instance so auth can integrate with LDAP, Nextcloud and Discourse.
+
+### 1. Checkout and install habidat-setup
+
+```bash
+git clone https://github.com/soudis/habidat-setup.git
+cd habidat-setup
+```
+
+Follow the `habidat-setup` installation guide, then install at least these modules:
+
+- `nginx`
+- `auth`
+- `nextcloud`
+- `discourse`
+
+Example:
+
+```bash
+./habidat.sh install nginx
+./habidat.sh install auth
+./habidat.sh install nextcloud
+./habidat.sh install discourse
+```
+
+If you want to test with data from an existing habidat instance, run 
+
+
+```bash
+./habidat.sh export auth
+```
+
+on the instance and download the exported file to the `HABIDAT_BACKUP_DIR/habidat/auth` folder. Then run
+
+```bash
+./habdiat.sh import auth <filename>
+```
+
+IMPORTANT: Make sure to use the same `HABIDAT_LDAP_DOMAIN` and `HABIDAT_LDAP_BASE` parameters in your `setup.env` as on the source system of the data. 
+
+### 2. Prepare habidat-auth env
+
+```bash
+cd /path/to/habidat-auth
+cp .env.example .env
+```
+
+Copy relevant values from `habidat-setup/store/auth/auth.env` (or legacy `store/auth/user.env` where needed) into `.env`, especially:
+
+- `DOCKER_PREFIX`,
+- `DOMAIN`,
+- `ADMIN_EMAIL`, 
+- `ADMIN_PASSWORD`
+- `LDAP_BASE_DN`, 
+- `LDAP_BIND_PASSWORD`
+- `DISCOURSE_SSO_SECRET`
+- `DISCOURSE_API_KEY`
+
+### 3. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### 2. Copy environment file
+### 4. Stop user container from habidat-setup
 
 ```bash
-cp .env.example .env
+docker stop DOCKER_PREFIX-user
 ```
 
-### 3. Start infrastructure services
+### 5. Start development docker container
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+pnpm dev
 ```
 
-This starts:
-- PostgreSQL (port 5432)
-- Redis (port 6379)
-- OpenLDAP (port 389)
-- Mailhog (ports 1025, 8025)
-
-### 4. Generate Prisma client and run migrations
-
-```bash
-pnpm db:generate
-pnpm db:push
-```
-
-### 5. Start development server
-
-```bash
-pnpm dev:web
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
-### Development with Docker (full stack)
-
-To run the whole dev environment in Docker (useful for connecting from other apps on the same host or network):
-
-```bash
-# Ensure .env exists with at least SESSION_SECRET and BETTER_AUTH_SECRET
-cp .env.example .env
-
-pnpm dev:docker
-```
-
-This starts PostgreSQL, Redis, Mailhog, the web app and the worker in one go. The app is at [http://localhost:3000](http://localhost:3000); Mailhog at [http://localhost:8025](http://localhost:8025). The schema is pushed to the DB on first start. The worker needs `LDAP_*` (and optionally `DISCOURSE_*`) in `.env`; SMTP is set to Mailhog automatically. Rebuild the image when you change dependencies (`docker compose -f docker/docker-compose.dev.yml up --build`).
+This starts the dev stack defined in `docker/docker-compose.dev.yml` (DB, Redis, Mailhog, web, worker) and connects to your local `habidat-setup` networks.
 
 ## Scripts
 
@@ -78,7 +105,7 @@ This starts PostgreSQL, Redis, Mailhog, the web app and the worker in one go. Th
 |---------|-------------|
 | `pnpm dev` | Start all apps in development mode |
 | `pnpm dev:web` | Start web app only |
-| `pnpm dev:docker` | Run full dev stack in Docker (db, redis, mailhog, web) |
+| `pnpm dev:docker` | Run full dev stack in Docker (db, redis, mailhog, web, worker) |
 | `pnpm build` | Build all packages and apps |
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm lint` | Run Biome linter |
