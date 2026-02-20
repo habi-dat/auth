@@ -42,16 +42,16 @@
   "auth": {
     "login": {
       "title": "Sign In",
-      "description": "Enter your email and password to sign in",
-      "email": "Email",
-      "emailPlaceholder": "name@example.com",
+      "description": "Enter your username or email and password to sign in",
+      "identity": "Username or Email",
       "password": "Password",
       "forgotPassword": "Forgot password?",
       "submit": "Sign In",
       "noAccount": "Don't have an account?",
       "register": "Register",
       "failed": "Login failed",
-      "invalidCredentials": "Email or password is incorrect."
+      "invalidCredentials": "Username/email or password is incorrect.",
+      "nameSuggestion": "Login by name is no longer supported. Did you mean: {usernames}?"
     },
     "register": {
       "title": "Register",
@@ -105,6 +105,7 @@
     },
     "validation": {
       "emailInvalid": "Please enter a valid email address",
+      "identityRequired": "Please enter your username or email",
       "passwordRequired": "Please enter your password",
       "nameMin": "Name must be at least 3 characters long",
       "nameRegex": "Name must not contain any of the following characters: \"(),=<>",

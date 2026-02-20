@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
+import { resolveLoginEmail } from '@/lib/actions/auth-actions'
 
 interface LoginFormProps {
   platformName?: string
@@ -25,7 +26,7 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
   const tCommon = useTranslations('common')
 
   const loginSchema = z.object({
-    email: z.string().email(tVal('emailInvalid')),
+    identity: z.string().min(1, tVal('identityRequired')),
     password: z.string().min(1, tVal('passwordRequired')),
   })
 
@@ -53,8 +54,27 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true)
     try {
+      let email = data.identity.trim()
+      console.log('email', email)
+      if (!email.includes('@')) {
+        const result = await resolveLoginEmail(email)
+        if (result.email) {
+          email = result.email
+        } else {
+          const suggestions = 'suggestedUsernames' in result ? result.suggestedUsernames : undefined
+          toast({
+            variant: 'destructive',
+            title: t('failed'),
+            description: suggestions?.length
+              ? t('nameSuggestion', { usernames: suggestions.join(', ') })
+              : t('invalidCredentials'),
+          })
+          return
+        }
+      }
+
       const result = await signIn.email({
-        email: data.email,
+        email,
         password: data.password,
       })
 
@@ -108,19 +128,18 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-foreground/90">
-            {t('email')}
+          <Label htmlFor="identity" className="text-foreground/90">
+            {t('identity')}
           </Label>
           <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder={t('emailPlaceholder')}
-            {...register('email')}
+            id="identity"
+            type="text"
+            autoComplete="username"
+            {...register('identity')}
             disabled={isLoading}
             className="h-11"
           />
-          {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
+          {errors.identity && <p className="text-destructive text-sm">{errors.identity.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password" className="text-foreground/90">

@@ -42,16 +42,16 @@
   "auth": {
     "login": {
       "title": "Anmelden",
-      "description": "Gib deine E-Mail und dein Passwort ein, um dich anzumelden",
-      "email": "E-Mail",
-      "emailPlaceholder": "name@beispiel.de",
+      "description": "Gib deinen Benutzernamen oder deine E-Mail und dein Passwort ein",
+      "identity": "Benutzername oder E-Mail",
       "password": "Passwort",
       "forgotPassword": "Passwort vergessen?",
       "submit": "Anmelden",
       "noAccount": "Noch kein Konto?",
       "register": "Registrieren",
       "failed": "Anmeldung fehlgeschlagen",
-      "invalidCredentials": "E-Mail oder Passwort ist falsch."
+      "invalidCredentials": "Benutzername/E-Mail oder Passwort ist falsch.",
+      "nameSuggestion": "Anmeldung mit dem Namen wird nicht mehr unterstützt. Meintest du: {usernames}?"
     },
     "register": {
       "title": "Registrieren",
@@ -105,6 +105,7 @@
     },
     "validation": {
       "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
+      "identityRequired": "Bitte gib deinen Benutzernamen oder deine E-Mail ein",
       "passwordRequired": "Bitte gib dein Passwort ein",
       "nameMin": "Name muss mindestens 3 Zeichen haben",
       "nameRegex": "Name darf keine der folgenden Zeichen enthalten: \"(),=<>",
