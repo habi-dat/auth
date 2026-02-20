@@ -36,8 +36,9 @@ RUN adduser --system --uid 1001 worker
 # pnpm deploy output: worker files + production node_modules
 COPY --from=installer --chown=worker:nodejs /app/deploy .
 
-# Prisma init: schema, migrations, seed, generated client
+# Prisma init: config, schema, migrations, seed, generated client
 # (docker-compose runs: cd /app/packages/db && npx prisma migrate deploy && npx prisma db seed)
+COPY --from=installer --chown=worker:nodejs /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
 COPY --from=installer --chown=worker:nodejs /app/packages/db/prisma ./packages/db/prisma
 COPY --from=installer --chown=worker:nodejs /app/packages/db/generated ./packages/db/generated
 COPY --from=installer --chown=worker:nodejs /app/packages/db/package.json ./packages/db/package.json
