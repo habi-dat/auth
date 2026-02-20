@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 import { acceptInviteAction, getInviteByToken } from '@/lib/actions/invite-actions'
+import { slugify } from '@/lib/utils'
 
 export default function AcceptInvitePage() {
   const t = useTranslations('acceptInvite')
@@ -25,6 +26,7 @@ export default function AcceptInvitePage() {
   const { toast } = useToast()
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
+  const usernameManuallyEdited = useRef(false)
   const [password, setPassword] = useState('')
   const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null)
   const [inviteGroups, setInviteGroups] = useState<{ id: string; name: string; slug: string }[]>([])
@@ -95,7 +97,12 @@ export default function AcceptInvitePage() {
               <Input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  if (!usernameManuallyEdited.current) {
+                    setUsername(slugify(e.target.value))
+                  }
+                }}
                 required
                 minLength={3}
               />
@@ -105,7 +112,10 @@ export default function AcceptInvitePage() {
               <Input
                 id="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  usernameManuallyEdited.current = true
+                  setUsername(e.target.value)
+                }}
                 required
                 minLength={3}
                 pattern="^[a-zA-Z0-9_-]+$"

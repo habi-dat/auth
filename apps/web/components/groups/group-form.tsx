@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { GroupSelector } from '@/components/groups/group-selector'
@@ -21,6 +21,7 @@ import {
   updateGroupAction,
 } from '@/lib/actions/group-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
+import { slugify } from '@/lib/utils'
 
 interface Group {
   id: string
@@ -50,6 +51,7 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!group
+  const slugManuallyEdited = useRef(false)
 
   const createGroupSchema = z.object({
     name: z.string().min(3, tVal('nameMin')),
@@ -172,7 +174,17 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">{t('name')}</Label>
-            <Input id="name" {...register('name')} disabled={isLoading || isSystemGroup} />
+            <Input
+              id="name"
+              {...register('name', {
+                onChange: (e) => {
+                  if (!isEditing && !slugManuallyEdited.current) {
+                    setValue('slug' as keyof (CreateGroupForm | UpdateGroupForm), slugify(e.target.value))
+                  }
+                },
+              })}
+              disabled={isLoading || isSystemGroup}
+            />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
@@ -181,7 +193,9 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
               <Label htmlFor="slug">{t('slugLabel')}</Label>
               <Input
                 id="slug"
-                {...register('slug' as keyof (CreateGroupForm | UpdateGroupForm))}
+                {...register('slug' as keyof (CreateGroupForm | UpdateGroupForm), {
+                  onChange: () => { slugManuallyEdited.current = true },
+                })}
                 disabled={isLoading}
                 placeholder={t('slugPlaceholder')}
               />

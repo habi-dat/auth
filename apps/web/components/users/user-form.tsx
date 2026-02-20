@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { createUserAction, deleteUserAction, updateUserAction } from '@/lib/actions/user-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
+import { slugify } from '@/lib/utils'
 
 interface GroupWithSlug {
   id: string
@@ -58,6 +59,7 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const isEditing = !!user
+  const usernameManuallyEdited = useRef(false)
 
   const nameRegex = /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/
 
@@ -247,7 +249,17 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">{t('name')}</Label>
-              <Input id="name" {...register('name')} disabled={isLoading || profileFieldsDisabled} />
+              <Input
+                id="name"
+                {...register('name', {
+                  onChange: (e) => {
+                    if (!isEditing && !usernameManuallyEdited.current) {
+                      setValue('username' as keyof (CreateUserForm | UpdateUserForm), slugify(e.target.value))
+                    }
+                  },
+                })}
+                disabled={isLoading || profileFieldsDisabled}
+              />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
 
@@ -256,7 +268,9 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
                 <Label htmlFor="username">{t('username')}</Label>
                 <Input
                   id="username"
-                  {...register('username' as keyof (CreateUserForm | UpdateUserForm))}
+                  {...register('username' as keyof (CreateUserForm | UpdateUserForm), {
+                    onChange: () => { usernameManuallyEdited.current = true },
+                  })}
                   disabled={isLoading}
                 />
                 {'username' in errors && errors.username && (

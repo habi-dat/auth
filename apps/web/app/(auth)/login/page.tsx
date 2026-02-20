@@ -28,7 +28,7 @@ export default async function LoginPage() {
           />
         </div>
       ) : null}
-      <div className="relative w-full rounded-2xl border border-border/80 bg-card/95 p-8 shadow-xl shadow-black/5 dark:shadow-black/20 ring-1 ring-black/5 dark:ring-white/5 backdrop-blur-sm overflow-hidden">
+      <div className="relative w-full rounded-xl border border-border/80 bg-card/95 p-8 shadow-xl shadow-black/5 dark:shadow-black/20 ring-1 ring-black/5 dark:ring-white/5 backdrop-blur-sm overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/8 via-transparent to-transparent"
           aria-hidden

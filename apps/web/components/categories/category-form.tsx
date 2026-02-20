@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { GroupSelector } from '@/components/groups/group-selector'
@@ -20,6 +20,7 @@ import {
   deleteCategoryAction,
   updateCategoryAction,
 } from '@/lib/actions/category-actions'
+import { slugify } from '@/lib/utils'
 
 const categoryFormSchema = z.object({
   name: z.string().min(1),
@@ -52,6 +53,7 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
   const router = useRouter()
   const { toast } = useToast()
   const isEditing = !!category
+  const slugManuallyEdited = useRef(isEditing)
 
   const parentOptions = categories.filter((c) => !isEditing || c.id !== category?.id)
 
@@ -168,14 +170,30 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t('name')}</Label>
-              <Input id="name" {...form.register('name')} placeholder={t('namePlaceholder')} />
+              <Input
+                id="name"
+                {...form.register('name', {
+                  onChange: (e) => {
+                    if (!slugManuallyEdited.current) {
+                      form.setValue('slug', slugify(e.target.value))
+                    }
+                  },
+                })}
+                placeholder={t('namePlaceholder')}
+              />
               {form.formState.errors.name && (
                 <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="slug">{t('slug')}</Label>
-              <Input id="slug" {...form.register('slug')} placeholder={t('slugPlaceholder')} />
+              <Input
+                id="slug"
+                {...form.register('slug', {
+                  onChange: () => { slugManuallyEdited.current = true },
+                })}
+                placeholder={t('slugPlaceholder')}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

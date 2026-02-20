@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { GroupSelector } from '@/components/groups/group-selector'
@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast'
 import type { getApps } from '@/lib/actions/app-actions'
 import { createAppAction, deleteAppAction, updateAppAction } from '@/lib/actions/app-actions'
 import { removeAppImageAction, uploadAppImageAction } from '@/lib/actions/upload-app-image-action'
+import { slugify } from '@/lib/utils'
 
 type AppRow = Awaited<ReturnType<typeof getApps>>[number]
 
@@ -70,6 +71,7 @@ export function AppForm({ app, allGroups }: AppFormProps) {
   const [iconVersion, setIconVersion] = useState(0)
   const [logoVersion, setLogoVersion] = useState(0)
   const isEditing = !!app
+  const slugManuallyEdited = useRef(isEditing)
 
   const createAction = useAction(createAppAction, {
     onError: ({ error }) => {
@@ -302,7 +304,13 @@ export function AppForm({ app, allGroups }: AppFormProps) {
               <Label htmlFor="name">{t('name')}</Label>
               <Input
                 id="name"
-                {...form.register('name')}
+                {...form.register('name', {
+                  onChange: (e) => {
+                    if (!slugManuallyEdited.current) {
+                      form.setValue('slug', slugify(e.target.value))
+                    }
+                  },
+                })}
                 disabled={isExecuting}
                 placeholder="Meine App"
               />
@@ -314,7 +322,9 @@ export function AppForm({ app, allGroups }: AppFormProps) {
               <Label htmlFor="slug">{t('slug')}</Label>
               <Input
                 id="slug"
-                {...form.register('slug')}
+                {...form.register('slug', {
+                  onChange: () => { slugManuallyEdited.current = true },
+                })}
                 disabled={isEditing || isExecuting}
                 placeholder={t('slugPlaceholder')}
               />

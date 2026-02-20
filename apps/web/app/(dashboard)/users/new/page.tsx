@@ -10,7 +10,7 @@ export default async function NewUserPage() {
   const groups = await getGroupsForSelect()
 
   return (
-    <FormPageLayout backHref="/users" title={t('newUser')}>
+    <FormPageLayout backHref="/users" title={t('form.titleCreate')}>
       <UserForm groups={groups} isAdmin={session.isAdmin} />
     </FormPageLayout>
   )
