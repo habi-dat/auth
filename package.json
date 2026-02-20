@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "dev:web": "pnpm --filter @habidat/web dev",
+    "dev:worker": "pnpm --filter @habidat/worker dev",
     "dev:docker": "docker compose -f docker/docker-compose.dev.yml --project-directory . -p habidat-auth",
     "dev": "docker compose -f docker/docker-compose.dev.yml --project-directory . -p habidat-auth up --no-attach db --no-attach redis --no-attach mailhog",
     "build": "turbo build",
@@ -26,6 +28,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.0.0"
   }
 }

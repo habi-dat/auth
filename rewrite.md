@@ -405,7 +405,7 @@ packages:
   },
   "packageManager": "pnpm@9.12.0",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   }
 }
 ```
@@ -5470,7 +5470,7 @@ volumes:
 
 ```dockerfile
 # docker/web.Dockerfile
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 
@@ -5516,7 +5516,7 @@ CMD ["node", "apps/web/server.js"]
 
 ```dockerfile
 # docker/worker.Dockerfile
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 
@@ -5794,7 +5794,7 @@ APP_URL="https://auth.example.com"
   "devDependencies": {
     "typescript": "^5.0.0",
     "prisma": "^6.0.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@biomejs/biome": "^1.0.0",
     "tailwindcss": "^4.0.0",

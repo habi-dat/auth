@@ -78,11 +78,12 @@ export function Header({ user }: HeaderProps) {
       <div className="flex items-center justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar>
+            <Button variant="ghost" className="relative h-10 gap-2 rounded-full px-2">
+              <Avatar className="h-8 w-8">
                 <AvatarImage src={user.image || undefined} alt={user.name} />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
+              <span className="max-w-[8rem] truncate text-sm font-medium">{user.name}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
