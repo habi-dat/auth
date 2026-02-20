@@ -39,8 +39,8 @@ jobs:
             habidat/auth:${{ github.event.release.tag_name }}
             habidat/auth:2
           labels: ${{ steps.meta_web.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=habidat-auth-web
+          cache-to: type=gha,scope=habidat-auth-web,mode=max
 
       - name: Extract metadata (tags, labels) for Worker
         id: meta_worker
@@ -58,5 +58,5 @@ jobs:
             habidat/auth-worker:${{ github.event.release.tag_name }}
             habidat/auth-worker:2
           labels: ${{ steps.meta_worker.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=habidat-auth-worker
+          cache-to: type=gha,scope=habidat-auth-worker,mode=max
