@@ -94,7 +94,7 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
       {/* Title / intro inside card */}
       <div className="flex flex-col items-center gap-5 text-center">
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground px-12 sm:text-3xl">
             {displayName}
           </h1>
           {loginPageText?.trim() ? (

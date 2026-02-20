@@ -85,7 +85,7 @@ function AppCard({ app, variant }: { app: App; variant: 'main' | 'compact' }) {
         className={cn(
           'h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2',
           variant === 'main'
-            ? 'border-primary/20 bg-linear-to-b from-card to-primary/5 hover:border-primary/50'
+            ? 'border-primary/20 hover:border-primary/50'
             : 'hover:border-primary/30'
         )}
       >

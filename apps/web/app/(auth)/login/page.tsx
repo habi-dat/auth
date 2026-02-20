@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { LoginForm } from '@/components/auth/login-form'
 import { getGeneralSettings } from '@/lib/settings/general'
+import { cn } from '@/lib/utils'
 
 export default async function LoginPage() {
   const settings = await getGeneralSettings().catch(() => ({
@@ -16,23 +17,21 @@ export default async function LoginPage() {
       : settings.logoUrl
 
   return (
-    <div className="flex w-full max-w-sm mx-auto flex-col items-center">
+    <div
+      className={cn('relative w-full max-w-sm mx-auto overflow-visible', logoSrc && 'pt-16 pl-12')}
+    >
       {logoSrc ? (
-        <div className="flex h-32 shrink-0 items-center justify-center overflow-hidden">
+        <div className="absolute top-6 -left-3 z-10 h-32 w-32 drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
           <Image
             src={logoSrc}
             alt=""
             className="h-full w-full object-contain"
-            width={256}
-            height={256}
+            width={128}
+            height={128}
           />
         </div>
       ) : null}
-      <div className="relative w-full rounded-xl border border-border/80 bg-card/95 p-8 shadow-xl shadow-black/5 dark:shadow-black/20 ring-1 ring-black/5 dark:ring-white/5 backdrop-blur-sm overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/8 via-transparent to-transparent"
-          aria-hidden
-        />
+      <div className="relative w-full rounded-xl border border-border/60 bg-card p-8 shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
         <LoginForm platformName={settings.platformName} loginPageText={settings.loginPageText} />
       </div>
     </div>
