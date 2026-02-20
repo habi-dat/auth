@@ -24,17 +24,26 @@ COPY turbo.json turbo.json
 
 RUN pnpm turbo build --filter=@habidat/worker...
 
+# Production-only deployment (includes prisma + tsx since they are regular deps now)
+RUN pnpm deploy --filter=@habidat/worker --prod /app/deploy
+
 FROM base AS runner
 WORKDIR /app
 
-# Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 worker
 
-COPY --from=installer --chown=worker:nodejs /app .
+# pnpm deploy output: worker files + production node_modules
+COPY --from=installer --chown=worker:nodejs /app/deploy .
+
+# Prisma init: schema, migrations, seed, generated client
+# (docker-compose runs: cd /app/packages/db && npx prisma migrate deploy && npx prisma db seed)
+COPY --from=installer --chown=worker:nodejs /app/packages/db/prisma ./packages/db/prisma
+COPY --from=installer --chown=worker:nodejs /app/packages/db/generated ./packages/db/generated
+COPY --from=installer --chown=worker:nodejs /app/packages/db/package.json ./packages/db/package.json
 
 RUN mkdir -p /app/import && chown worker:nodejs /app/import
 
 USER worker
 
-CMD ["node", "apps/worker/dist/index.js"]
+CMD ["node", "dist/index.js"]

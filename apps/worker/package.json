@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsup",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/"
@@ -17,12 +17,14 @@
     "@habidat/ldap": "workspace:*",
     "@habidat/sync": "workspace:*",
     "bullmq": "^5.34.5",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "prisma": "^7.3.0",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
     "@types/node": "^22.13.4",
-    "tsx": "^4.19.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.7.3"
   }
 }
