@@ -20,7 +20,7 @@ node_modules/
 # Build outputs
 dist/
 build/
-.next/
+**/.next
 out/
 
 # Uploaded assets (logo etc.)
