@@ -11,7 +11,6 @@ FROM base AS installer
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -32,4 +31,4 @@ USER worker
 
 COPY --from=installer --chown=worker:nodejs /app .
 
-CMD node apps/worker/dist/index.js
+CMD ["node", "apps/worker/dist/index.js"]

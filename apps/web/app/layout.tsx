@@ -12,6 +12,9 @@ const inter = Inter({ subsets: ['latin'] })
 const defaultTitle = 'habidat auth'
 const defaultDescription = 'User management and identity provider'
 
+// Disable static generation at build time (no DATABASE_URL/env needed in Docker build)
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const settings = await getGeneralSettings()

@@ -48,11 +48,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   id: z.string(),
-  name: z
-    .string()
-    .min(3)
-    .regex(NAME_REGEX)
-    .optional(),
+  name: z.string().min(3).regex(NAME_REGEX).optional(),
   email: z.email().optional(),
   location: z.string().min(1).optional().nullable(),
   preferredLanguage: z.string().optional(),
@@ -63,10 +59,7 @@ const updateUserSchema = z.object({
 })
 
 const updateProfileSchema = z.object({
-  name: z
-    .string()
-    .min(3)
-    .regex(NAME_REGEX),
+  name: z.string().min(3).regex(NAME_REGEX),
   location: z.string().min(1).optional().nullable(),
   preferredLanguage: z.string(),
   preferredColorMode: z.enum(['light', 'dark', 'system']).optional().nullable(),
@@ -270,7 +263,9 @@ export const updateUserAction = groupAdminAction
     const existingUser = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.id },
       include: {
-        memberships: { include: { group: { select: { id: true, slug: true, isSystem: true } } } },
+        memberships: {
+          include: { group: { select: { id: true, slug: true, isSystem: true, name: true } } },
+        },
         ownerships: true,
       },
     })
@@ -307,9 +302,7 @@ export const updateUserAction = groupAdminAction
     const primaryGroupId = parsedInput.primaryGroupId
 
     // Managed group IDs for the acting user (used to scope group admin changes)
-    const managedGroupIds = isActorAdmin
-      ? null
-      : new Set(session.ownerships.map((o) => o.groupId))
+    const managedGroupIds = isActorAdmin ? null : new Set(session.ownerships.map((o) => o.groupId))
 
     const beforeGroupIds = [
       ...new Set([
@@ -620,7 +613,9 @@ export const deleteUserAction = groupAdminAction
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: parsedInput.userId },
       include: {
-        memberships: { include: { group: { select: { id: true, slug: true, name: true, isSystem: true } } } },
+        memberships: {
+          include: { group: { select: { id: true, slug: true, name: true, isSystem: true } } },
+        },
         ownerships: true,
       },
     })

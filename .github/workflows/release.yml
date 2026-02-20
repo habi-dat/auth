@@ -37,7 +37,7 @@ jobs:
           push: true
           tags: |
             habidat/auth:${{ github.event.release.tag_name }}
-            habidat/auth:latest
+            habidat/auth:2
           labels: ${{ steps.meta_web.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -56,7 +56,7 @@ jobs:
           push: true
           tags: |
             habidat/auth-worker:${{ github.event.release.tag_name }}
-            habidat/auth-worker:latest
+            habidat/auth-worker:2
           labels: ${{ steps.meta_worker.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
