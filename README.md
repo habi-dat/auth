@@ -118,7 +118,7 @@ script.onerror = function() {
 };
 
 document.head.appendChild(script);
-``
+```
 
 ## Scripts
 
