@@ -169,7 +169,6 @@ export class DiscourseService {
 
   async unsuspendUser(userId: number): Promise<void> {
     try {
-      console.log(`Unsuspending Discourse user (id: ${userId})`)
       await this.request(`/admin/users/${userId}/unsuspend.json`, {
         method: 'PUT',
       })

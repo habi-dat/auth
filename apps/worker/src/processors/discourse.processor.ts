@@ -29,7 +29,15 @@ export function createDiscourseProcessor(
     try {
       if (event.entityType === 'USER') {
         if (event.operation === 'DELETE') {
-          await handleDeleteUser(discourse, event.payload as { username: string })
+          await handleDeleteUser(
+            discourse,
+            event.payload as {
+              username: string
+              userId: string
+              name: string
+              email: string
+            }
+          )
         } else {
           await handleSyncUser(discourse, prisma, event.payload as { userId: string })
         }
@@ -176,13 +184,30 @@ async function handleSyncUser(
 
 async function handleDeleteUser(
   discourse: DiscourseService,
-  payload: { username: string }
+  payload: {
+    username: string
+    userId: string
+    name: string
+    email: string
+  }
 ): Promise<void> {
   const result = await discourse.deleteUser(payload.username)
   if (result.notFound) {
     console.log(`[Discourse] User ${payload.username} not found for deletion`)
   } else if (result.suspended) {
     console.log(`[Discourse] User ${payload.username} has posts, suspended instead of deleted`)
+    if (payload.userId) {
+      // Sync the user via SSO to free up the username
+      await discourse.syncUserViaSso({
+        externalId: payload.userId,
+        email: payload.email,
+        username: payload.userId,
+        name: payload.name,
+      })
+      console.log(
+        `[Discourse] Renamed suspended user ${payload.username} to ${payload.userId} to free up username`
+      )
+    }
   } else if (result.deleted) {
     console.log(`[Discourse] User ${payload.username} successfully deleted`)
   }

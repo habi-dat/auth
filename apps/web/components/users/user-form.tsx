@@ -430,7 +430,9 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
           description={user ? t('deleteConfirm.description', { name: user.name }) : ''}
           confirmLabel={t('delete')}
           cancelLabel={tCommon('cancel')}
-          onConfirm={() => deleteAction.execute({ userId: user!.id })}
+          onConfirm={() =>
+            deleteAction.executeAsync({ userId: user!.id }).then(() => router.push('/users'))
+          }
           isPending={deleteAction.isPending}
         />
       )}

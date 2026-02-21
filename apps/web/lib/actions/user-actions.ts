@@ -636,7 +636,7 @@ export const deleteUserAction = groupAdminAction
         operation: 'DELETE',
         entityType: 'USER',
         entityId: user.id,
-        payload: { username: user.username },
+        payload: { username: user.username, userId: user.id, name: user.name, email: user.email },
       })
       await tx.user.delete({ where: { id: user.id } })
       return { ldapSyncEventId: syncEvent.id, discourseSyncEventId: discourseEv.id }
