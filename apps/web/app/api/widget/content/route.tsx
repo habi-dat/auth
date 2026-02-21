@@ -54,10 +54,10 @@ function renderWidgetHtml(apps: AppInfo[], logoUrl?: string | null, title?: stri
             .join('')}
         </ul>
       </div>
-      <button type="button" class="menu-button" id="habidat-menu-button" aria-label="Toggle App Menu">
+      <button type="button" class="menu-button ${absoluteLogoUrl ? 'has-logo' : ''}" id="habidat-menu-button" aria-label="Toggle App Menu">
         ${
           absoluteLogoUrl
-            ? `<img src="${absoluteLogoUrl}" alt="Menu" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`
+            ? `<img src="${absoluteLogoUrl}" alt="Menu" />`
             : `<svg viewBox="0 0 24 24" aria-hidden="true">
                 <title>Toggle App Menu</title>
                 <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
@@ -155,10 +155,32 @@ export async function GET() {
         height: 28px;
         fill: currentColor;
       }
+      
+      .menu-button.has-logo {
+        background-color: transparent;
+        box-shadow: none;
+        width: 112px;
+        height: 112px;
+        border-radius: 0;
+        padding: 0;
+      }
+
+      .menu-button.has-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .menu-button.has-logo img {
+          filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+        }
+      }
 
       .app-menu {
         position: absolute;
-        bottom: 72px;
+        bottom: calc(100% + 16px);
         right: 0;
         background: var(--bg);
         border: 1px solid var(--border);
