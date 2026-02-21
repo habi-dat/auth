@@ -90,11 +90,19 @@ export class DiscourseService {
     return createHmac('sha256', this.config.ssoSecret).update(payload).digest('hex')
   }
 
-  async deleteUser(username: string): Promise<void> {
+  async deleteUser(
+    username: string
+  ): Promise<{ deleted?: boolean; suspended?: boolean; notFound?: boolean }> {
+    let user: { user: { id: number } }
     try {
-      const user = await this.request<{ user: { id: number } }>(
-        `/u/${encodeURIComponent(username)}.json`
-      )
+      user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('404')) return { notFound: true }
+      throw err
+    }
+
+    try {
       await this.request(`/admin/users/${user.user.id}.json`, {
         method: 'DELETE',
         body: JSON.stringify({
@@ -104,26 +112,45 @@ export class DiscourseService {
           block_ip: false,
         }),
       })
+      return { deleted: true }
     } catch {
       try {
-        await this.suspendUser(username)
+        await this.request(`/admin/users/${user.user.id}/suspend.json`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            suspend_until: '3018-01-01',
+            reason: 'Account deleted from habidat-auth',
+          }),
+        })
+        return { suspended: true }
       } catch (e) {
         console.warn(`Could not delete or suspend Discourse user ${username}:`, e)
+        throw e
       }
     }
   }
 
-  private async suspendUser(username: string): Promise<void> {
-    const user = await this.request<{ user: { id: number } }>(
-      `/u/${encodeURIComponent(username)}.json`
-    )
-    await this.request(`/admin/users/${user.user.id}/suspend.json`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        suspend_until: '3018-01-01',
-        reason: 'Account deleted from habidat-auth',
-      }),
-    })
+  async unsuspendUser(username: string): Promise<void> {
+    let user: { user: { id: number } }
+    try {
+      user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('404')) return
+      throw err
+    }
+
+    try {
+      await this.request(`/admin/users/${user.user.id}/suspend.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          suspend_until: '2000-01-01',
+          reason: 'Unsuspended via habidat-auth',
+        }),
+      })
+    } catch (e) {
+      console.warn(`Could not unsuspend Discourse user ${username}:`, e)
+    }
   }
 
   /**

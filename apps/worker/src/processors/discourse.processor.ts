@@ -126,6 +126,9 @@ async function handleSyncUser(
     },
   })
 
+  // Ensure user is unsuspended in case they were previously logically deleted
+  await discourse.unsuspendUser(user.username)
+
   const groupSlugs = await getGroupSlugsForUser(prisma, user.id)
   const externalId = user.discourseId ?? user.username
   await discourse.syncUserViaSso({
@@ -151,7 +154,14 @@ async function handleDeleteUser(
   discourse: DiscourseService,
   payload: { username: string }
 ): Promise<void> {
-  await discourse.deleteUser(payload.username)
+  const result = await discourse.deleteUser(payload.username)
+  if (result.notFound) {
+    console.log(`[Discourse] User ${payload.username} not found for deletion`)
+  } else if (result.suspended) {
+    console.log(`[Discourse] User ${payload.username} has posts, suspended instead of deleted`)
+  } else if (result.deleted) {
+    console.log(`[Discourse] User ${payload.username} successfully deleted`)
+  }
 }
 
 async function handleSyncGroup(
