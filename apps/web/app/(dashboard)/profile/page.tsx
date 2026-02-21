@@ -2,6 +2,7 @@ import { requireUserWithGroups } from '@habidat/auth/session'
 import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { PageLayout } from '@/components/layout/page-layout'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,9 +23,10 @@ export default async function ProfilePage() {
     user.preferredLanguage === 'de' ? t('languageDe') : user.preferredLanguage || t('languageDe')
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
+    <PageLayout
+      title={t('title')}
+      className="max-w-2xl"
+      actions={
         <div className="flex gap-2">
           <Link href="/profile/edit">
             <Button variant="outline">
@@ -39,8 +41,8 @@ export default async function ProfilePage() {
             </Button>
           </Link>
         </div>
-      </div>
-
+      }
+    >
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -127,6 +129,6 @@ export default async function ProfilePage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   )
 }

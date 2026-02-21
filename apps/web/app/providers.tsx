@@ -1,5 +1,4 @@
 'use client'
-
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { NextIntlClientProvider } from 'next-intl'
 import { useState } from 'react'
@@ -30,7 +29,7 @@ export function Providers({
   )
 
   return (
-    <NextIntlClientProvider locale="de" messages={messages}>
+    <NextIntlClientProvider locale="de" timeZone="Europe/Berlin" messages={messages}>
       <QueryClientProvider client={queryClient}>
         <ThemeSchemeProvider themeColor={themeColor} initialColorMode={initialColorMode}>
           {children}

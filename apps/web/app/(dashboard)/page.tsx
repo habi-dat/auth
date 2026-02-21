@@ -3,6 +3,7 @@ import { ExternalLink, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { PageLayout } from '@/components/layout/page-layout'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { getUserApps } from '@/lib/actions/app-actions'
 import { getGeneralSettings } from '@/lib/settings/general'
@@ -26,14 +27,7 @@ export default async function HomePage() {
   const description = settings.dashboardDescription || t('description')
 
   return (
-    <div className="space-y-6 pb-12 max-w-7xl mx-auto">
-      <div className="relative overflow-hidden py-6 ">
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">{title}</h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">{description}</p>
-        </div>
-      </div>
-
+    <PageLayout title={title} description={description} className="pb-12">
       {apps.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-20 text-center text-muted-foreground">
@@ -70,7 +64,7 @@ export default async function HomePage() {
           )}
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }
 

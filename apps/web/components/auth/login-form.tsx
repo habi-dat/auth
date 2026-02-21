@@ -68,6 +68,7 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
             description: suggestions?.length
               ? t('nameSuggestion', { usernames: suggestions.join(', ') })
               : t('invalidCredentials'),
+            duration: 10000,
           })
           return
         }

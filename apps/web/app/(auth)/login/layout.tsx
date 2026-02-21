@@ -1,5 +1,5 @@
+import Image from 'next/image'
 import { getGeneralSettings } from '@/lib/settings/general'
-import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,8 +15,19 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       : settings.logoUrl
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4 py-12">
-      <div className={cn('relative w-full max-w-md', logoSrc && 'pt-16 pl-12')}>{children}</div>
-    </div>
+    <>
+      {logoSrc ? (
+        <div className="absolute top-6 -left-3 z-10 h-32 w-32 drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+          <Image
+            src={logoSrc}
+            alt=""
+            className="h-full w-full object-contain"
+            width={128}
+            height={128}
+          />
+        </div>
+      ) : null}
+      {children}
+    </>
   )
 }

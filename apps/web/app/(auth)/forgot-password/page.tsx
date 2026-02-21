@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <Card>
+      <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
             <CheckCircle className="h-12 w-12 text-green-500" />
@@ -93,10 +93,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card>
+    <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
-        <CardDescription>{t('description')}</CardDescription>
+        <CardTitle className="text-2xl font-bold  mx-8 text-center">{t('title')}</CardTitle>
+        <CardDescription className="mx-4 text-center">{t('description')}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">

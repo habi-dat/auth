@@ -51,7 +51,7 @@
       "register": "Registrieren",
       "failed": "Anmeldung fehlgeschlagen",
       "invalidCredentials": "Benutzername/E-Mail oder Passwort ist falsch.",
-      "nameSuggestion": "Anmeldung mit dem Namen wird nicht mehr unterstützt. Meintest du: {usernames}?"
+      "nameSuggestion": "Anmeldungen mit dem Anzeigenamen werden nicht mehr unterstützt. Benutze bitte den Benutzer*innennamen oder die E-mailadresse. Meintest du vielleicht: {usernames}?"
     },
     "register": {
       "title": "Registrieren",

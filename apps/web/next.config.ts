@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  allowedDevOrigins: ['http://localhost:3000', 'https://user.habidat.local'],
   images: {
     remotePatterns: [
       {

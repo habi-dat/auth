@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -81,13 +89,13 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4">
-      <div className="space-y-6 rounded-lg border bg-card p-6 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
-        </div>
+    <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
+        <CardDescription>{t('description')}</CardDescription>
+      </CardHeader>
 
+      <CardContent>
         {!token ? (
           <p className="text-destructive text-sm">{t('invalidOrExpired')}</p>
         ) : (
@@ -159,13 +167,15 @@ export default function AcceptInvitePage() {
             </Button>
           </form>
         )}
+      </CardContent>
 
+      <CardFooter className="flex justify-center border-t border-border/60 pt-6">
         <div className="text-center text-sm">
           <Link href="/login" className="text-primary hover:underline">
             {t('backToLogin')}
           </Link>
         </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }
