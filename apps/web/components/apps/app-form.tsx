@@ -323,7 +323,9 @@ export function AppForm({ app, allGroups }: AppFormProps) {
               <Input
                 id="slug"
                 {...form.register('slug', {
-                  onChange: () => { slugManuallyEdited.current = true },
+                  onChange: () => {
+                    slugManuallyEdited.current = true
+                  },
                 })}
                 disabled={isEditing || isExecuting}
                 placeholder={t('slugPlaceholder')}

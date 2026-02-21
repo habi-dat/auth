@@ -152,8 +152,7 @@ export async function renderPasswordResetEmail(params: {
   const config = mergeLocaleConfig(locale, 'passwordReset', configByLocale)
 
   const branding = await getEmailBranding()
-  const rawSubject =
-    params.subject ?? config.subject ?? template?.subject ?? 'Reset your password'
+  const rawSubject = params.subject ?? config.subject ?? template?.subject ?? 'Reset your password'
   const subject = rawSubject
     .replace(/\{\{?\s*platformName\s*\}\}?/gi, branding.platformName)
     .replace(/\{\{?\s*appUrl\s*\}\}?/gi, branding.appUrl)

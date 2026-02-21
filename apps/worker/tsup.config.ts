@@ -7,12 +7,5 @@ export default defineConfig({
   platform: 'node',
   clean: true,
   noExternal: [/@habidat\/.*/],
-  external: [
-    '@prisma/client',
-    '@prisma/adapter-pg',
-    'pg',
-    'bullmq',
-    'ioredis',
-    'ldapjs-client',
-  ],
+  external: ['@prisma/client', '@prisma/adapter-pg', 'pg', 'bullmq', 'ioredis', 'ldapjs-client'],
 })

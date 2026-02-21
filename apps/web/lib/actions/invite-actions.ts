@@ -271,10 +271,7 @@ const acceptInviteSchema = z.object({
   name: z
     .string()
     .min(3, 'Name must be at least 3 characters')
-    .regex(
-      /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/,
-      'Name must not contain "(),=<>'
-    ),
+    .regex(/^[^"(),=`<>]{2,}[^"(),=`<> ]+$/, 'Name must not contain "(),=<>'),
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')
@@ -328,8 +325,8 @@ export const acceptInviteAction = actionClient
         ? parsedInput.primaryGroupId
         : (invite.memberGroups[0]?.groupId ?? invite.ownerGroups[0]?.groupId ?? null)
 
-    const { user, ldapSyncEventId, discourseSyncEventId, discourseGroupSyncEventIds } =
-      await prisma.$transaction(async (tx) => {
+    const { user, ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(
+      async (tx) => {
         const newUser = await tx.user.create({
           data: {
             name: parsedInput.name,
@@ -381,40 +378,19 @@ export const acceptInviteAction = actionClient
           entityId: newUser.id,
           payload: { userId: newUser.id },
         })
-        const discourseGroupIds: string[] = []
-        const allGroupIds = [
-          ...new Set([
-            ...invite.memberGroups.map((mg) => mg.groupId),
-            ...invite.ownerGroups.map((og) => og.groupId),
-          ]),
-        ]
-        for (const groupId of allGroupIds) {
-          const ev = await createSyncEvent(tx, {
-            target: 'DISCOURSE',
-            operation: 'UPDATE',
-            entityType: 'GROUP',
-            entityId: groupId,
-            payload: { groupId },
-          })
-          discourseGroupIds.push(ev.id)
-        }
-
         await tx.invite.delete({ where: { id: invite.id } })
 
         return {
           user: newUser,
           ldapSyncEventId: ldapEv.id,
           discourseSyncEventId: discourseUserEv.id,
-          discourseGroupSyncEventIds: discourseGroupIds,
         }
-      })
+      }
+    )
 
     const { queueLdapSync, queueDiscourseSync } = await import('@habidat/sync')
     await queueLdapSync(ldapSyncEventId)
     await queueDiscourseSync(discourseSyncEventId)
-    for (const id of discourseGroupSyncEventIds) {
-      await queueDiscourseSync(id)
-    }
 
     await createAuditLog({
       actorId: user.id,

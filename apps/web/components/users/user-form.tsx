@@ -64,10 +64,7 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
   const nameRegex = /^[^"(),=`<>]{2,}[^"(),=`<> ]+$/
 
   const createUserSchema = z.object({
-    name: z
-      .string()
-      .min(3, tVal('nameMin'))
-      .regex(nameRegex, tVal('nameRegex')),
+    name: z.string().min(3, tVal('nameMin')).regex(nameRegex, tVal('nameRegex')),
     username: z
       .string()
       .min(3, tVal('usernameMin'))
@@ -84,10 +81,7 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
 
   const updateUserSchema = z.object({
     id: z.string(),
-    name: z
-      .string()
-      .min(3, tVal('nameMin'))
-      .regex(nameRegex, tVal('nameRegex')),
+    name: z.string().min(3, tVal('nameMin')).regex(nameRegex, tVal('nameRegex')),
     email: z.string().email(tVal('emailInvalid')),
     location: z.string().min(1, tVal('locationRequired')).optional().nullable(),
     preferredLanguage: z.string(),
@@ -254,7 +248,10 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
                 {...register('name', {
                   onChange: (e) => {
                     if (!isEditing && !usernameManuallyEdited.current) {
-                      setValue('username' as keyof (CreateUserForm | UpdateUserForm), slugify(e.target.value))
+                      setValue(
+                        'username' as keyof (CreateUserForm | UpdateUserForm),
+                        slugify(e.target.value)
+                      )
                     }
                   },
                 })}
@@ -269,7 +266,9 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
                 <Input
                   id="username"
                   {...register('username' as keyof (CreateUserForm | UpdateUserForm), {
-                    onChange: () => { usernameManuallyEdited.current = true },
+                    onChange: () => {
+                      usernameManuallyEdited.current = true
+                    },
                   })}
                   disabled={isLoading}
                 />
@@ -281,7 +280,12 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="email">{t('email')}</Label>
-              <Input id="email" type="email" {...register('email')} disabled={isLoading || profileFieldsDisabled} />
+              <Input
+                id="email"
+                type="email"
+                {...register('email')}
+                disabled={isLoading || profileFieldsDisabled}
+              />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
@@ -318,7 +322,11 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('location')}</Label>
-              <Input id="location" {...register('location')} disabled={isLoading || profileFieldsDisabled} />
+              <Input
+                id="location"
+                {...register('location')}
+                disabled={isLoading || profileFieldsDisabled}
+              />
             </div>
 
             <div className="space-y-2">

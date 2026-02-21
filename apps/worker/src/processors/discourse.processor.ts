@@ -78,20 +78,25 @@ export function createDiscourseProcessor(
  * Resolve group slugs for sync_sso: direct membership groups + all parent (ancestor) groups
  * so that Discourse sees the user in every group they belong to (including parent groups).
  */
-async function getGroupSlugsForUser(prisma: PrismaClient, userId: string): Promise<string[]> {
+async function getGroupSlugsForUser(
+  discourse: DiscourseService,
+  prisma: PrismaClient,
+  userId: string
+): Promise<string[]> {
   const memberships = await prisma.groupMembership.findMany({
     where: { userId },
     select: { groupId: true },
   })
   const slugs = new Set<string>()
   for (const m of memberships) {
-    const groupSlugs = await getGroupSlugAndAncestorSlugs(prisma, m.groupId)
+    const groupSlugs = await getGroupSlugAndAncestorSlugs(discourse, prisma, m.groupId)
     for (const s of groupSlugs) slugs.add(s)
   }
   return [...slugs]
 }
 
 async function getGroupSlugAndAncestorSlugs(
+  discourse: DiscourseService,
   prisma: PrismaClient,
   groupId: string,
   visited = new Set<string>()
@@ -100,15 +105,25 @@ async function getGroupSlugAndAncestorSlugs(
   visited.add(groupId)
   const group = await prisma.group.findUniqueOrThrow({
     where: { id: groupId },
-    select: { slug: true },
+    select: { id: true, slug: true, discourseId: true },
   })
+
+  if (!group.discourseId) {
+    await handleSyncGroup(discourse, prisma, { groupId: group.id })
+  }
+
   const result: string[] = [group.slug]
   const parents = await prisma.groupHierarchy.findMany({
     where: { childGroupId: groupId },
     select: { parentGroupId: true },
   })
   for (const p of parents) {
-    const ancestorSlugs = await getGroupSlugAndAncestorSlugs(prisma, p.parentGroupId, visited)
+    const ancestorSlugs = await getGroupSlugAndAncestorSlugs(
+      discourse,
+      prisma,
+      p.parentGroupId,
+      visited
+    )
     for (const s of ancestorSlugs) result.push(s)
   }
   return result
@@ -125,12 +140,21 @@ async function handleSyncUser(
       primaryGroup: { select: { name: true } },
     },
   })
+  // If we haven't linked this user in the database yet:
+  if (!user.discourseId) {
+    const existingDiscourseUser = await discourse.findUserByEmail(user.email)
+    // If the legacy account exists in Discourse, we must assume ownership securely
+    if (existingDiscourseUser) {
+      // Unsuspend the user (if they had been flagged as deleted prior to this matching)
+      await discourse.unsuspendUser(existingDiscourseUser.id)
+    }
+  }
 
-  // Ensure user is unsuspended in case they were previously logically deleted
-  await discourse.unsuspendUser(user.username)
+  const groupSlugs = await getGroupSlugsForUser(discourse, prisma, user.id)
 
-  const groupSlugs = await getGroupSlugsForUser(prisma, user.id)
-  const externalId = user.discourseId ?? user.username
+  // Hardcode the SSO identity strictly to `user.id` instead of mutable `user.username`
+  // so identity shifts don't ever open doors
+  const externalId = user.id
   await discourse.syncUserViaSso({
     externalId,
     email: user.email,
@@ -143,7 +167,7 @@ async function handleSyncUser(
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      discourseId: user.discourseId ?? user.username,
+      discourseId: externalId,
       discourseSynced: true,
       discourseSyncedAt: new Date(),
     },

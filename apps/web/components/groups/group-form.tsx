@@ -179,7 +179,10 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
               {...register('name', {
                 onChange: (e) => {
                   if (!isEditing && !slugManuallyEdited.current) {
-                    setValue('slug' as keyof (CreateGroupForm | UpdateGroupForm), slugify(e.target.value))
+                    setValue(
+                      'slug' as keyof (CreateGroupForm | UpdateGroupForm),
+                      slugify(e.target.value)
+                    )
                   }
                 },
               })}
@@ -194,7 +197,9 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
               <Input
                 id="slug"
                 {...register('slug' as keyof (CreateGroupForm | UpdateGroupForm), {
-                  onChange: () => { slugManuallyEdited.current = true },
+                  onChange: () => {
+                    slugManuallyEdited.current = true
+                  },
                 })}
                 disabled={isLoading}
                 placeholder={t('slugPlaceholder')}

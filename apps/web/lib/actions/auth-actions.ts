@@ -3,18 +3,14 @@
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 
-export type ResolveLoginResult =
-  | { email: string }
-  | { email: null; suggestedUsernames?: string[] }
+export type ResolveLoginResult = { email: string } | { email: null; suggestedUsernames?: string[] }
 
 /**
  * Given a username, return the associated email address.
  * If no user matches by username, fall back to a name search and
  * return suggested usernames so the caller can hint the user.
  */
-export async function resolveLoginEmail(
-  identity: string
-): Promise<ResolveLoginResult> {
+export async function resolveLoginEmail(identity: string): Promise<ResolveLoginResult> {
   const byUsername = await prisma.user.findUnique({
     where: { username: identity },
     select: { email: true },

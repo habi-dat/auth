@@ -190,7 +190,9 @@ export function CategoryForm({ category, categories, groups }: CategoryFormProps
               <Input
                 id="slug"
                 {...form.register('slug', {
-                  onChange: () => { slugManuallyEdited.current = true },
+                  onChange: () => {
+                    slugManuallyEdited.current = true
+                  },
                 })}
                 placeholder={t('slugPlaceholder')}
               />

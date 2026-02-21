@@ -115,6 +115,8 @@ export class DiscourseService {
       return { deleted: true }
     } catch {
       try {
+        await this.logOutUser(user.user.id)
+
         await this.request(`/admin/users/${user.user.id}/suspend.json`, {
           method: 'PUT',
           body: JSON.stringify({
@@ -130,26 +132,49 @@ export class DiscourseService {
     }
   }
 
-  async unsuspendUser(username: string): Promise<void> {
-    let user: { user: { id: number } }
+  async logOutUser(userId: number): Promise<void> {
     try {
-      user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return
-      throw err
-    }
-
-    try {
-      await this.request(`/admin/users/${user.user.id}/suspend.json`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          suspend_until: '2000-01-01',
-          reason: 'Unsuspended via habidat-auth',
-        }),
+      await this.request(`/admin/users/${userId}/log_out.json`, {
+        method: 'POST',
       })
     } catch (e) {
-      console.warn(`Could not unsuspend Discourse user ${username}:`, e)
+      console.warn(`Could not log out Discourse user (id: ${userId}):`, e)
+    }
+  }
+
+  async findUserByEmail(email: string): Promise<{ username: string; id: number } | null> {
+    try {
+      // Discourse email lookups are available in active and suspended lists
+      const [activeResult, suspendedResult] = await Promise.all([
+        this.request<{ username: string; id: number }[]>(
+          `/admin/users/list/active.json?email=${encodeURIComponent(email)}`
+        ),
+        this.request<{ username: string; id: number }[]>(
+          `/admin/users/list/suspended.json?email=${encodeURIComponent(email)}`
+        ),
+      ])
+
+      const activeMatch = activeResult?.[0]
+      if (activeMatch) return activeMatch
+
+      const suspendedMatch = suspendedResult?.[0]
+      if (suspendedMatch) return suspendedMatch
+
+      return null
+    } catch (e) {
+      console.warn(`Failed to find discourse user by email (${email}):`, e)
+      return null
+    }
+  }
+
+  async unsuspendUser(userId: number): Promise<void> {
+    try {
+      console.log(`Unsuspending Discourse user (id: ${userId})`)
+      await this.request(`/admin/users/${userId}/unsuspend.json`, {
+        method: 'PUT',
+      })
+    } catch (e) {
+      console.warn(`Could not unsuspend Discourse user (id: ${userId}):`, e)
     }
   }
 
