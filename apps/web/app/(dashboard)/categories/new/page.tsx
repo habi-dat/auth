@@ -17,7 +17,7 @@ export default async function NewCategoryPage() {
   }
 
   return (
-    <FormPageLayout backHref="/categories" title={t('newCategory')}>
+    <FormPageLayout backHref="/categories" title={t('form.titleCreate')}>
       <CategoryForm categories={categories} groups={groups} />
     </FormPageLayout>
   )

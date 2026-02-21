@@ -27,6 +27,10 @@ interface SidebarProps {
   logoUrl?: string
   /** Cache-buster so sidebar logo updates after upload (e.g. Setting.updatedAt) */
   logoUpdatedAt?: string
+  /** Custom class name for the sidebar container */
+  className?: string
+  /** Callback fired when a navigation item is clicked */
+  onItemClick?: () => void
 }
 
 export function Sidebar({
@@ -35,6 +39,8 @@ export function Sidebar({
   brandName,
   logoUrl,
   logoUpdatedAt,
+  className,
+  onItemClick,
 }: SidebarProps) {
   const t = useTranslations('sidebar')
   const pathname = usePathname()
@@ -60,7 +66,7 @@ export function Sidebar({
   })
 
   return (
-    <aside className="w-64 border-r bg-card hidden md:block">
+    <aside className={cn('h-full w-64 border-r bg-card flex flex-col', className)}>
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
@@ -96,6 +102,7 @@ export function Sidebar({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={onItemClick}
                   className={cn(
                     'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
                     isActive

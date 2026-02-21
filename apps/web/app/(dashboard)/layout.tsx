@@ -30,10 +30,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
           brandName={generalSettings.platformName?.trim() || undefined}
           logoUrl={generalSettings.logoUrl?.trim() || undefined}
           logoUpdatedAt={generalSettings.logoUpdatedAt}
+          className="hidden md:flex"
         />
       )}
-      <div className="flex-1 flex flex-col">
-        <Header user={session.user} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header
+          user={session.user}
+          sidebarProps={
+            showSidebar
+              ? {
+                  isAdmin: session.isAdmin,
+                  isGroupAdmin: session.isGroupAdmin,
+                  brandName: generalSettings.platformName?.trim() || undefined,
+                  logoUrl: generalSettings.logoUrl?.trim() || undefined,
+                  logoUpdatedAt: generalSettings.logoUpdatedAt,
+                }
+              : undefined
+          }
+        />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
