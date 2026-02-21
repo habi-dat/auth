@@ -11,6 +11,7 @@ const publicRoutes = [
   '/api/auth',
   '/sso/login',
   '/sso/logout',
+  '/api/widget',
 ]
 
 export function proxy(request: NextRequest) {

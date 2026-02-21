@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test Page</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        h1 {
+            color: #0f172a;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Widget Integration Test</h1>
+        <p>This is a plain HTML page simulating a third-party application.</p>
+        <p>If you are logged into Habidat Auth in this browser, you should see a floating action button in the bottom right corner. Clicking it will open a menu showing your available SSO apps.</p>
+        <p>The widget is fully encapsulated in a Shadow DOM, meaning the styles on this page do not affect the widget, and the widget's styles do not leak out.</p>
+    </div>
+
+    <!-- Include the Habidat SSO Widget -->
+    <script src="/api/widget/script"></script>
+</body>
+</html>
