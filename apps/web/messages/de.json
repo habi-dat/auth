@@ -258,7 +258,9 @@
       "dashboardDescription": "Dashboard-Beschreibung",
       "dashboardDescriptionPlaceholder": "Kurzer Text unter dem Titel",
       "save": "Speichern",
-      "saved": "Gespeichert"
+      "saved": "Gespeichert",
+      "showWidgetInAuthApp": "App-Menü-Widget anzeigen",
+      "showWidgetInAuthAppHelp": "Wenn aktiviert, wird das schwebende App-Menü-Widget auch in dieser App angezeigt."
     },
     "templates": {
       "title": "E-Mail-Vorlagen",

@@ -17,6 +17,7 @@ const updateGeneralSettingsSchema = z.object({
     .optional(),
   dashboardTitle: z.string().optional(),
   dashboardDescription: z.string().optional(),
+  showWidgetInAuthApp: z.boolean().optional(),
 })
 
 export const updateGeneralSettingsAction = adminAction

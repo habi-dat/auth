@@ -258,7 +258,9 @@
       "dashboardDescription": "Dashboard Description",
       "dashboardDescriptionPlaceholder": "Short text shown below the title",
       "save": "Save",
-      "saved": "Saved"
+      "saved": "Saved",
+      "showWidgetInAuthApp": "Show App Menu Widget",
+      "showWidgetInAuthAppHelp": "If enabled, the floating app menu widget will also be shown in this application."
     },
     "templates": {
       "title": "Email templates",

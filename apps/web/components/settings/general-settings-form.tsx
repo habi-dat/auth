@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { FormFooter } from '@/components/ui/form-footer'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
@@ -32,6 +33,9 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
   const [dashboardDescription, setDashboardDescription] = useState(
     initialSettings.dashboardDescription ?? ''
   )
+  const [showWidgetInAuthApp, setShowWidgetInAuthApp] = useState(
+    initialSettings.showWidgetInAuthApp ?? false
+  )
   const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +48,7 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
       themeColor,
       dashboardTitle: dashboardTitle.trim() || undefined,
       dashboardDescription: dashboardDescription.trim() || undefined,
+      showWidgetInAuthApp,
     })
     setIsPending(false)
     if (result?.data?.success) {
@@ -174,6 +179,21 @@ export function GeneralSettingsForm({ initialSettings }: GeneralSettingsFormProp
           maxLength={200}
         />
       </div>
+
+      <div className="flex items-start space-x-3 space-y-0 ">
+        <Checkbox
+          id="showWidgetInAuthApp"
+          checked={showWidgetInAuthApp}
+          onCheckedChange={(checked) => setShowWidgetInAuthApp(!!checked)}
+        />
+        <div className="space-y-1 leading-none">
+          <Label htmlFor="showWidgetInAuthApp" className="cursor-pointer">
+            {t('showWidgetInAuthApp')}
+          </Label>
+          <p className="text-sm text-muted-foreground">{t('showWidgetInAuthAppHelp')}</p>
+        </div>
+      </div>
+
       <FormFooter isLoading={isPending} submitLabel={t('save')} className="flex justify-end" />
     </form>
   )

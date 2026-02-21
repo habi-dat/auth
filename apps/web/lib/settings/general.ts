@@ -14,6 +14,8 @@ export interface GeneralSettings {
   dashboardDescription?: string
   /** ISO date string of Setting.updatedAt; use as cache-buster for logo (e.g. ?v=...) */
   logoUpdatedAt?: string
+  /** Whether to show the app menu widget in the auth app itself. */
+  showWidgetInAuthApp?: boolean
 }
 
 const GENERAL_KEY = 'general'
@@ -35,6 +37,7 @@ export async function getGeneralSettings(): Promise<GeneralSettings> {
     dashboardDescription:
       typeof v.dashboardDescription === 'string' ? v.dashboardDescription : undefined,
     logoUpdatedAt: logoUrl && row.updatedAt ? row.updatedAt.toISOString() : undefined,
+    showWidgetInAuthApp: typeof v.showWidgetInAuthApp === 'boolean' ? v.showWidgetInAuthApp : false,
   }
 }
 

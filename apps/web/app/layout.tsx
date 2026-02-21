@@ -46,7 +46,7 @@ export default async function RootLayout({
 }>) {
   const [messages, settings, themePrefs] = await Promise.all([
     getMessages(),
-    getGeneralSettings().catch(() => ({ themeColor: undefined })),
+    getGeneralSettings().catch(() => ({ themeColor: undefined, showWidgetInAuthApp: undefined })),
     getCurrentUserThemePreferences(),
   ])
 
@@ -83,6 +83,7 @@ export default async function RootLayout({
           initialColorMode={initialColorMode}
         >
           {children}
+          {settings.showWidgetInAuthApp && <script src="/api/widget/script" defer />}
         </Providers>
       </body>
     </html>
