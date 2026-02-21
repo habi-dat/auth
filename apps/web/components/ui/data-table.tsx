@@ -7,11 +7,15 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
+  type SortingState,
+  type Updater,
   useReactTable,
 } from '@tanstack/react-table'
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useMemo, useState } from 'react'
+import { parseAsInteger, parseAsJson, parseAsString, useQueryState } from 'nuqs'
+import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -58,12 +62,37 @@ export function DataTable<TData, TValue>({
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable')
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([])
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: initialPageSize,
-  })
+  const [globalFilter, setGlobalFilter] = useQueryState(
+    'q',
+    parseAsString.withDefault('').withOptions({ shallow: true })
+  )
+  const [sorting, setSorting] = useQueryState(
+    'sort',
+    parseAsJson<SortingState>((val) => val as SortingState)
+      .withDefault([])
+      .withOptions({ shallow: true })
+  )
+  const [pageIndex, setPageIndex] = useQueryState(
+    'page',
+    parseAsInteger.withDefault(0).withOptions({ shallow: true })
+  )
+  const [pageSize, setPageSize] = useQueryState(
+    'size',
+    parseAsInteger.withDefault(initialPageSize).withOptions({ shallow: true })
+  )
+
+  const pagination = useMemo(() => ({ pageIndex, pageSize }), [pageIndex, pageSize])
+
+  const onPaginationChange = (updater: Updater<PaginationState>) => {
+    const next = typeof updater === 'function' ? updater(pagination) : updater
+    setPageIndex(next.pageIndex)
+    setPageSize(next.pageSize)
+  }
+
+  const onSortingChange = (updater: Updater<SortingState>) => {
+    const next = typeof updater === 'function' ? updater(sorting) : updater
+    setSorting(next)
+  }
 
   const pageSizeOptions = useMemo(() => {
     const set = new Set([...DEFAULT_PAGE_SIZES, initialPageSize])
@@ -77,8 +106,8 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
+    onSortingChange,
+    onPaginationChange,
     state: {
       globalFilter,
       sorting,

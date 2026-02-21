@@ -89,7 +89,8 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
     },
     {
       id: 'hierarchy',
-      accessorFn: (row) => row.parentGroups.map((p) => p.parentGroup.name).join(', '),
+      accessorFn: (row) =>
+        `${row.parentGroups.map((p) => p.parentGroup.name).join(', ')}-${row.childGroups.length}`,
       header: t('hierarchy'),
       cell: ({ row }) => {
         const g = row.original

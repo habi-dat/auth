@@ -1,12 +1,17 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { parseAsStringLiteral, useQueryState } from 'nuqs'
 import { EmailTemplateForm } from '@/components/settings/email-template-form'
 import { GeneralSettingsForm } from '@/components/settings/general-settings-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { EmailTemplateConfigByLocale } from '@/lib/email/types'
 import type { GeneralSettings } from '@/lib/settings/general'
+
+const SETTINGS_TABS = ['general', 'templates'] as const
+
+type SettingsTab = (typeof SETTINGS_TABS)[number]
 
 interface SettingsPageClientProps {
   generalSettings: GeneralSettings
@@ -16,8 +21,6 @@ interface SettingsPageClientProps {
   defaultCopyPasswordReset: Record<string, Record<string, string>>
   inviteEnabled: boolean
   passwordResetEnabled: boolean
-  /** Initial tab from URL (e.g. ?tab=templates). */
-  defaultTab?: 'general' | 'templates'
 }
 
 export function SettingsPageClient({
@@ -28,13 +31,17 @@ export function SettingsPageClient({
   defaultCopyPasswordReset,
   inviteEnabled,
   passwordResetEnabled,
-  defaultTab = 'general',
 }: SettingsPageClientProps) {
   const t = useTranslations('settings')
   const tTemplates = useTranslations('settings.templates')
 
+  const [tab, setTab] = useQueryState(
+    'tab',
+    parseAsStringLiteral(SETTINGS_TABS).withDefault('general').withOptions({ shallow: true })
+  )
+
   return (
-    <Tabs defaultValue={defaultTab} className="space-y-6">
+    <Tabs value={tab} onValueChange={(v) => setTab(v as SettingsTab)} className="space-y-6">
       <TabsList>
         <TabsTrigger value="general">{t('tabGeneral')}</TabsTrigger>
         <TabsTrigger value="templates">{t('tabTemplates')}</TabsTrigger>

@@ -7,15 +7,9 @@ import { getEmailTemplates } from '@/lib/email/templates'
 import type { EmailTemplateConfigByLocale, SupportedEmailLocale } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
 
-interface SettingsPageProps {
-  searchParams: Promise<{ tab?: string }>
-}
-
-export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+export default async function SettingsPage() {
   await requireAdmin()
   const t = await getTranslations('settings')
-  const params = await searchParams
-  const defaultTab = params.tab === 'templates' ? ('templates' as const) : ('general' as const)
 
   const [generalSettings, templates] = await Promise.all([
     getGeneralSettings(),
@@ -56,7 +50,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         defaultCopyPasswordReset={defaultCopyPasswordReset}
         inviteEnabled={inviteTemplate?.enabled ?? true}
         passwordResetEnabled={passwordResetTemplate?.enabled ?? true}
-        defaultTab={defaultTab}
       />
     </ListPageLayout>
   )
