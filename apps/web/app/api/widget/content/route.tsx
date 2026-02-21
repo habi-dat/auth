@@ -129,6 +129,13 @@ export async function GET() {
         align-items: flex-end;
       }
 
+      @media (max-width: 768px) {
+        .widget-container {
+          bottom: 16px;
+          right: 16px;
+        }
+      }
+
       .menu-button {
         background-color: var(--primary);
         color: white;
@@ -144,6 +151,13 @@ export async function GET() {
         transition: transform 0.2s, background-color 0.2s;
         z-index: 2;
       }
+
+      @media (max-width: 768px) {
+        .menu-button {
+          width: 28px;
+          height: 28px;
+        }
+      }
       
       .menu-button:hover {
         transform: scale(1.05);
@@ -155,6 +169,13 @@ export async function GET() {
         height: 28px;
         fill: currentColor;
       }
+
+      @media (max-width: 768px) {
+        .menu-button svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
       
       .menu-button.has-logo {
         background-color: transparent;
@@ -163,6 +184,13 @@ export async function GET() {
         height: 112px;
         border-radius: 0;
         padding: 0;
+      }
+
+      @media (max-width: 768px) {
+        .menu-button.has-logo {
+          width: 56px;
+          height: 56px;
+        }
       }
 
       .menu-button.has-logo img {
