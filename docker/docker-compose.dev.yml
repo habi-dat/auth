@@ -70,6 +70,12 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_FROM: dev@${DOMAIN}
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""      
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
@@ -110,6 +116,8 @@ services:
       SMTP_PORT: 1025
       SMTP_SECURE: "false"
       SMTP_FROM: dev@${DOMAIN}
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
