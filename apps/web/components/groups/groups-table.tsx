@@ -32,7 +32,7 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
   const columns: ColumnDef<GroupRow>[] = [
     {
       accessorKey: 'slug',
-      accessorFn: (row) => row.name,
+      accessorFn: (row) => `${row.name} ${row.slug}`,
       sortingFn: (rowA, rowB) => rowA.original.slug.localeCompare(rowB.original.slug),
       header: t('name'),
       cell: ({ row }) => (
@@ -89,6 +89,7 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
     },
     {
       id: 'hierarchy',
+      accessorFn: (row) => row.parentGroups.map((p) => p.parentGroup.name).join(', '),
       header: t('hierarchy'),
       cell: ({ row }) => {
         const g = row.original

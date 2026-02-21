@@ -43,6 +43,8 @@ export function UsersTable({ users }: { users: UserRow[] }) {
     },
     {
       id: 'groups',
+      accessorFn: (row) => row.memberships.map((m) => m.group.name).join(', '),
+      filterFn: 'includesString',
       header: t('groups'),
       cell: ({ row }) => <BadgeList data={row.original.memberships} label={(m) => m.group.name} />,
     },
