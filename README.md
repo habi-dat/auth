@@ -99,6 +99,27 @@ pnpm dev
 
 This starts the dev stack defined in `docker/docker-compose.dev.yml` (DB, Redis, Mailhog, web, worker) and connects to your local `habidat-setup` networks.
 
+## Floating app menu
+
+When Apps run in a subdomain of the same domain as the auth instance, you can integrate a floating menu on the bottom right corner by inserting a javascript snippet into those apps. This can be for example done with the JSLoader app in nextcloud or with a custom layout component on discourse:
+
+```
+const script = document.createElement('script');
+script.src = 'https://user.habidat.local/api/widget/script';
+script.async = true; // Don't block the rest of the page load
+
+script.onload = function() {
+    console.log("Central menu script loaded and executed.");
+    // Initialize your menu here if needed
+};
+
+script.onerror = function() {
+    console.error("Error loading the central menu script.");
+};
+
+document.head.appendChild(script);
+``
+
 ## Scripts
 
 | Command | Description |
