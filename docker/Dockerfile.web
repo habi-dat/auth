@@ -45,6 +45,10 @@ RUN pnpm turbo build --filter=@habidat/web...
 FROM base AS runner
 WORKDIR /app
 
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -57,5 +61,7 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/publ
 RUN mkdir -p /app/apps/web/public/uploads && chown -R nextjs:nodejs /app/apps/web/public/uploads
 
 USER nextjs
+
+EXPOSE 3000
 
 CMD ["node", "apps/web/server.js"]
