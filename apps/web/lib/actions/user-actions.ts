@@ -335,9 +335,14 @@ export const updateUserAction = groupAdminAction
             ? [...new Set([...effectiveMemberGroupIds, ...(effectiveOwnerGroupIds ?? [])])]
             : undefined
 
+        // When member list was updated, allMemberIds excludes system groups (they are filtered from form input).
+        // System group memberships are preserved in DB, so include them for primary group validation.
+        const existingSystemMemberIds = existingUser.memberships
+          .filter((m) => m.group.isSystem)
+          .map((m) => m.groupId)
         const afterGroupIdsForPrimary =
           allMemberIds !== undefined
-            ? allMemberIds
+            ? [...new Set([...allMemberIds, ...existingSystemMemberIds])]
             : [
                 ...new Set([
                   ...existingUser.memberships.map((m) => m.groupId),
