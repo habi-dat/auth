@@ -88,3 +88,36 @@ export interface ListCategoriesResponse {
 export interface ShowCategoryResponse {
   category: DiscourseCategoryApi
 }
+
+// ---------------------------------------------------------------------------
+// User mail / notification settings
+// ---------------------------------------------------------------------------
+
+/** Category as returned when fetching as a specific user – includes their notification level. */
+export interface DiscourseCategoryWithNotification extends DiscourseCategoryApi {
+  notification_level: 0 | 1 | 2 | 3 | 4
+  email_in?: string | null
+}
+
+/** Single tag as returned by GET /tags.json */
+export interface DiscourseTagBasic {
+  id: string
+  name: string
+  count: number
+}
+
+/** Tag notification entry as returned by GET /tag-notifications.json */
+export interface DiscourseTagNotification {
+  tag_name: string
+  notification_level: 0 | 1 | 2 | 3 | 4
+}
+
+/** Group with user's notification level as returned by GET /groups.json (acted as user). */
+export interface DiscourseGroupBasic {
+  id: number
+  name: string
+  display_name: string
+  notification_level: 0 | 1 | 2 | 3 | 4
+  bio_excerpt?: string | null
+  incoming_email?: string | null
+}

@@ -1,5 +1,6 @@
 import { requireUserWithGroups } from '@habidat/auth/session'
 import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
+import { isDiscourseConfigured } from '@/lib/discourse/client'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { PageLayout } from '@/components/layout/page-layout'
@@ -7,10 +8,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getMailSwitchData } from '@/lib/actions/discourse-mail-actions'
+import { ProfileMailSection } from '@/components/mail/profile-mail-section'
 
 export default async function ProfilePage() {
   const t = await getTranslations('profile')
   const { user, memberships, ownerships, primaryGroup } = await requireUserWithGroups()
+  const discourseConfigured = isDiscourseConfigured()
+
+  const mailData = discourseConfigured ? await getMailSwitchData().catch(() => null) : null
 
   const initials = user.name
     .split(' ')
@@ -43,92 +49,96 @@ export default async function ProfilePage() {
         </div>
       }
     >
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-2xl">{user.name}</CardTitle>
-              <CardDescription className="text-base">@{user.username}</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
+              </Avatar>
               <div>
-                <p className="text-sm text-muted-foreground">{t('email')}</p>
-                <p className="font-medium">{user.email}</p>
+                <CardTitle className="text-2xl">{user.name}</CardTitle>
+                <CardDescription className="text-base">@{user.username}</CardDescription>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('location')}</p>
-                <p className="font-medium">{user.location ?? '—'}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('primaryGroup')}</p>
-                <p className="font-medium">{primaryGroup?.name ?? '—'}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('groups')}</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {memberships.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    memberships.map((m) => (
-                      <Badge key={m.group.id} variant="secondary">
-                        {m.group.name}
-                      </Badge>
-                    ))
-                  )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('email')}</p>
+                  <p className="font-medium">{user.email}</p>
                 </div>
               </div>
-            </div>
-            {ownerships.length > 0 && (
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('groupAdmins')}</p>
+                  <p className="text-sm text-muted-foreground">{t('location')}</p>
+                  <p className="font-medium">{user.location ?? '—'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('primaryGroup')}</p>
+                  <p className="font-medium">{primaryGroup?.name ?? '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('groups')}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {ownerships.map((o) => (
-                      <Badge key={o.group.id} variant="default">
-                        {o.group.name}
-                      </Badge>
-                    ))}
+                    {memberships.length === 0 ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      memberships.map((m) => (
+                        <Badge key={m.group.id} variant="secondary">
+                          {m.group.name}
+                        </Badge>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('preferredLanguage')}</p>
-                <p className="font-medium">{langLabel}</p>
+              {ownerships.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t('groupAdmins')}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {ownerships.map((o) => (
+                        <Badge key={o.group.id} variant="default">
+                          {o.group.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <Globe className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('preferredLanguage')}</p>
+                  <p className="font-medium">{langLabel}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <HardDrive className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('storageQuota')}</p>
+                  <p className="font-medium">{user.storageQuota}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <HardDrive className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('storageQuota')}</p>
-                <p className="font-medium">{user.storageQuota}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {mailData && <ProfileMailSection initialData={mailData} />}
+      </div>
     </PageLayout>
   )
 }

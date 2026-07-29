@@ -37,7 +37,10 @@
     "description": "Deine verfügbaren Anwendungen",
     "mainApps": "Hauptanwendungen",
     "otherApps": "Weitere Anwendungen",
-    "noApps": "Keine Apps verfügbar. Kontaktiere einen Administrator."
+    "noApps": "Keine Apps verfügbar. Kontaktiere einen Administrator.",
+    "toolsSection": "Tools",
+    "mailSettingsTitle": "Mail-Einstellungen",
+    "mailSettingsDescription": "Mailing-List-Modus und Abonnements verwalten"
   },
   "auth": {
     "login": {
@@ -122,6 +125,7 @@
     "title": "Profil",
     "edit": "Bearbeiten",
     "changePassword": "Passwort ändern",
+    "mailSettings": "Mail-Einstellungen",
     "email": "E-Mail",
     "location": "Ort",
     "language": "Sprache",
@@ -560,6 +564,26 @@
       "slugMin": "Slug muss mindestens 3 Zeichen haben",
       "slugRegex": "Nur Buchstaben, Zahlen, _ und - erlaubt",
       "descriptionRequired": "Beschreibung ist erforderlich"
+    }
+  },
+  "mailSettings": {
+    "title": "Mail-Einstellungen",
+    "notConfigured": "Discourse ist nicht konfiguriert. Mail-Einstellungen sind nicht verfügbar.",
+    "errorTitle": "Fehler",
+    "filterPlaceholder": "Filtern...",
+    "noResults": "Keine Ergebnisse.",
+    "mailingListMode": {
+      "title": "Mailing-List-Modus",
+      "description": "Wenn aktiviert, erhältst du für jeden neuen Beitrag in beobachteten Themen eine E-Mail.",
+      "on": "Aktiviert",
+      "off": "Deaktiviert"
+    },
+    "subscriptions": {
+      "title": "Abonnements",
+      "description": "Abonniere Kategorien, Tags oder Gruppen, um E-Mails für neue Beiträge zu erhalten.",
+      "categories": "Kategorien",
+      "tags": "Tags",
+      "groups": "Gruppen"
     }
   }
 }

@@ -3,7 +3,11 @@ import type {
   CreateCategoryData,
   CreateGroupData,
   DiscourseCategoryApi,
+  DiscourseCategoryWithNotification,
   DiscourseConfig,
+  DiscourseGroupBasic,
+  DiscourseTagBasic,
+  DiscourseTagNotification,
   ListCategoriesResponse,
   ShowCategoryResponse,
   SsoUserData,
@@ -301,6 +305,131 @@ export class DiscourseService {
   async deleteCategory(id: number): Promise<void> {
     await this.request(`/categories/${id}.json`, {
       method: 'DELETE',
+    })
+  }
+
+  // -------------------------------------------------------------------------
+  // User mail / notification settings (act as the user via Api-Username header)
+  // -------------------------------------------------------------------------
+
+  /** Returns the user's mailing_list_mode setting. GET /u/{username}.json */
+  async getUserMailingListMode(username: string): Promise<boolean> {
+    const result = await this.request<{ user: { user_option?: { mailing_list_mode?: boolean } } }>(
+      `/u/${encodeURIComponent(username)}.json`
+    )
+    return result?.user?.user_option?.mailing_list_mode ?? false
+  }
+
+  /** Enable or disable mailing list mode for a user. PUT /u/{username} */
+  async setUserMailingListMode(username: string, enabled: boolean): Promise<void> {
+    await this.request(`/u/${encodeURIComponent(username)}`, {
+      method: 'PUT',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ user: { user_option: { mailing_list_mode: enabled } } }),
+    })
+  }
+
+  /**
+   * List all categories including the acting user's notification level for each.
+   * GET /categories.json (called as the target user via Api-Username)
+   */
+  async getCategoriesWithNotifications(username: string): Promise<DiscourseCategoryWithNotification[]> {
+    const result = await this.request<ListCategoriesResponse>(
+      '/categories.json?include_subcategories=true',
+      { headers: { 'Api-Username': username } }
+    )
+    const topLevel = result?.category_list?.categories ?? []
+    const flat: DiscourseCategoryWithNotification[] = []
+    for (const cat of topLevel) {
+      flat.push(cat as DiscourseCategoryWithNotification)
+      for (const sub of cat.subcategory_list ?? []) {
+        flat.push(sub as DiscourseCategoryWithNotification)
+      }
+    }
+    return flat
+  }
+
+  /**
+   * Set notification level for a category for the given user.
+   * POST /category/{id}/notifications (called as the target user)
+   * level: 3 = watching (subscribed), 1 = regular (unsubscribed)
+   */
+  async setCategoryNotificationLevel(
+    username: string,
+    categoryId: number,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    await this.request(`/category/${categoryId}/notifications`, {
+      method: 'POST',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ notification_level: level }),
+    })
+  }
+
+  /** List all available tags. GET /tags.json */
+  async getAllTags(): Promise<DiscourseTagBasic[]> {
+    const result = await this.request<{ tags: DiscourseTagBasic[] }>('/tags.json')
+    return result?.tags ?? []
+  }
+
+  /**
+   * Get the user's tag notification subscriptions (only tags with non-default level).
+   * GET /tag-notifications.json (called as the target user)
+   */
+  async getTagNotifications(username: string): Promise<DiscourseTagNotification[]> {
+    try {
+      const result = await this.request<{ tag_notification: DiscourseTagNotification[] }>(
+        '/tag-notifications.json',
+        { headers: { 'Api-Username': username } }
+      )
+      return result?.tag_notification ?? []
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('404')) return []
+      throw err
+    }
+  }
+
+  /**
+   * Set notification level for a tag for the given user.
+   * POST /tag-notifications (called as the target user)
+   */
+  async setTagNotificationLevel(
+    username: string,
+    tagName: string,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    await this.request('/tag-notifications', {
+      method: 'POST',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ tag_name: tagName, notification_level: level }),
+    })
+  }
+
+  /**
+   * List all visible groups including the acting user's notification level.
+   * GET /groups.json (called as the target user via Api-Username)
+   */
+  async getGroupsWithNotifications(username: string): Promise<DiscourseGroupBasic[]> {
+    const result = await this.request<{ groups: DiscourseGroupBasic[] }>('/groups.json', {
+      headers: { 'Api-Username': username },
+    })
+    return result?.groups ?? []
+  }
+
+  /**
+   * Set notification level for a group for the given user.
+   * POST /groups/{name}/notifications.json — Discourse routes by name, not numeric id.
+   */
+  async setGroupNotificationLevel(
+    username: string,
+    groupName: string,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    await this.request(`/groups/${encodeURIComponent(groupName)}/notifications.json`, {
+      method: 'POST',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ notification_level: level }),
     })
   }
 }

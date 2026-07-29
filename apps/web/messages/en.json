@@ -37,7 +37,10 @@
     "description": "Your applications and services",
     "mainApps": "Main Applications",
     "otherApps": "Other Applications",
-    "noApps": "No apps available. Contact an administrator."
+    "noApps": "No apps available. Contact an administrator.",
+    "toolsSection": "Tools",
+    "mailSettingsTitle": "Mail settings",
+    "mailSettingsDescription": "Manage mailing list mode and subscriptions"
   },
   "auth": {
     "login": {
@@ -122,6 +125,7 @@
     "title": "Profile",
     "edit": "Edit",
     "changePassword": "Change password",
+    "mailSettings": "Mail settings",
     "email": "Email",
     "location": "Location",
     "language": "Language",
@@ -560,6 +564,26 @@
       "slugMin": "Slug must be at least 3 characters",
       "slugRegex": "Only letters, numbers, _ and - allowed",
       "descriptionRequired": "Description is required"
+    }
+  },
+  "mailSettings": {
+    "title": "Mail settings",
+    "notConfigured": "Discourse is not configured. Mail settings are not available.",
+    "errorTitle": "Error",
+    "filterPlaceholder": "Filter...",
+    "noResults": "No results.",
+    "mailingListMode": {
+      "title": "Mailing list mode",
+      "description": "When enabled, you will receive an email for every new post in topics you are watching.",
+      "on": "Enabled",
+      "off": "Disabled"
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "description": "Subscribe to categories, tags, or groups to receive emails for new posts.",
+      "categories": "Categories",
+      "tags": "Tags",
+      "groups": "Groups"
     }
   }
 }
