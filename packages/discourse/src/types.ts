@@ -118,6 +118,7 @@ export interface DiscourseGroupBasic {
   name: string
   display_name: string
   notification_level: 0 | 1 | 2 | 3 | 4
+  automatic?: boolean
   bio_excerpt?: string | null
   incoming_email?: string | null
 }

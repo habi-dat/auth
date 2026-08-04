@@ -441,7 +441,7 @@ export class DiscourseService {
         group_users?: Array<{ group_id: number; notification_level: number }>
       }
     }>(`/u/${encodeURIComponent(username)}.json`)
-    const groups = result?.user?.groups ?? []
+    const groups = (result?.user?.groups ?? []).filter((g) => !g.automatic)
     const groupUsers = result?.user?.group_users ?? []
     const notifByGroupId = Object.fromEntries(groupUsers.map((gu) => [gu.group_id, gu.notification_level as 0 | 1 | 2 | 3 | 4]))
     return groups.map((g) => ({ ...g, notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4 }))
