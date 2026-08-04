@@ -104,6 +104,7 @@ export interface DiscourseTagBasic {
   id: string
   name: string
   count: number
+  description?: string | null
 }
 
 /** Tag notification entry as returned by GET /tag-notifications.json */

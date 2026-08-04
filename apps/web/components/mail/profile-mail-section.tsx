@@ -141,6 +141,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     id: c.id,
     name: c.name,
     color: c.color,
+    description: c.description_text ?? undefined,
     email: c.email_in,
     subscribed: (categoryLevels[c.id] ?? 1) >= WATCHING,
     pending: categoryPending.has(c.id),
@@ -149,6 +150,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
   const tagItems: SubscriptionItem[] = initialData.allTags.map((tag) => ({
     id: tag.name,
     name: tag.name,
+    description: tag.description ?? undefined,
     subscribed: (tagLevels[tag.name] ?? 1) >= WATCHING,
     pending: tagPending.has(tag.name),
   }))
