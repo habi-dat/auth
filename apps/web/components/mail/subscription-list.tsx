@@ -51,40 +51,42 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as Kind | 'all')}>
-          <SelectTrigger className="w-36 h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('kindFilter.all')}</SelectItem>
-            <SelectItem value="group">
-              <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" />{t('kindFilter.groups')}</span>
-            </SelectItem>
-            <SelectItem value="category">
-              <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" />{t('kindFilter.categories')}</span>
-            </SelectItem>
-            <SelectItem value="tag">
-              <span className="flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{t('kindFilter.tags')}</span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as Kind | 'all')}>
+            <SelectTrigger className="flex-1 h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('kindFilter.all')}</SelectItem>
+              <SelectItem value="group">
+                <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" />{t('kindFilter.groups')}</span>
+              </SelectItem>
+              <SelectItem value="category">
+                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" />{t('kindFilter.categories')}</span>
+              </SelectItem>
+              <SelectItem value="tag">
+                <span className="flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{t('kindFilter.tags')}</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={subscribedFilter} onValueChange={(v) => setSubscribedFilter(v as typeof subscribedFilter)}>
+            <SelectTrigger className="flex-1 h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('subscribedFilter.all')}</SelectItem>
+              <SelectItem value="subscribed">{t('subscribedFilter.subscribed')}</SelectItem>
+              <SelectItem value="unsubscribed">{t('subscribedFilter.unsubscribed')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Input
           placeholder={t('filterPlaceholder')}
           value={filter}
           onChange={(e) => setFilter(e.target.value || null)}
-          className="flex-1 h-8 text-sm"
+          className="h-8 text-sm"
         />
-        <Select value={subscribedFilter} onValueChange={(v) => setSubscribedFilter(v as typeof subscribedFilter)}>
-          <SelectTrigger className="w-40 h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('subscribedFilter.all')}</SelectItem>
-            <SelectItem value="subscribed">{t('subscribedFilter.subscribed')}</SelectItem>
-            <SelectItem value="unsubscribed">{t('subscribedFilter.unsubscribed')}</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4">{t('noResults')}</p>
@@ -105,7 +107,7 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
                     <p className="text-xs text-muted-foreground mt-0.5 font-mono">{item.email}</p>
                   )}
                   {item.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {item.description}
                     </p>
                   )}

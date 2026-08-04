@@ -11,7 +11,7 @@ interface PageLayoutProps {
 export function PageLayout({ title, description, actions, children, className }: PageLayoutProps) {
   return (
     <div className={cn('space-y-6 mx-auto max-w-7xl', className)}>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">{title}</h1>
           {description != null && <p className="text-muted-foreground mt-1">{description}</p>}
