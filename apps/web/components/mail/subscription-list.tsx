@@ -51,10 +51,12 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
+      {/* Mobile: dropdowns side-by-side row 1, input full-width row 2.
+          Desktop (sm+): single row — kind | input | subscribed via CSS order. */}
+      <div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
+        <div className="w-[calc(50%-4px)] sm:w-auto sm:order-1 sm:shrink-0">
           <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as Kind | 'all')}>
-            <SelectTrigger className="flex-1 h-8 text-sm">
+            <SelectTrigger className="h-8 text-sm w-full sm:w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -70,8 +72,10 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="w-[calc(50%-4px)] sm:w-auto sm:order-3 sm:shrink-0">
           <Select value={subscribedFilter} onValueChange={(v) => setSubscribedFilter(v as typeof subscribedFilter)}>
-            <SelectTrigger className="flex-1 h-8 text-sm">
+            <SelectTrigger className="h-8 text-sm w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -85,7 +89,7 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
           placeholder={t('filterPlaceholder')}
           value={filter}
           onChange={(e) => setFilter(e.target.value || null)}
-          className="h-8 text-sm"
+          className="h-8 text-sm w-full sm:flex-1 sm:order-2"
         />
       </div>
       {filtered.length === 0 ? (
