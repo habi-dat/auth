@@ -336,7 +336,7 @@ export class DiscourseService {
     await this.request(`/u/${encodeURIComponent(username)}`, {
       method: 'PUT',
       headers: { 'Api-Username': username },
-      body: JSON.stringify({ user: { user_option: { mailing_list_mode: enabled } } }),
+      body: JSON.stringify({ mailing_list_mode: enabled }),
     })
   }
 
@@ -345,9 +345,7 @@ export class DiscourseService {
     await this.request(`/u/${encodeURIComponent(username)}`, {
       method: 'PUT',
       headers: { 'Api-Username': username },
-      body: JSON.stringify({
-        user: { user_option: { mailing_list_mode_frequency: echo ? 0 : 1 } },
-      }),
+      body: JSON.stringify({ mailing_list_mode_frequency: echo ? 0 : 1 }),
     })
   }
 
@@ -395,36 +393,39 @@ export class DiscourseService {
   }
 
   /**
-   * Get the user's tag notification subscriptions (only tags with non-default level).
-   * GET /tag-notifications.json (called as the target user)
+   * Get the user's watched tags via their profile. Returns tags at watching level (3).
+   * /tag-notifications.json is unreliable; profile endpoint is authoritative.
    */
   async getTagNotifications(username: string): Promise<DiscourseTagNotification[]> {
-    try {
-      const result = await this.request<{ tag_notification: DiscourseTagNotification[] }>(
-        '/tag-notifications.json',
-        { headers: { 'Api-Username': username } }
-      )
-      return result?.tag_notification ?? []
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return []
-      throw err
-    }
+    const result = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
+      `/u/${encodeURIComponent(username)}.json`
+    )
+    return (result?.user?.watched_tags ?? []).map((t) => ({
+      tag_name: t.name,
+      notification_level: 3 as const,
+    }))
   }
 
   /**
-   * Set notification level for a tag for the given user.
-   * POST /tag-notifications (called as the target user)
+   * Set notification level for a tag via PUT /u/{username}.
+   * Discourse manages tags as lists (watched_tags, tracked_tags, muted_tags) not numeric levels.
+   * Level 3 = watching, level 1 = regular (remove from all lists).
    */
   async setTagNotificationLevel(
     username: string,
     tagName: string,
     level: 0 | 1 | 3
   ): Promise<void> {
-    await this.request('/tag-notifications', {
-      method: 'POST',
+    const userData = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
+      `/u/${encodeURIComponent(username)}.json`
+    )
+    const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
+    const without = current.filter((t) => t !== tagName)
+    const newList = level === 3 ? [...without, tagName] : without
+    await this.request(`/u/${encodeURIComponent(username)}`, {
+      method: 'PUT',
       headers: { 'Api-Username': username },
-      body: JSON.stringify({ tag_name: tagName, notification_level: level }),
+      body: JSON.stringify({ watched_tags: newList.join(',') }),
     })
   }
 
