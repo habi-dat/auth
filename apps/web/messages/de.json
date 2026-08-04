@@ -596,7 +596,7 @@
     },
     "subscriptions": {
       "title": "Abonnements",
-      "description": "Abonniere Kategorien, Tags oder Gruppen, um E-Mails für neue Beiträge zu erhalten.",
+      "description": "Hier kannst du die unterschiedlichen Themen, die im Syndikat diskutiert werden, abonnieren. Die Liste lässt sich filtern: links nach Typ, in der Mitte nach Inhalt, rechts nach Abostatus.",
       "categories": "Kategorien",
       "tags": "Tags",
       "groups": "Gruppen"

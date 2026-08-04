@@ -207,7 +207,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       >
         <div className="overflow-hidden">
           <CardContent className="pt-0">
-            <div className="border-t pt-4 space-y-4">
+            <div className="pt-4 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 min-w-0">
                   <p className="text-sm font-medium leading-none">{t('echoOwnMessages.title')}</p>
@@ -224,7 +224,10 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
                 />
               </div>
               <Separator />
-              <p className="text-base font-semibold">{t('subscriptions.title')}</p>
+              <div className="space-y-1">
+                <p className="text-base font-semibold">{t('subscriptions.title')}</p>
+                <p className="text-sm text-muted-foreground leading-snug">{t('subscriptions.description')}</p>
+              </div>
               <SubscriptionList items={allItems} filterKey="sf" onToggle={handleToggle} />
             </div>
           </CardContent>

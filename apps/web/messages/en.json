@@ -596,7 +596,7 @@
     },
     "subscriptions": {
       "title": "Subscriptions",
-      "description": "Subscribe to categories, tags, or groups to receive emails for new posts.",
+      "description": "Here you can subscribe to the different topics discussed in the Syndikat. The list can be filtered: left by type, centre by content, right by subscription status.",
       "categories": "Categories",
       "tags": "Tags",
       "groups": "Groups"
