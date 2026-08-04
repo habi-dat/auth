@@ -567,13 +567,14 @@
     }
   },
   "mailSettings": {
+    "heading": "E-mail mode",
     "title": "Mail settings",
     "notConfigured": "Discourse is not configured. Mail settings are not available.",
     "errorTitle": "Error",
     "filterPlaceholder": "Filter...",
     "noResults": "No results.",
     "mailingListMode": {
-      "title": "Mailing list mode",
+      "title": "E-mail mode active",
       "description": "When enabled, you will receive an email for every new post in topics you are watching.",
       "on": "Enabled",
       "off": "Disabled"
@@ -581,6 +582,17 @@
     "echoOwnMessages": {
       "title": "Echo own messages",
       "description": "When enabled, you will also receive emails for your own posts."
+    },
+    "kindFilter": {
+      "all": "All",
+      "groups": "Groups",
+      "categories": "Categories",
+      "tags": "Tags"
+    },
+    "subscribedFilter": {
+      "all": "All",
+      "subscribed": "Subscribed",
+      "unsubscribed": "Not subscribed"
     },
     "subscriptions": {
       "title": "Subscriptions",

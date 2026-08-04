@@ -13,6 +13,7 @@ import { ProfileMailSection } from '@/components/mail/profile-mail-section'
 
 export default async function ProfilePage() {
   const t = await getTranslations('profile')
+  const tMail = await getTranslations('mailSettings')
   const { user, memberships, ownerships, primaryGroup } = await requireUserWithGroups()
   const discourseConfigured = isDiscourseConfigured()
 
@@ -137,7 +138,12 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
 
-        {mailData && <ProfileMailSection initialData={mailData} />}
+        {mailData && (
+          <>
+            <h2 className="text-2xl font-bold">{tMail('heading')}</h2>
+            <ProfileMailSection initialData={mailData} />
+          </>
+        )}
       </div>
     </PageLayout>
   )

@@ -11,7 +11,6 @@ import { useCallback, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/use-toast'
 import {
   setCategorySubscriptionAction,
@@ -118,8 +117,18 @@ export function MailSwitchPage({ initialData }: MailSwitchPageProps) {
     [groupLevels, t, toast]
   )
 
+  const handleToggle = useCallback(
+    (item: SubscriptionItem, subscribed: boolean) => {
+      if (item.kind === 'category') return handleCategoryToggle(item.id, subscribed)
+      if (item.kind === 'tag') return handleTagToggle(item.id, subscribed)
+      return handleGroupToggle(item.id, subscribed)
+    },
+    [handleCategoryToggle, handleTagToggle, handleGroupToggle]
+  )
+
   const categoryItems: SubscriptionItem[] = initialData.categories.map((c) => ({
     id: c.id,
+    kind: 'category' as const,
     name: c.name,
     color: c.color,
     email: c.email_in,
@@ -129,6 +138,7 @@ export function MailSwitchPage({ initialData }: MailSwitchPageProps) {
 
   const tagItems: SubscriptionItem[] = initialData.allTags.map((tag) => ({
     id: tag.name,
+    kind: 'tag' as const,
     name: tag.name,
     subscribed: (tagLevels[tag.name] ?? 1) >= WATCHING,
     pending: tagPending.has(tag.name),
@@ -136,6 +146,7 @@ export function MailSwitchPage({ initialData }: MailSwitchPageProps) {
 
   const groupItems: SubscriptionItem[] = initialData.groups.map((g) => ({
     id: g.name,
+    kind: 'group' as const,
     name: g.display_name || g.name,
     email: g.incoming_email,
     description: g.bio_excerpt,
@@ -143,9 +154,7 @@ export function MailSwitchPage({ initialData }: MailSwitchPageProps) {
     pending: groupPending.has(g.name),
   }))
 
-  const categoryCount = categoryItems.filter((i) => i.subscribed).length
-  const tagCount = tagItems.filter((i) => i.subscribed).length
-  const groupCount = groupItems.filter((i) => i.subscribed).length
+  const allItems: SubscriptionItem[] = [...categoryItems, ...groupItems, ...tagItems]
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -175,47 +184,7 @@ export function MailSwitchPage({ initialData }: MailSwitchPageProps) {
           <CardDescription>{t('subscriptions.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="categories">
-            <TabsList className="mb-4">
-              <TabsTrigger value="categories">
-                {t('subscriptions.categories')}
-                {categoryCount > 0 && (
-                  <span className="ml-1.5 rounded-full bg-primary text-primary-foreground text-xs px-1.5 py-0.5 leading-none">
-                    {categoryCount}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="tags">
-                {t('subscriptions.tags')}
-                {tagCount > 0 && (
-                  <span className="ml-1.5 rounded-full bg-primary text-primary-foreground text-xs px-1.5 py-0.5 leading-none">
-                    {tagCount}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="groups">
-                {t('subscriptions.groups')}
-                {groupCount > 0 && (
-                  <span className="ml-1.5 rounded-full bg-primary text-primary-foreground text-xs px-1.5 py-0.5 leading-none">
-                    {groupCount}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="categories">
-              <SubscriptionList
-                items={categoryItems}
-                filterKey="cf"
-                onToggle={handleCategoryToggle}
-              />
-            </TabsContent>
-            <TabsContent value="tags">
-              <SubscriptionList items={tagItems} filterKey="tf" onToggle={handleTagToggle} />
-            </TabsContent>
-            <TabsContent value="groups">
-              <SubscriptionList items={groupItems} filterKey="gf" onToggle={handleGroupToggle} />
-            </TabsContent>
-          </Tabs>
+          <SubscriptionList items={allItems} filterKey="sf" onToggle={handleToggle} />
         </CardContent>
       </Card>
     </div>

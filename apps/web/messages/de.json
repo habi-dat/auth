@@ -567,13 +567,14 @@
     }
   },
   "mailSettings": {
+    "heading": "E-Mail Modus",
     "title": "Mail-Einstellungen",
     "notConfigured": "Discourse ist nicht konfiguriert. Mail-Einstellungen sind nicht verfügbar.",
     "errorTitle": "Fehler",
-    "filterPlaceholder": "Filtern...",
+    "filterPlaceholder": "Suchen...",
     "noResults": "Keine Ergebnisse.",
     "mailingListMode": {
-      "title": "Mailing-List-Modus",
+      "title": "E-Mail Modus aktiv",
       "description": "Wenn du die Syndikatsnachrichten in deinem Mailprogramm bekommen und den Treffpunkt nicht verwenden möchtest, aktiviere diese Option und entscheide dann, über was du informiert werden möchtest.",
       "on": "Aktiviert",
       "off": "Deaktiviert"
@@ -581,6 +582,17 @@
     "echoOwnMessages": {
       "title": "Eigene Nachrichten empfangen",
       "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge."
+    },
+    "kindFilter": {
+      "all": "Alles",
+      "groups": "Gruppen",
+      "categories": "Kategorien",
+      "tags": "Tags"
+    },
+    "subscribedFilter": {
+      "all": "Alles",
+      "subscribed": "Abonniert",
+      "unsubscribed": "Nicht Abonniert"
     },
     "subscriptions": {
       "title": "Abonnements",
