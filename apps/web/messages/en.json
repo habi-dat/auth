@@ -578,6 +578,10 @@
       "on": "Enabled",
       "off": "Disabled"
     },
+    "echoOwnMessages": {
+      "title": "Echo own messages",
+      "description": "When enabled, you will also receive emails for your own posts."
+    },
     "subscriptions": {
       "title": "Subscriptions",
       "description": "Subscribe to categories, tags, or groups to receive emails for new posts.",

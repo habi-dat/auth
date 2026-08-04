@@ -17,12 +17,14 @@ import {
   setCategorySubscriptionAction,
   setGroupSubscriptionAction,
   setTagSubscriptionAction,
+  toggleEchoOwnMessagesAction,
   toggleMailingListModeAction,
 } from '@/lib/actions/discourse-mail-actions'
 import { type SubscriptionItem, SubscriptionList } from './subscription-list'
 
 export interface MailSwitchData {
   mailingListMode: boolean
+  echoOwnPosts: boolean
   categories: DiscourseCategoryWithNotification[]
   allTags: DiscourseTagBasic[]
   tagNotifications: DiscourseTagNotification[]
@@ -37,6 +39,8 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
 
   const [mailingListMode, setMailingListMode] = useState(initialData.mailingListMode)
   const [mlmPending, setMlmPending] = useState(false)
+  const [echoOwnPosts, setEchoOwnPosts] = useState(initialData.echoOwnPosts)
+  const [echoPending, setEchoPending] = useState(false)
 
   const [categoryLevels, setCategoryLevels] = useState<Record<number, 0 | 1 | 2 | 3 | 4>>(
     () => Object.fromEntries(initialData.categories.map((c) => [c.id, c.notification_level ?? 1]))
@@ -63,6 +67,17 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     setMlmPending(false)
     if (result?.serverError) {
       setMailingListMode(!enabled)
+      toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+    }
+  }
+
+  const handleEchoOwnPosts = async (echo: boolean) => {
+    setEchoOwnPosts(echo)
+    setEchoPending(true)
+    const result = await toggleEchoOwnMessagesAction({ echo })
+    setEchoPending(false)
+    if (result?.serverError) {
+      setEchoOwnPosts(!echo)
       toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
     }
   }
@@ -173,7 +188,22 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       >
         <div className="overflow-hidden">
           <CardContent className="pt-0">
-            <div className="border-t pt-4">
+            <div className="border-t pt-4 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-sm font-medium leading-none">{t('echoOwnMessages.title')}</p>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    {t('echoOwnMessages.description')}
+                  </p>
+                </div>
+                <Switch
+                  id="profile-echo-own-messages"
+                  checked={echoOwnPosts}
+                  disabled={echoPending}
+                  onCheckedChange={handleEchoOwnPosts}
+                  className="mt-0.5 shrink-0"
+                />
+              </div>
               <Tabs defaultValue="categories">
                 <TabsList className="mb-4">
                   <TabsTrigger value="categories">

@@ -578,6 +578,10 @@
       "on": "Aktiviert",
       "off": "Deaktiviert"
     },
+    "echoOwnMessages": {
+      "title": "Eigene Nachrichten empfangen",
+      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge."
+    },
     "subscriptions": {
       "title": "Abonnements",
       "description": "Abonniere Kategorien, Tags oder Gruppen, um E-Mails für neue Beiträge zu erhalten.",

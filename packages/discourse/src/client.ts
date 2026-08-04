@@ -312,12 +312,23 @@ export class DiscourseService {
   // User mail / notification settings (act as the user via Api-Username header)
   // -------------------------------------------------------------------------
 
-  /** Returns the user's mailing_list_mode setting. GET /u/{username}.json */
+  /** Returns mailing list mode and frequency (0=echo own posts, 1=no echo). GET /u/{username}.json */
+  async getUserMailingListOptions(
+    username: string
+  ): Promise<{ mailingListMode: boolean; echoOwnPosts: boolean }> {
+    const result = await this.request<{
+      user: { user_option?: { mailing_list_mode?: boolean; mailing_list_mode_frequency?: number } }
+    }>(`/u/${encodeURIComponent(username)}.json`)
+    const opt = result?.user?.user_option
+    return {
+      mailingListMode: opt?.mailing_list_mode ?? false,
+      echoOwnPosts: (opt?.mailing_list_mode_frequency ?? 1) === 0,
+    }
+  }
+
+  /** @deprecated Use getUserMailingListOptions */
   async getUserMailingListMode(username: string): Promise<boolean> {
-    const result = await this.request<{ user: { user_option?: { mailing_list_mode?: boolean } } }>(
-      `/u/${encodeURIComponent(username)}.json`
-    )
-    return result?.user?.user_option?.mailing_list_mode ?? false
+    return (await this.getUserMailingListOptions(username)).mailingListMode
   }
 
   /** Enable or disable mailing list mode for a user. PUT /u/{username} */
@@ -326,6 +337,17 @@ export class DiscourseService {
       method: 'PUT',
       headers: { 'Api-Username': username },
       body: JSON.stringify({ user: { user_option: { mailing_list_mode: enabled } } }),
+    })
+  }
+
+  /** Set mailing list frequency: 0 = echo own posts, 1 = no own posts. PUT /u/{username} */
+  async setMailingListEchoOwnPosts(username: string, echo: boolean): Promise<void> {
+    await this.request(`/u/${encodeURIComponent(username)}`, {
+      method: 'PUT',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({
+        user: { user_option: { mailing_list_mode_frequency: echo ? 0 : 1 } },
+      }),
     })
   }
 

@@ -12,15 +12,15 @@ export async function getMailSwitchData() {
   const { user } = await requireUserWithGroups()
   const username = user.username
 
-  const [mailingListMode, categories, allTags, tagNotifications, groups] = await Promise.all([
-    discourse.getUserMailingListMode(username),
+  const [mailingListOptions, categories, allTags, tagNotifications, groups] = await Promise.all([
+    discourse.getUserMailingListOptions(username),
     discourse.getCategoriesWithNotifications(username),
     discourse.getAllTags(),
     discourse.getTagNotifications(username),
     discourse.getGroupsWithNotifications(username),
   ])
 
-  return { mailingListMode, categories, allTags, tagNotifications, groups }
+  return { ...mailingListOptions, categories, allTags, tagNotifications, groups }
 }
 
 export const toggleMailingListModeAction = userAction
@@ -29,6 +29,15 @@ export const toggleMailingListModeAction = userAction
     const discourse = getDiscourseClient()
     if (!discourse) throw new Error('Discourse not configured')
     await discourse.setUserMailingListMode(ctx.session.user.username, parsedInput.enabled)
+    return { success: true }
+  })
+
+export const toggleEchoOwnMessagesAction = userAction
+  .schema(z.object({ echo: z.boolean() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const discourse = getDiscourseClient()
+    if (!discourse) throw new Error('Discourse not configured')
+    await discourse.setMailingListEchoOwnPosts(ctx.session.user.username, parsedInput.echo)
     return { success: true }
   })
 
