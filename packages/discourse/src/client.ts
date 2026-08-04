@@ -430,14 +430,21 @@ export class DiscourseService {
   }
 
   /**
-   * List all visible groups including the acting user's notification level.
-   * GET /groups.json (called as the target user via Api-Username)
+   * List groups the user is a member of, with per-user notification levels.
+   * Uses user profile instead of /groups.json (which returns all visible groups,
+   * including groups the user cannot set notification levels for).
    */
   async getGroupsWithNotifications(username: string): Promise<DiscourseGroupBasic[]> {
-    const result = await this.request<{ groups: DiscourseGroupBasic[] }>('/groups.json', {
-      headers: { 'Api-Username': username },
-    })
-    return result?.groups ?? []
+    const result = await this.request<{
+      user: {
+        groups?: DiscourseGroupBasic[]
+        group_users?: Array<{ group_id: number; notification_level: number }>
+      }
+    }>(`/u/${encodeURIComponent(username)}.json`)
+    const groups = result?.user?.groups ?? []
+    const groupUsers = result?.user?.group_users ?? []
+    const notifByGroupId = Object.fromEntries(groupUsers.map((gu) => [gu.group_id, gu.notification_level as 0 | 1 | 2 | 3 | 4]))
+    return groups.map((g) => ({ ...g, notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4 }))
   }
 
   /**
