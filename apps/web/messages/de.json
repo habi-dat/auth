@@ -574,7 +574,7 @@
     "noResults": "Keine Ergebnisse.",
     "mailingListMode": {
       "title": "Mailing-List-Modus",
-      "description": "Wenn aktiviert, erhältst du für jeden neuen Beitrag in beobachteten Themen eine E-Mail.",
+      "description": "Wenn du die Syndikatsnachrichten in deinem Mailprogramm bekommen und den Treffpunkt nicht verwenden möchtest, aktiviere diese Option und entscheide dann, über was du informiert werden möchtest.",
       "on": "Aktiviert",
       "off": "Deaktiviert"
     },
