@@ -84,6 +84,7 @@ export async function GET(request: Request) {
     email: user.email ?? '',
     username: user.username ?? user.name ?? '',
     name: user.name ?? '',
+    require_activation: 'false',
   })
   if (groups.length > 0) {
     responseParams.set('groups', groups.join(','))

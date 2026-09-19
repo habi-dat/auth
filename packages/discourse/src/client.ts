@@ -101,6 +101,7 @@ export class DiscourseService {
       email: user.email,
       username: user.username,
       name: user.name,
+      require_activation: 'false',
       ...(user.title != null && user.title !== '' && { title: user.title }),
       ...(user.groups != null && user.groups.length > 0 && { groups: user.groups.join(',') }),
     })
