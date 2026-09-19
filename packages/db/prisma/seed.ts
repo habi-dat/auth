@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 /**
  * Prisma seed: creates admin group and admin user (DB + optional LDAP), or imports from LDAP.
@@ -716,19 +716,50 @@ async function importJsonData(prisma: PrismaClient) {
     }
   }
 
-  // 2. Import Apps
-  const appsPath = resolve(importDir, 'appStore.json')
-  if (existsSync(appsPath)) {
-    try {
-      const appsData = JSON.parse(readFileSync(appsPath, 'utf-8'))
-      if (Array.isArray(appsData)) {
-        for (const app of appsData) {
-          const slug = app.id
-          // Skip if exists
+  // 2. Import Apps (appStore.json and per-module files like appStore-mediawiki-wiki.json)
+  try {
+    const appStoreFiles = existsSync(importDir)
+      ? readdirSync(importDir)
+          .filter((name) => name.startsWith('appStore') && name.endsWith('.json'))
+          .sort()
+      : []
+    for (const fileName of appStoreFiles) {
+      const appsPath = resolve(importDir, fileName)
+      try {
+        const appsData = JSON.parse(readFileSync(appsPath, 'utf-8'))
+        const apps = Array.isArray(appsData) ? appsData : appsData ? [appsData] : []
+        for (const app of apps) {
+          const slug = app?.id
+          if (typeof slug !== 'string' || !slug.trim()) {
+            console.log(`Skipping app without id in ${fileName}`)
+            continue
+          }
           const exists = await prisma.app.findUnique({ where: { slug } })
           if (exists) {
             console.log(`App ${slug} already exists, skipping import.`)
             continue
+          }
+
+          const groupSlugs = Array.isArray(app.groups)
+            ? app.groups.filter(
+                (g: unknown): g is string => typeof g === 'string' && g.trim() !== ''
+              )
+            : []
+          const groups = groupSlugs.length
+            ? await prisma.group.findMany({
+                where: { slug: { in: groupSlugs } },
+                select: { id: true, slug: true },
+              })
+            : []
+          const missingGroups = groupSlugs.filter(
+            (g: string) => !groups.some((found) => found.slug === g)
+          )
+          if (missingGroups.length > 0) {
+            console.log(
+              `App ${slug}: group(s) not found (${missingGroups.join(', ')})${
+                groups.length > 0 ? ', attaching remaining groups' : ', leaving unrestricted'
+              }.`
+            )
           }
 
           await prisma.app.create({
@@ -740,14 +771,19 @@ async function importJsonData(prisma: PrismaClient) {
               samlEntityId: app.saml?.entityId,
               samlAcsUrl: app.saml?.acs,
               samlSloUrl: app.saml?.slo,
+              ...(groups.length > 0 && {
+                groupAccess: { create: groups.map((g) => ({ groupId: g.id })) },
+              }),
             },
           })
           console.log(`Imported app: ${slug}`)
         }
+      } catch (e) {
+        console.error(`Failed to import ${fileName}:`, e)
       }
-    } catch (e) {
-      console.error('Failed to import appStore.json:', e)
     }
+  } catch (e) {
+    console.error('Failed to scan import directory for app stores:', e)
   }
 
   // 3. Import Invites

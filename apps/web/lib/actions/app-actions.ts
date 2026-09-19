@@ -49,7 +49,7 @@ const appSchema = z.object({
   slug: z
     .string()
     .min(2)
-    .regex(/^[a-zA-Z0-9-]+$/, 'Slug must be letters, numbers, hyphens only'),
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/, 'Slug must be letters, numbers, dots, and hyphens'),
   name: z.string().min(2),
   description: z.string().optional().nullable(),
   url: z.string().url(),

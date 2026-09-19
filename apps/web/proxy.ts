@@ -17,6 +17,8 @@ const publicRoutes = [
   '/api/widget',
 ]
 
+const staticFileExt = /\.(?:avif|css|gif|ico|jpe?g|js|json|map|png|svg|txt|webp|woff2?|ttf|eot)$/i
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -25,8 +27,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Allow static files and Next.js internals
-  if (pathname.startsWith('/_next') || pathname.startsWith('/favicon') || pathname.includes('.')) {
+  // Allow static files and Next.js internals (do not treat dotted app slugs as files)
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    staticFileExt.test(pathname)
+  ) {
     return NextResponse.next()
   }
 
