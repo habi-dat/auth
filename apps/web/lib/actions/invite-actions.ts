@@ -10,8 +10,13 @@ import { createAuditLog } from '@/lib/audit'
 import { sendEmail } from '@/lib/email/send'
 import { renderInviteEmail } from '@/lib/email/templates'
 import { hashPasswordSsha } from '@/lib/ldap/password'
-import { createSyncEvent } from '@/lib/sync/create-sync-event'
+import {
+  createSyncEvent,
+  dispatchDiscourseSyncAfterCommit,
+  dispatchLdapSyncAfterCommit,
+} from '@/lib/sync/create-sync-event'
 import { actionClient, groupAdminAction } from './client'
+import { addUserToGroupAdmin } from './group-actions'
 
 export type InviteWithGroupsResult = {
   invite: { memberGroups: { groupId: string }[]; ownerGroups: { groupId: string }[] }
@@ -325,8 +330,8 @@ export const acceptInviteAction = actionClient
         ? parsedInput.primaryGroupId
         : (invite.memberGroups[0]?.groupId ?? invite.ownerGroups[0]?.groupId ?? null)
 
-    const { user, ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(
-      async (tx) => {
+    const { user, ldapSyncEventId, groupSyncEventIds, discourseSyncEventId } =
+      await prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
           data: {
             name: parsedInput.name,
@@ -348,12 +353,14 @@ export const acceptInviteAction = actionClient
           },
         })
 
-        await tx.groupMembership.createMany({
-          data: invite.memberGroups.map((mg) => ({
-            userId: newUser.id,
-            groupId: mg.groupId,
-          })),
-        })
+        if (effectiveMemberGroupIds.length > 0) {
+          await tx.groupMembership.createMany({
+            data: effectiveMemberGroupIds.map((groupId) => ({
+              userId: newUser.id,
+              groupId,
+            })),
+          })
+        }
 
         if (invite.ownerGroups.length > 0) {
           await tx.groupOwnership.createMany({
@@ -362,6 +369,7 @@ export const acceptInviteAction = actionClient
               groupId: og.groupId,
             })),
           })
+          await addUserToGroupAdmin(tx, newUser.id)
         }
 
         const ldapEv = await createSyncEvent(tx, {
@@ -371,6 +379,17 @@ export const acceptInviteAction = actionClient
           entityId: newUser.id,
           payload: { userId: newUser.id, hashedPassword: ldapPasswordSsha },
         })
+        const groupSyncEventIds: string[] = []
+        for (const groupId of effectiveMemberGroupIds) {
+          const ev = await createSyncEvent(tx, {
+            target: 'LDAP',
+            operation: 'UPDATE',
+            entityType: 'GROUP',
+            entityId: groupId,
+            payload: { groupId },
+          })
+          groupSyncEventIds.push(ev.id)
+        }
         const discourseUserEv = await createSyncEvent(tx, {
           target: 'DISCOURSE',
           operation: 'CREATE',
@@ -383,14 +402,16 @@ export const acceptInviteAction = actionClient
         return {
           user: newUser,
           ldapSyncEventId: ldapEv.id,
+          groupSyncEventIds,
           discourseSyncEventId: discourseUserEv.id,
         }
-      }
-    )
+      })
 
-    const { queueLdapSync, queueDiscourseSync } = await import('@habidat/sync')
-    await queueLdapSync(ldapSyncEventId)
-    await queueDiscourseSync(discourseSyncEventId)
+    await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
+    for (const id of groupSyncEventIds) {
+      await dispatchLdapSyncAfterCommit(id, 'LDAP')
+    }
+    await dispatchDiscourseSyncAfterCommit(discourseSyncEventId, 'DISCOURSE')
 
     await createAuditLog({
       actorId: user.id,
