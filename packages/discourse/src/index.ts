@@ -1,4 +1,10 @@
 export { DiscourseService } from './client'
+export type { DiscourseReturnUrlAllowlist } from './sso'
+export {
+  hmacSha256Hex,
+  parseAllowedDiscourseReturnUrl,
+  verifyDiscourseSsoPayload,
+} from './sso'
 export type {
   CreateCategoryData,
   CreateGroupData,

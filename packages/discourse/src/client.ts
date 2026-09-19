@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto'
+import { hmacSha256Hex } from './sso'
 import type {
   CreateCategoryData,
   CreateGroupData,
@@ -91,7 +91,7 @@ export class DiscourseService {
   }
 
   private signPayload(payload: string): string {
-    return createHmac('sha256', this.config.ssoSecret).update(payload).digest('hex')
+    return hmacSha256Hex(this.config.ssoSecret, payload)
   }
 
   async deleteUser(
