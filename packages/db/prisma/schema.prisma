@@ -37,7 +37,8 @@ model User {
   ldapSynced        Boolean   @default(false)
   ldapSyncedAt      DateTime?
 
-  // Discourse sync fields (external_id for sync_sso; set from username on first sync, then kept)
+  // DiscourseConnect external_id. Set once from username (LDAP uid, matching
+  // legacy Nextcloud SSO) and never changed, so username edits stay linked.
   discourseId       String?   @unique
   discourseSynced   Boolean   @default(false)
   discourseSyncedAt DateTime?

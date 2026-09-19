@@ -8,7 +8,13 @@ export type SyncEventPayload =
   | { ldapDn: string; username: string }
   | { ldapDn: string; slug: string }
   | { username: string }
-  | { username: string; userId: string; name: string; email: string }
+  | {
+      username: string
+      userId: string
+      name: string
+      email: string
+      discourseId?: string | null
+    }
 
 export interface CreateSyncEventParams {
   target: SyncTarget

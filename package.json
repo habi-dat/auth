@@ -27,6 +27,7 @@
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
+    "@types/node": "^22.13.4",
     "@biomejs/biome": "^2.3.14",
     "tsx": "^4.19.2",
     "turbo": "^2.8.3",

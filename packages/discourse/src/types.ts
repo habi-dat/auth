@@ -5,8 +5,20 @@ export interface DiscourseConfig {
   ssoSecret: string
 }
 
+/**
+ * DiscourseConnect / sync_sso external_id.
+ * Freeze `discourseId` after first link; otherwise use username (LDAP uid),
+ * which is what the Nextcloud discoursesso plugin sent.
+ */
+export function resolveDiscourseExternalId(user: {
+  discourseId?: string | null
+  username: string
+}): string {
+  return user.discourseId || user.username
+}
+
 export interface SsoUserData {
-  /** External id for Discourse (use user.discourseId ?? user.username; store after first sync) */
+  /** External id for Discourse (see resolveDiscourseExternalId) */
   externalId: string
   email: string
   username: string

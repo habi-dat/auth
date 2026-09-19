@@ -21,7 +21,7 @@ export type SessionUser = {
 }
 
 export type SessionWithGroups = {
-  user: SessionUser
+  user: SessionUser & { discourseId: string | null }
   memberships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
   ownerships: Array<{ groupId: string; group: { id: string; slug: string; name: string } }>
   primaryGroup: { name: string } | null

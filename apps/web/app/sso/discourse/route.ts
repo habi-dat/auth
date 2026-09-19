@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto'
 import { getAncestorGroupIds, getUserGroupSlugs } from '@habidat/auth/group-slugs'
 import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { resolveDiscourseExternalId } from '@habidat/discourse'
 import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 
@@ -56,6 +57,14 @@ export async function GET(request: Request) {
   }
 
   const user = sessionWithGroups.user
+  const externalId = resolveDiscourseExternalId(user)
+  if (!user.discourseId) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { discourseId: externalId },
+    })
+  }
+
   const memberGroupIds = sessionWithGroups.memberships.map(
     (m: { group: { id: string } }) => m.group.id
   )
@@ -66,7 +75,7 @@ export async function GET(request: Request) {
   // Build the response payload
   const responseParams = new URLSearchParams({
     nonce,
-    external_id: user.id,
+    external_id: externalId,
     email: user.email ?? '',
     username: user.username ?? user.name ?? '',
     name: user.name ?? '',

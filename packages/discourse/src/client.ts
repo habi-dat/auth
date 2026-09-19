@@ -64,8 +64,8 @@ export class DiscourseService {
   }
 
   /**
-   * Sync user via SSO. Use externalId = user.discourseId ?? user.username;
-   * save discourseId after first sync so it persists when username changes.
+   * Sync user via SSO. Pass externalId from resolveDiscourseExternalId
+   * (discourseId ?? username) and persist it on the user after first sync.
    * groups = group slugs (include parent groups for hierarchy).
    */
   async syncUserViaSso(user: SsoUserData): Promise<void> {

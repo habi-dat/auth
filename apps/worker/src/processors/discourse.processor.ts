@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@habidat/db'
-import type { DiscourseService } from '@habidat/discourse'
+import { type DiscourseService, resolveDiscourseExternalId } from '@habidat/discourse'
 import type { DiscourseSyncJobData, JOB_NAMES } from '@habidat/sync'
 import type { Job } from 'bullmq'
 
@@ -36,6 +36,7 @@ export function createDiscourseProcessor(
               userId: string
               name: string
               email: string
+              discourseId?: string | null
             }
           )
         } else {
@@ -160,9 +161,9 @@ async function handleSyncUser(
 
   const groupSlugs = await getGroupSlugsForUser(discourse, prisma, user.id)
 
-  // Hardcode the SSO identity strictly to `user.id` instead of mutable `user.username`
-  // so identity shifts don't ever open doors
-  const externalId = user.id
+  // Frozen DiscourseConnect key: existing discourseId, else username (LDAP uid).
+  // Username matches legacy Nextcloud SSO; once stored, username changes stay linked.
+  const externalId = resolveDiscourseExternalId(user)
   await discourse.syncUserViaSso({
     externalId,
     email: user.email,
@@ -189,6 +190,7 @@ async function handleDeleteUser(
     userId: string
     name: string
     email: string
+    discourseId?: string | null
   }
 ): Promise<void> {
   const result = await discourse.deleteUser(payload.username)
@@ -197,9 +199,9 @@ async function handleDeleteUser(
   } else if (result.suspended) {
     console.log(`[Discourse] User ${payload.username} has posts, suspended instead of deleted`)
     if (payload.userId) {
-      // Sync the user via SSO to free up the username
+      // Keep the existing SSO identity and only rename so the username is freed
       await discourse.syncUserViaSso({
-        externalId: payload.userId,
+        externalId: resolveDiscourseExternalId(payload),
         email: payload.email,
         username: payload.userId,
         name: payload.name,
