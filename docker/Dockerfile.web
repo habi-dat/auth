@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM node:22-alpine AS base
 
 FROM base AS builder
@@ -7,10 +8,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-# Install turbo global + platform binary (optional dep — install explicitly to avoid silent skip)
-RUN npm install turbo --global && \
-    TURBO_VERSION=$(node -e "console.log(require('/usr/local/lib/node_modules/turbo/package.json').version)") && \
-    npm install -g "@turbo/linux-64@${TURBO_VERSION}"
+# Install turbo global
+RUN npm install turbo --global
 COPY . .
 # Prune
 RUN turbo prune --scope=@habidat/web --docker
