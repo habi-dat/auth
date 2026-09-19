@@ -581,7 +581,7 @@
     },
     "echoOwnMessages": {
       "title": "Echo own messages",
-      "description": "When enabled, you will also receive emails for your own posts."
+      "description": "When enabled, you will also receive emails for your own posts in categories and tags. This does not apply to group messages."
     },
     "kindFilter": {
       "all": "All",
@@ -596,7 +596,7 @@
     },
     "subscriptions": {
       "title": "Subscriptions",
-      "description": "Here you can subscribe to the different topics discussed in the Syndikat. The list can be filtered: left by type, centre by content, right by subscription status.",
+      "description": "Categories and tags are forum topics. Groups in the list are group inboxes and @mentions, not topic mailing lists. Filter by type on the left, content in the middle, subscription status on the right.",
       "categories": "Categories",
       "tags": "Tags",
       "groups": "Groups"

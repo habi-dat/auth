@@ -68,13 +68,6 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     if (result?.serverError) {
       setMailingListMode(!enabled)
       toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
-    } else if (result?.data?.subscribedGroups?.length) {
-      const subscribed = result.data.subscribedGroups
-      setGroupLevels((prev) => {
-        const next = { ...prev }
-        for (const name of subscribed) next[name] = WATCHING
-        return next
-      })
     }
   }
 

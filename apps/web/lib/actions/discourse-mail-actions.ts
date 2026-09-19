@@ -28,14 +28,8 @@ export const toggleMailingListModeAction = userAction
   .action(async ({ parsedInput, ctx }) => {
     const discourse = getDiscourseClient()
     if (!discourse) throw new Error('Discourse not configured')
-    const username = ctx.session.user.username
-    await discourse.setUserMailingListMode(username, parsedInput.enabled)
-    if (parsedInput.enabled) {
-      const groups = await discourse.getGroupsWithNotifications(username)
-      await Promise.all(groups.map((g) => discourse.setGroupNotificationLevel(username, g.name, 3)))
-      return { success: true, subscribedGroups: groups.map((g) => g.name) }
-    }
-    return { success: true, subscribedGroups: [] }
+    await discourse.setUserMailingListMode(ctx.session.user.username, parsedInput.enabled)
+    return { success: true }
   })
 
 export const toggleEchoOwnMessagesAction = userAction

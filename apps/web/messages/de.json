@@ -581,7 +581,7 @@
     },
     "echoOwnMessages": {
       "title": "Eigene Nachrichten empfangen",
-      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge."
+      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge in Kategorien und Tags. Für Gruppen-Nachrichten gilt das nicht."
     },
     "kindFilter": {
       "all": "Alles",
@@ -596,7 +596,7 @@
     },
     "subscriptions": {
       "title": "Abonnements",
-      "description": "Hier kannst du die unterschiedlichen Themen, die im Syndikat diskutiert werden, abonnieren. Die Liste lässt sich filtern: links nach Typ, in der Mitte nach Inhalt, rechts nach Abostatus.",
+      "description": "Kategorien und Tags sind Themen im Syndikat. Gruppen in der Liste sind Gruppenpostfächer und @Erwähnungen, keine Themen-Mailinglisten. Filtern: links nach Typ, in der Mitte nach Inhalt, rechts nach Abostatus.",
       "categories": "Kategorien",
       "tags": "Tags",
       "groups": "Gruppen"
