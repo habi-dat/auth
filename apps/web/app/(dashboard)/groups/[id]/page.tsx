@@ -13,17 +13,16 @@ interface PageProps {
 export default async function EditGroupPage({ params }: PageProps) {
   const { id } = await params
   const session = await requireUserWithGroups()
-  const [group, allGroups, allUsers] = await Promise.all([
-    getGroup(id),
-    getGroupsForSelect(),
-    getUsersForSelect(),
-  ])
+  const group = await getGroup(id)
 
   if (!group) {
     notFound()
   }
 
   const canManage = canManageGroup(session, group.id)
+  const [allGroups, allUsers] = canManage
+    ? await Promise.all([getGroupsForSelect(), getUsersForSelect()])
+    : [[], []]
 
   return (
     <FormPageLayout

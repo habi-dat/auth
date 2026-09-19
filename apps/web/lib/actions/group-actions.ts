@@ -897,6 +897,8 @@ export async function getGroup(id: string) {
 
 // Get groups for select dropdown
 export async function getGroupsForSelect() {
+  const session = await getCurrentUserWithGroups()
+  if (!session) return []
   return prisma.group.findMany({
     select: { id: true, name: true, slug: true },
     orderBy: { name: 'asc' },

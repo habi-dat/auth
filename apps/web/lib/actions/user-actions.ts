@@ -1,6 +1,7 @@
 'use server'
 
 import { canManageGroup, canManageUser } from '@habidat/auth/roles'
+import { requireAdmin, requireGroupAdmin } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import { hashPassword } from 'better-auth/crypto'
 import { revalidatePath } from 'next/cache'
@@ -670,6 +671,7 @@ export const deleteUserAction = groupAdminAction
 
 // Get users (for list page)
 export async function getUsers(search?: string) {
+  await requireAdmin()
   return prisma.user.findMany({
     where: search
       ? {
@@ -699,6 +701,7 @@ export async function getUsers(search?: string) {
 
 // Get users for select/dropdown (minimal fields)
 export async function getUsersForSelect() {
+  await requireGroupAdmin()
   return prisma.user.findMany({
     select: { id: true, name: true, email: true },
     orderBy: { name: 'asc' },
@@ -707,7 +710,8 @@ export async function getUsersForSelect() {
 
 // Get single user
 export async function getUser(id: string) {
-  return prisma.user.findUnique({
+  const session = await requireGroupAdmin()
+  const user = await prisma.user.findUnique({
     where: { id },
     include: {
       memberships: {
@@ -723,4 +727,6 @@ export async function getUser(id: string) {
       primaryGroup: { select: { id: true, name: true, slug: true } },
     },
   })
+  if (!user || !canManageUser(session, user.memberships)) return null
+  return user
 }

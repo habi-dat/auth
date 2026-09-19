@@ -1,6 +1,7 @@
 'use server'
 
 import { getAncestorGroupIds } from '@habidat/auth/group-slugs'
+import { requireAdmin } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -8,6 +9,7 @@ import { adminAction } from '@/lib/actions/client'
 import { createAuditLog } from '@/lib/audit'
 
 export async function getApps() {
+  await requireAdmin()
   return prisma.app.findMany({
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     include: {

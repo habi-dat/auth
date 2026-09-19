@@ -1,6 +1,6 @@
 'use server'
 import { canManageGroup } from '@habidat/auth/roles'
-import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { requireGroupAdmin } from '@habidat/auth/session'
 import { type Prisma, prisma } from '@habidat/db'
 import { hashPassword } from 'better-auth/crypto'
 import { addDays } from 'date-fns'
@@ -116,7 +116,17 @@ export const createInviteAction = groupAdminAction
   })
 
 export async function getInvites() {
+  const session = await requireGroupAdmin()
+  const managedGroupIds = session.ownerships.map((o) => o.groupId)
   return prisma.invite.findMany({
+    where: session.isAdmin
+      ? undefined
+      : {
+          OR: [
+            { memberGroups: { some: { groupId: { in: managedGroupIds } } } },
+            { ownerGroups: { some: { groupId: { in: managedGroupIds } } } },
+          ],
+        },
     orderBy: { createdAt: 'desc' },
     include: {
       createdBy: { select: { id: true, name: true, email: true } },
@@ -151,8 +161,7 @@ export async function getInviteByToken(token: string): Promise<InviteWithGroupsR
 }
 
 export async function getGroupsForSelect() {
-  const session = await getCurrentUserWithGroups()
-  if (!session) return []
+  const session = await requireGroupAdmin()
 
   const where: Prisma.GroupWhereInput = {}
   if (!session.isAdmin) {
