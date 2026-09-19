@@ -2,6 +2,7 @@
 
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { isDiscourseConfigured } from '@/lib/discourse/client'
 
 export type ResolveLoginResult = { email: string } | { email: null; suggestedUsernames?: string[] }
 
@@ -40,7 +41,7 @@ export async function getLogoutUrlAction() {
     where: { sessionId: session.id },
   })
 
-  if (samlCount > 0) {
+  if (samlCount > 0 || isDiscourseConfigured()) {
     // Redirect to the logout route.
     // The "init" slug is a placeholder; initiateLogoutFlow ignores it
     // and looks up the sessions from the DB.

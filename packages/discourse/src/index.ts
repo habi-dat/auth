@@ -4,6 +4,8 @@ export type { DiscourseReturnUrlAllowlist } from './sso'
 export {
   hmacSha256Hex,
   parseAllowedDiscourseReturnUrl,
+  parseAllowedLogoutReturnUrl,
+  publicDiscourseOrigin,
   verifyDiscourseSsoPayload,
 } from './sso'
 export type {

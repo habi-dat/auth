@@ -64,31 +64,29 @@ function hostIsAllowed(
   return false
 }
 
-/**
- * DiscourseConnect `return_sso_url` must be http(s), have no credentials,
- * land on `/session/sso_login`, and use a host we already trust (Discourse
- * base URL, the auth app's parent domain, or TRUSTED_ORIGINS).
- */
-export function parseAllowedDiscourseReturnUrl(
-  returnSsoUrl: string,
-  allowlist: DiscourseReturnUrlAllowlist
-): URL | null {
-  let parsed: URL
+/** Browser-reachable Discourse origin; skips Docker service names like `discourse`. */
+export function publicDiscourseOrigin(discourseUrl?: string): string | null {
+  if (!discourseUrl) return null
   try {
-    parsed = new URL(returnSsoUrl)
+    const parsed = new URL(discourseUrl)
+    if (!parsed.hostname.includes('.')) return null
+    return parsed.origin
   } catch {
     return null
   }
+}
 
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null
-  if (parsed.username || parsed.password) return null
-  if (!parsed.pathname.endsWith('/session/sso_login')) return null
-
+function collectAllowedHosts(
+  allowlist: DiscourseReturnUrlAllowlist,
+  includeDiscourseUrl: boolean
+): { exactHosts: Set<string>; wildcardSuffixes: Set<string> } {
   const exactHosts = new Set<string>()
   const wildcardSuffixes = new Set<string>()
 
-  const discourseHost = allowlist.discourseUrl ? hostnameOf(allowlist.discourseUrl) : null
-  if (discourseHost) exactHosts.add(discourseHost)
+  if (includeDiscourseUrl) {
+    const discourseHost = allowlist.discourseUrl ? hostnameOf(allowlist.discourseUrl) : null
+    if (discourseHost) exactHosts.add(discourseHost)
+  }
 
   const appHost = allowlist.appUrl ? hostnameOf(allowlist.appUrl) : null
   if (appHost) {
@@ -106,8 +104,55 @@ export function parseAllowedDiscourseReturnUrl(
     }
   }
 
+  return { exactHosts, wildcardSuffixes }
+}
+
+function parseAllowedHttpUrl(
+  value: string,
+  allowlist: DiscourseReturnUrlAllowlist,
+  includeDiscourseUrl: boolean
+): URL | null {
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    return null
+  }
+
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null
+  if (parsed.username || parsed.password) return null
+
+  const { exactHosts, wildcardSuffixes } = collectAllowedHosts(allowlist, includeDiscourseUrl)
   if (exactHosts.size === 0 && wildcardSuffixes.size === 0) return null
   if (!hostIsAllowed(parsed.hostname.toLowerCase(), exactHosts, wildcardSuffixes)) return null
 
   return parsed
+}
+
+/**
+ * DiscourseConnect `return_sso_url` must be http(s), have no credentials,
+ * land on `/session/sso_login`, and use a host we already trust (Discourse
+ * base URL, the auth app's parent domain, or TRUSTED_ORIGINS).
+ */
+export function parseAllowedDiscourseReturnUrl(
+  returnSsoUrl: string,
+  allowlist: DiscourseReturnUrlAllowlist
+): URL | null {
+  const parsed = parseAllowedHttpUrl(returnSsoUrl, allowlist, true)
+  if (!parsed) return null
+  if (!parsed.pathname.endsWith('/session/sso_login')) return null
+  return parsed
+}
+
+/**
+ * Post-logout redirect (Discourse `logout_redirect` return). Same hosts as SSO,
+ * but any path, and Docker-internal DISCOURSE_URL hosts are not treated as
+ * browser destinations.
+ */
+export function parseAllowedLogoutReturnUrl(
+  returnTo: string,
+  allowlist: DiscourseReturnUrlAllowlist
+): URL | null {
+  const includeDiscourseUrl = Boolean(publicDiscourseOrigin(allowlist.discourseUrl))
+  return parseAllowedHttpUrl(returnTo, allowlist, includeDiscourseUrl)
 }

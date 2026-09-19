@@ -59,27 +59,26 @@ export function createLogoutRequestRedirect(params: {
   return (result as { context: string }).context
 }
 
-/**
- * Encode logout state into RelayState for chaining.
- */
-export function encodeLogoutState(state: {
+export type LogoutState = {
   remainingAppIds: string[]
   initiatorAppId?: string
   initiatorRelayState?: string
   initiatorRequestId?: string
-}): string {
+  /** Allowlisted URL to send the browser to after the chain finishes. */
+  returnTo?: string
+}
+
+/**
+ * Encode logout state into RelayState for chaining.
+ */
+export function encodeLogoutState(state: LogoutState): string {
   return Buffer.from(JSON.stringify(state)).toString('base64url')
 }
 
 /**
  * Decode logout state from RelayState.
  */
-export function decodeLogoutState(relayState: string | null): {
-  remainingAppIds: string[]
-  initiatorAppId?: string
-  initiatorRelayState?: string
-  initiatorRequestId?: string
-} | null {
+export function decodeLogoutState(relayState: string | null): LogoutState | null {
   if (!relayState) return null
   try {
     return JSON.parse(Buffer.from(relayState, 'base64url').toString('utf8'))

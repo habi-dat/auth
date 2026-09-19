@@ -163,6 +163,18 @@ export class DiscourseService {
     }
   }
 
+  async logOutUserByUsername(username: string): Promise<void> {
+    try {
+      const user = await this.request<{ user: { id: number } }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
+      if (user?.user?.id) await this.logOutUser(user.user.id)
+    } catch (e) {
+      if (isDiscourseNotFound(e)) return
+      console.warn(`Could not log out Discourse user ${username}:`, e)
+    }
+  }
+
   async findUserByEmail(email: string): Promise<{ username: string; id: number } | null> {
     try {
       // Discourse email lookups are available in active and suspended lists
