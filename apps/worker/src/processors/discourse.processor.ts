@@ -162,7 +162,7 @@ async function handleSyncUser(
   const groupSlugs = await getGroupSlugsForUser(discourse, prisma, user.id)
 
   // Frozen DiscourseConnect key: existing discourseId, else username (LDAP uid).
-  // Username matches legacy Nextcloud SSO; once stored, username changes stay linked.
+  // Matches historical SSO (LDAP uid as external_id); once stored, username changes stay linked.
   const externalId = resolveDiscourseExternalId(user)
   await discourse.syncUserViaSso({
     externalId,
