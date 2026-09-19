@@ -66,7 +66,6 @@ services:
       VIRTUAL_HOST: user.${DOMAIN}
       LETSENCRYPT_HOST: user.${DOMAIN}
       CERT_NAME: ${DOMAIN}
-      SESSION_SECRET: ${SESSION_SECRET}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -75,7 +74,7 @@ services:
       SMTP_SECURE: "false"
       SMTP_FROM: dev@${DOMAIN}
       SMTP_USER: ""
-      SMTP_PASSWORD: ""      
+      SMTP_PASS: ""
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
@@ -117,7 +116,7 @@ services:
       SMTP_SECURE: "false"
       SMTP_FROM: dev@${DOMAIN}
       SMTP_USER: ""
-      SMTP_PASSWORD: ""
+      SMTP_PASS: ""
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}

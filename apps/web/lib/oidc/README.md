@@ -24,7 +24,7 @@ When a user hits the authorization endpoint without a session, they are redirect
 ## Environment
 
 - `APP_URL` / `NEXT_PUBLIC_APP_URL`: Base URL (default `http://localhost:3000`).
-- `OIDC_COOKIE_KEYS`: Comma-separated keys for signing cookies (default uses a single dev key).
+- `OIDC_COOKIE_KEYS`: Comma-separated keys for signing cookies. Required in production; development falls back to a single local-only key.
 
 ## Database
 

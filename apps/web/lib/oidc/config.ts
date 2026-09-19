@@ -80,6 +80,17 @@ export function createFindAccount(): FindAccount {
 }
 
 /** Build oidc-provider Configuration. */
+function oidcCookieKeys(): string[] {
+  const fromEnv = process.env.OIDC_COOKIE_KEYS?.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (fromEnv && fromEnv.length > 0) return fromEnv
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('OIDC_COOKIE_KEYS is required in production')
+  }
+  return ['oidc-session-key-change-me']
+}
+
 export function getOidcConfiguration(
   _issuer: string,
   clients: ClientMetadata[],
@@ -96,9 +107,7 @@ export function getOidcConfiguration(
       },
     },
     cookies: {
-      keys: process.env.OIDC_COOKIE_KEYS
-        ? (process.env.OIDC_COOKIE_KEYS as string).split(',').map((s) => s.trim())
-        : ['oidc-session-key-change-me'],
+      keys: oidcCookieKeys(),
     },
     features: {
       devInteractions: { enabled: false },

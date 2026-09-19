@@ -56,7 +56,6 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
     setIsLoading(true)
     try {
       let email = data.identity.trim()
-      console.log('email', email)
       if (!email.includes('@')) {
         const result = await resolveLoginEmail(email)
         if (result.email) {
