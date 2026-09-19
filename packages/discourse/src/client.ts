@@ -1,21 +1,44 @@
-import { createHmac } from 'node:crypto'
-import type {
-  CreateCategoryData,
-  CreateGroupData,
-  DiscourseCategoryApi,
-  DiscourseConfig,
-  ListCategoriesResponse,
-  ShowCategoryResponse,
-  SsoUserData,
-  UpdateCategoryData,
-  UpdateGroupData,
+import { DiscourseApiError, isDiscourseNotFound } from './errors'
+import { hmacSha256Hex } from './sso'
+import {
+  type CreateCategoryData,
+  type CreateGroupData,
+  type DiscourseCategoryApi,
+  type DiscourseCategoryWithNotification,
+  type DiscourseConfig,
+  type DiscourseGroupBasic,
+  type DiscourseTagBasic,
+  type DiscourseUserMailProfile,
+  flattenCategoryList,
+  isDiscourseTagName,
+  type ListCategoriesResponse,
+  mergeWatchedTags,
+  type ShowCategoryResponse,
+  type SsoUserData,
+  type UpdateCategoryData,
+  type UpdateGroupData,
 } from './types'
 
 export class DiscourseService {
   private config: DiscourseConfig
+  /** Serializes watched-tags read-modify-write per Discourse username. */
+  private tagUpdateByUser = new Map<string, Promise<void>>()
 
   constructor(config: DiscourseConfig) {
     this.config = config
+  }
+
+  private enqueueUserTagUpdate(username: string, task: () => Promise<void>): Promise<void> {
+    const next = (this.tagUpdateByUser.get(username) ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(task)
+    this.tagUpdateByUser.set(username, next)
+    void next.finally(() => {
+      if (this.tagUpdateByUser.get(username) === next) {
+        this.tagUpdateByUser.delete(username)
+      }
+    })
+    return next
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -34,8 +57,9 @@ export class DiscourseService {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`Discourse API error: ${response.status} - ${error}`)
+      const body = await response.text()
+      console.error(`Discourse API ${response.status} ${path}:`, body.slice(0, 500))
+      throw new DiscourseApiError(response.status)
     }
 
     const text = await response.text()
@@ -53,15 +77,14 @@ export class DiscourseService {
       )
       return result?.group?.id ?? null
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return null
+      if (isDiscourseNotFound(err)) return null
       throw err
     }
   }
 
   /**
-   * Sync user via SSO. Use externalId = user.discourseId ?? user.username;
-   * save discourseId after first sync so it persists when username changes.
+   * Sync user via SSO. Pass externalId from resolveDiscourseExternalId
+   * (discourseId ?? username) and persist it on the user after first sync.
    * groups = group slugs (include parent groups for hierarchy).
    */
   async syncUserViaSso(user: SsoUserData): Promise<void> {
@@ -80,6 +103,7 @@ export class DiscourseService {
       email: user.email,
       username: user.username,
       name: user.name,
+      require_activation: 'false',
       ...(user.title != null && user.title !== '' && { title: user.title }),
       ...(user.groups != null && user.groups.length > 0 && { groups: user.groups.join(',') }),
     })
@@ -87,7 +111,7 @@ export class DiscourseService {
   }
 
   private signPayload(payload: string): string {
-    return createHmac('sha256', this.config.ssoSecret).update(payload).digest('hex')
+    return hmacSha256Hex(this.config.ssoSecret, payload)
   }
 
   async deleteUser(
@@ -97,8 +121,7 @@ export class DiscourseService {
     try {
       user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return { notFound: true }
+      if (isDiscourseNotFound(err)) return { notFound: true }
       throw err
     }
 
@@ -139,6 +162,18 @@ export class DiscourseService {
       })
     } catch (e) {
       console.warn(`Could not log out Discourse user (id: ${userId}):`, e)
+    }
+  }
+
+  async logOutUserByUsername(username: string): Promise<void> {
+    try {
+      const user = await this.request<{ user: { id: number } }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
+      if (user?.user?.id) await this.logOutUser(user.user.id)
+    } catch (e) {
+      if (isDiscourseNotFound(e)) return
+      console.warn(`Could not log out Discourse user ${username}:`, e)
     }
   }
 
@@ -235,13 +270,7 @@ export class DiscourseService {
     const result = await this.request<ListCategoriesResponse>(`/categories.json${q}`)
     const topLevel = result?.category_list?.categories ?? []
     if (!includeSubcategories) return topLevel
-    const flat: DiscourseCategoryApi[] = []
-    for (const cat of topLevel) {
-      flat.push(cat)
-      const subs = cat.subcategory_list ?? []
-      for (const sub of subs) flat.push(sub)
-    }
-    return flat
+    return flattenCategoryList(topLevel)
   }
 
   /**
@@ -301,6 +330,155 @@ export class DiscourseService {
   async deleteCategory(id: number): Promise<void> {
     await this.request(`/categories/${id}.json`, {
       method: 'DELETE',
+    })
+  }
+
+  // -------------------------------------------------------------------------
+  // User mail / notification settings (act as the user via Api-Username header)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Mail options, watched tags, and group notification levels from one
+   * GET /u/{username}.json. Returns null when the user does not exist.
+   */
+  async getUserMailProfile(username: string): Promise<DiscourseUserMailProfile | null> {
+    let result: {
+      user?: {
+        user_option?: { mailing_list_mode?: boolean; mailing_list_mode_frequency?: number }
+        watched_tags?: Array<{ name: string }>
+        groups?: DiscourseGroupBasic[]
+        group_users?: Array<{ group_id: number; notification_level: number }>
+      }
+    }
+    try {
+      result = await this.request(`/u/${encodeURIComponent(username)}.json`)
+    } catch (err) {
+      if (isDiscourseNotFound(err)) return null
+      throw err
+    }
+
+    const user = result?.user
+    const opt = user?.user_option
+    const groups = (user?.groups ?? []).filter((g) => !g.automatic)
+    const notifByGroupId = Object.fromEntries(
+      (user?.group_users ?? []).map((gu) => [
+        gu.group_id,
+        gu.notification_level as 0 | 1 | 2 | 3 | 4,
+      ])
+    )
+
+    return {
+      mailingListMode: opt?.mailing_list_mode ?? false,
+      echoOwnPosts: (opt?.mailing_list_mode_frequency ?? 1) === 0,
+      tagNotifications: (user?.watched_tags ?? []).map((t) => ({
+        tag_name: t.name,
+        notification_level: 3 as const,
+      })),
+      groups: groups.map((g) => ({
+        ...g,
+        notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4,
+      })),
+    }
+  }
+
+  /** Enable or disable mailing list mode for a user. PUT /u/{username} */
+  async setUserMailingListMode(username: string, enabled: boolean): Promise<void> {
+    await this.request(`/u/${encodeURIComponent(username)}`, {
+      method: 'PUT',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ mailing_list_mode: enabled }),
+    })
+  }
+
+  /** Set mailing list frequency: 0 = echo own posts, 1 = no own posts. PUT /u/{username} */
+  async setMailingListEchoOwnPosts(username: string, echo: boolean): Promise<void> {
+    await this.request(`/u/${encodeURIComponent(username)}`, {
+      method: 'PUT',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ mailing_list_mode_frequency: echo ? 0 : 1 }),
+    })
+  }
+
+  /**
+   * List all categories including the acting user's notification level for each.
+   * GET /categories.json (called as the target user via Api-Username)
+   */
+  async getCategoriesWithNotifications(
+    username: string
+  ): Promise<DiscourseCategoryWithNotification[]> {
+    const result = await this.request<ListCategoriesResponse>(
+      '/categories.json?include_subcategories=true',
+      { headers: { 'Api-Username': username } }
+    )
+    const topLevel = result?.category_list?.categories ?? []
+    return flattenCategoryList(topLevel) as DiscourseCategoryWithNotification[]
+  }
+
+  /**
+   * Set notification level for a category for the given user.
+   * POST /category/{id}/notifications (called as the target user)
+   * level: 3 = watching (subscribed), 1 = regular (unsubscribed)
+   */
+  async setCategoryNotificationLevel(
+    username: string,
+    categoryId: number,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    await this.request(`/category/${categoryId}/notifications`, {
+      method: 'POST',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ notification_level: level }),
+    })
+  }
+
+  /** Tags visible to the given user. GET /tags.json (acted as the user; staff tags omitted). */
+  async getAllTags(username: string): Promise<DiscourseTagBasic[]> {
+    const result = await this.request<{ tags: DiscourseTagBasic[] }>('/tags.json', {
+      headers: { 'Api-Username': username },
+    })
+    return (result?.tags ?? []).filter((t) => !t.staff)
+  }
+
+  /**
+   * Set notification level for a tag via PUT /u/{username}.
+   * Discourse manages tags as lists (watched_tags, tracked_tags, muted_tags) not numeric levels.
+   * Level 3 = watching, level 1 = regular (remove from all lists).
+   */
+  async setTagNotificationLevel(
+    username: string,
+    tagName: string,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    if (!isDiscourseTagName(tagName)) {
+      throw new Error('Invalid tag name')
+    }
+    return this.enqueueUserTagUpdate(username, async () => {
+      const userData = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
+      const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
+      const newList = mergeWatchedTags(current, tagName, level === 3)
+      await this.request(`/u/${encodeURIComponent(username)}`, {
+        method: 'PUT',
+        headers: { 'Api-Username': username },
+        body: JSON.stringify({ watched_tags: newList.join(',') }),
+      })
+    })
+  }
+
+  /**
+   * Set notification level for a group for the given user.
+   * POST /groups/{name}/notifications.json — Discourse routes by name, not numeric id.
+   */
+  async setGroupNotificationLevel(
+    username: string,
+    groupName: string,
+    level: 0 | 1 | 3
+  ): Promise<void> {
+    await this.request(`/groups/${encodeURIComponent(groupName)}/notifications.json`, {
+      method: 'POST',
+      headers: { 'Api-Username': username },
+      body: JSON.stringify({ notification_level: level }),
     })
   }
 }

@@ -5,8 +5,20 @@ export interface DiscourseConfig {
   ssoSecret: string
 }
 
+/**
+ * DiscourseConnect / sync_sso external_id.
+ * Freeze `discourseId` after first link; otherwise use username (LDAP uid),
+ * which is what the Nextcloud discoursesso plugin sent.
+ */
+export function resolveDiscourseExternalId(user: {
+  discourseId?: string | null
+  username: string
+}): string {
+  return user.discourseId || user.username
+}
+
 export interface SsoUserData {
-  /** External id for Discourse (use user.discourseId ?? user.username; store after first sync) */
+  /** External id for Discourse (see resolveDiscourseExternalId) */
   externalId: string
   email: string
   username: string
@@ -54,6 +66,21 @@ export interface DiscourseCategoryApi {
   [key: string]: unknown
 }
 
+/** Flatten `subcategory_list` to any depth (Discourse only sends one nested array per node). */
+export function flattenCategoryList<T extends { subcategory_list?: T[] }>(categories: T[]): T[] {
+  const flat: T[] = []
+  for (const cat of categories) {
+    flat.push(cat)
+    const subs = cat.subcategory_list
+    if (subs && subs.length > 0) {
+      for (const nested of flattenCategoryList(subs)) {
+        flat.push(nested)
+      }
+    }
+  }
+  return flat
+}
+
 /** Payload for creating a category (POST /categories.json). */
 export interface CreateCategoryData {
   name: string
@@ -87,4 +114,61 @@ export interface ListCategoriesResponse {
 /** Response from GET /c/{id}/show.json */
 export interface ShowCategoryResponse {
   category: DiscourseCategoryApi
+}
+
+// ---------------------------------------------------------------------------
+// User mail / notification settings
+// ---------------------------------------------------------------------------
+
+/** Category as returned when fetching as a specific user – includes their notification level. */
+export interface DiscourseCategoryWithNotification extends DiscourseCategoryApi {
+  notification_level: 0 | 1 | 2 | 3 | 4
+  email_in?: string | null
+}
+
+/** Tag names must not be empty or contain commas (watched_tags is a CSV). */
+export const DISCOURSE_TAG_NAME = /^[^\s,]{1,100}$/
+
+export function isDiscourseTagName(name: string): boolean {
+  return DISCOURSE_TAG_NAME.test(name)
+}
+
+/** Read-modify-write helper for Discourse `watched_tags` CSV lists. */
+export function mergeWatchedTags(current: string[], tagName: string, watching: boolean): string[] {
+  const without = current.filter((t) => t !== tagName)
+  return watching ? [...without, tagName] : without
+}
+
+/** Single tag as returned by GET /tags.json */
+export interface DiscourseTagBasic {
+  id: string
+  name: string
+  count: number
+  description?: string | null
+  staff?: boolean
+}
+
+/** Tag notification entry as returned by GET /tag-notifications.json */
+export interface DiscourseTagNotification {
+  tag_name: string
+  notification_level: 0 | 1 | 2 | 3 | 4
+}
+
+/** Group with user's notification level as returned by GET /groups.json (acted as user). */
+export interface DiscourseGroupBasic {
+  id: number
+  name: string
+  display_name: string
+  notification_level: 0 | 1 | 2 | 3 | 4
+  automatic?: boolean
+  bio_excerpt?: string | null
+  incoming_email?: string | null
+}
+
+/** Mail-related fields from a single GET /u/{username}.json */
+export interface DiscourseUserMailProfile {
+  mailingListMode: boolean
+  echoOwnPosts: boolean
+  tagNotifications: DiscourseTagNotification[]
+  groups: DiscourseGroupBasic[]
 }

@@ -11,6 +11,8 @@ const publicRoutes = [
   '/api/auth',
   '/sso/login',
   '/sso/logout',
+  '/sso/discourse',
+  '/sso/metadata',
   '/api/widget',
 ]
 

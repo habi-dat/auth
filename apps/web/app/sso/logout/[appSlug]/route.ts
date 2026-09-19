@@ -1,5 +1,7 @@
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { parseAllowedLogoutReturnUrl } from '@habidat/discourse'
+import { webEnv } from '@habidat/env/web'
 import {
   createLogoutRequestRedirect,
   createLogoutResponseRedirect,
@@ -12,8 +14,27 @@ import {
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { logoutCurrentUserFromDiscourse } from '@/lib/discourse/logout'
 
 const appUrl = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+function logoutReturnAllowlist() {
+  return {
+    discourseUrl: webEnv.DISCOURSE_URL,
+    appUrl: webEnv.APP_URL ?? appUrl,
+    trustedOrigins: webEnv.TRUSTED_ORIGINS,
+  }
+}
+
+function resolveReturnTo(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined
+  return parseAllowedLogoutReturnUrl(raw, logoutReturnAllowlist())?.toString()
+}
+
+function finishLocalLogoutRedirect(request: Request, returnTo?: string) {
+  if (returnTo) return NextResponse.redirect(returnTo)
+  return NextResponse.redirect(new URL(`${appUrl}/login`, request.url))
+}
 
 export async function GET(request: Request, context: { params: Promise<{ appSlug: string }> }) {
   const { appSlug } = await context.params
@@ -61,6 +82,8 @@ async function handleLogoutRequest(
     return NextResponse.redirect(redirectUrl)
   }
 
+  await logoutCurrentUserFromDiscourse()
+
   const session = sessionData.session as { id: string }
   // Find OTHER apps to logout
   const otherSamlApps = await prisma.samlSessionApp.findMany({
@@ -97,10 +120,14 @@ async function handleLogoutResponse(
 }
 
 async function initiateLogoutFlow(request: Request) {
+  const returnTo = resolveReturnTo(new URL(request.url).searchParams.get('returnTo'))
   const sessionData = await getSession()
   if (!sessionData?.session) {
-    return NextResponse.redirect(new URL(`${appUrl}/login`, request.url))
+    return finishLocalLogoutRedirect(request, returnTo)
   }
+
+  await logoutCurrentUserFromDiscourse()
+
   const session = sessionData.session as { id: string }
   const samlApps = await prisma.samlSessionApp.findMany({
     where: { sessionId: session.id },
@@ -109,11 +136,12 @@ async function initiateLogoutFlow(request: Request) {
 
   if (samlApps.length === 0) {
     await auth.api.signOut({ headers: await headers() }).catch(() => {})
-    return NextResponse.redirect(new URL(`${appUrl}/login`, request.url))
+    return finishLocalLogoutRedirect(request, returnTo)
   }
 
   const chainState = encodeLogoutState({
     remainingAppIds: samlApps.map((a) => a.appId),
+    returnTo,
   })
 
   return processNextInChain(request, chainState)
@@ -145,9 +173,9 @@ async function processNextInChain(request: Request, currentState: string) {
       }
     }
 
-    // Default: local signout and redirect to login
+    // Default: local signout and redirect to login (or Discourse, if requested)
     await auth.api.signOut({ headers: await headers() }).catch(() => {})
-    return NextResponse.redirect(new URL(`${appUrl}/login`, request.url))
+    return finishLocalLogoutRedirect(request, resolveReturnTo(state?.returnTo))
   }
 
   const nextAppId = state.remainingAppIds[0]

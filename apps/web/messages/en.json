@@ -561,5 +561,41 @@
       "slugRegex": "Only letters, numbers, _ and - allowed",
       "descriptionRequired": "Description is required"
     }
+  },
+  "mailSettings": {
+    "heading": "E-mail mode",
+    "notConfigured": "Discourse is not configured. Mail settings are not available.",
+    "userNotSynced": "Your forum account is not ready yet. Mail settings will appear once it has been created.",
+    "loadError": "Mail settings could not be loaded. Try again later.",
+    "errorTitle": "Error",
+    "errorGeneric": "Could not update mail settings. Try again later.",
+    "filterPlaceholder": "Filter...",
+    "noResults": "No results.",
+    "mailingListMode": {
+      "title": "E-mail mode active",
+      "description": "When enabled, you will receive an email for every new post in topics you are watching."
+    },
+    "echoOwnMessages": {
+      "title": "Echo own messages",
+      "description": "When enabled, you will also receive emails for your own posts in categories and tags. Group inboxes are not mailing lists, so this does not apply to them."
+    },
+    "kindFilter": {
+      "all": "All",
+      "groups": "Groups",
+      "categories": "Categories",
+      "tags": "Tags"
+    },
+    "subscribedFilter": {
+      "all": "All",
+      "subscribed": "Subscribed",
+      "unsubscribed": "Not subscribed"
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "description": "Categories and tags are forum topics. Groups in the list are group inboxes and @mentions, not topic mailing lists. Filter by type on the left, content in the middle, subscription status on the right.",
+      "categories": "Categories",
+      "tags": "Tags",
+      "groups": "Groups"
+    }
   }
 }

@@ -4,12 +4,17 @@ import {
   requireGroupAdmin,
   requireUserWithGroups,
 } from '@habidat/auth/session'
+import { DiscourseApiError } from '@habidat/discourse'
 import { createSafeActionClient, DEFAULT_SERVER_ERROR_MESSAGE } from 'next-safe-action'
 
 // Base action client with error handling
 export const actionClient = createSafeActionClient({
   handleServerError(e) {
-    console.error('Action error:', e.message)
+    console.error('Action error:', e)
+
+    if (e instanceof DiscourseApiError) {
+      return DEFAULT_SERVER_ERROR_MESSAGE
+    }
 
     if (e instanceof Error) {
       return e.message

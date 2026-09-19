@@ -561,5 +561,41 @@
       "slugRegex": "Nur Buchstaben, Zahlen, _ und - erlaubt",
       "descriptionRequired": "Beschreibung ist erforderlich"
     }
+  },
+  "mailSettings": {
+    "heading": "E-Mail Modus",
+    "notConfigured": "Discourse ist nicht konfiguriert. Mail-Einstellungen sind nicht verfügbar.",
+    "userNotSynced": "Dein Syndikat-Konto ist noch nicht bereit. Die Mail-Einstellungen erscheinen, sobald es angelegt wurde.",
+    "loadError": "Die Mail-Einstellungen konnten nicht geladen werden. Versuche es später erneut.",
+    "errorTitle": "Fehler",
+    "errorGeneric": "Die Mail-Einstellungen konnten nicht gespeichert werden. Versuche es später erneut.",
+    "filterPlaceholder": "Suchen...",
+    "noResults": "Keine Ergebnisse.",
+    "mailingListMode": {
+      "title": "E-Mail Modus aktiv",
+      "description": "Wenn du die Syndikatsnachrichten in deinem Mailprogramm bekommen und den Treffpunkt nicht verwenden möchtest, aktiviere diese Option und entscheide dann, über was du informiert werden möchtest."
+    },
+    "echoOwnMessages": {
+      "title": "Eigene Nachrichten empfangen",
+      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge in Kategorien und Tags. Gruppenpostfächer sind keine Mailinglisten — das gilt für sie nicht."
+    },
+    "kindFilter": {
+      "all": "Alles",
+      "groups": "Gruppen",
+      "categories": "Kategorien",
+      "tags": "Tags"
+    },
+    "subscribedFilter": {
+      "all": "Alles",
+      "subscribed": "Abonniert",
+      "unsubscribed": "Nicht Abonniert"
+    },
+    "subscriptions": {
+      "title": "Abonnements",
+      "description": "Kategorien und Tags sind Themen im Syndikat. Gruppen in der Liste sind Gruppenpostfächer und @Erwähnungen, keine Themen-Mailinglisten. Filtern: links nach Typ, in der Mitte nach Inhalt, rechts nach Abostatus.",
+      "categories": "Kategorien",
+      "tags": "Tags",
+      "groups": "Gruppen"
+    }
   }
 }
