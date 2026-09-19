@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  async redirects() {
+    return [
+      { source: '/lostpasswd', destination: '/forgot-password', permanent: true },
+      { source: '/forgot-passwd', destination: '/forgot-password', permanent: true },
+    ]
+  },
   allowedDevOrigins: ['http://localhost:3000', 'https://user.habidat.local'],
   images: {
     remotePatterns: [

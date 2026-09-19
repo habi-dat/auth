@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { hmacSha256Hex, parseAllowedDiscourseReturnUrl, verifyDiscourseSsoPayload } from './sso'
+import {
+  hmacSha256Hex,
+  isAllowedBrowserOrigin,
+  parseAllowedDiscourseReturnUrl,
+  verifyDiscourseSsoPayload,
+} from './sso'
 
 describe('verifyDiscourseSsoPayload', () => {
   it('accepts a matching hex HMAC', () => {
@@ -73,5 +78,23 @@ describe('parseAllowedDiscourseReturnUrl', () => {
       ),
       null
     )
+  })
+})
+
+describe('isAllowedBrowserOrigin', () => {
+  const allowlist = {
+    discourseUrl: 'http://discourse:80',
+    appUrl: 'https://user.example.org',
+    trustedOrigins: 'https://*.example.org',
+  }
+
+  it('allows the auth app origin and sibling hosts', () => {
+    assert.equal(isAllowedBrowserOrigin('https://user.example.org', allowlist), true)
+    assert.equal(isAllowedBrowserOrigin('https://cloud.example.org', allowlist), true)
+  })
+
+  it('rejects Docker-internal Discourse and unknown hosts', () => {
+    assert.equal(isAllowedBrowserOrigin('http://discourse', allowlist), false)
+    assert.equal(isAllowedBrowserOrigin('https://evil.example.net', allowlist), false)
   })
 })

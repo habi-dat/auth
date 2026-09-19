@@ -129,6 +129,14 @@ function parseAllowedHttpUrl(
   return parsed
 }
 
+/** True when `origin` is APP_URL, a sibling of APP_URL's parent domain, or TRUSTED_ORIGINS. */
+export function isAllowedBrowserOrigin(
+  origin: string,
+  allowlist: DiscourseReturnUrlAllowlist
+): boolean {
+  return parseAllowedHttpUrl(origin, allowlist, false) !== null
+}
+
 /**
  * DiscourseConnect `return_sso_url` must be http(s), have no credentials,
  * land on `/session/sso_login`, and use a host we already trust (Discourse

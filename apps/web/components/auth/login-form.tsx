@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { resolveLoginEmail } from '@/lib/actions/auth-actions'
+import { resolvePostLoginHref } from '@/lib/auth/post-login-redirect'
 
 interface LoginFormProps {
   platformName?: string
@@ -93,10 +94,8 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
         if (samlRequest) ssoUrl.searchParams.set('SAMLRequest', samlRequest)
         if (relayState) ssoUrl.searchParams.set('RelayState', relayState)
         router.push(ssoUrl.pathname + ssoUrl.search)
-      } else if (callbackUrl) {
-        router.push(callbackUrl)
       } else {
-        router.push(returnTo)
+        router.push(resolvePostLoginHref(returnTo, callbackUrl, window.location.origin))
       }
       router.refresh()
     } catch {

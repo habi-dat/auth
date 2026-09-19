@@ -1,5 +1,7 @@
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { isAllowedBrowserOrigin } from '@habidat/discourse'
+import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 import { getUserApps } from '@/lib/actions/app-actions'
 import { getGeneralSettings } from '@/lib/settings/general'
@@ -68,13 +70,28 @@ function renderWidgetHtml(apps: AppInfo[], logoUrl?: string | null, title?: stri
   `
 }
 
-export async function GET() {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
+function widgetCorsHeaders(request: Request): Record<string, string> {
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    Vary: 'Origin',
   }
+  const origin = request.headers.get('Origin')
+  if (
+    origin &&
+    isAllowedBrowserOrigin(origin, {
+      appUrl: webEnv.APP_URL,
+      trustedOrigins: webEnv.TRUSTED_ORIGINS,
+    })
+  ) {
+    headers['Access-Control-Allow-Origin'] = origin
+    headers['Access-Control-Allow-Credentials'] = 'true'
+  }
+  return headers
+}
+
+export async function GET(request: Request) {
+  const headers = widgetCorsHeaders(request)
 
   try {
     const sessionData = await getSession()
@@ -329,16 +346,6 @@ export async function GET() {
   }
 }
 
-export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-      },
-    }
-  )
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, { headers: widgetCorsHeaders(request) })
 }
