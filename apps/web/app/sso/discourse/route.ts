@@ -1,4 +1,4 @@
-import { getAncestorGroupIds, getUserGroupSlugs } from '@habidat/auth/group-slugs'
+import { getUserGroupSlugs } from '@habidat/auth/group-slugs'
 import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url)
-  const appUrl = APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? url.origin
+  const appUrl = APP_URL
   const ssoParam = url.searchParams.get('sso')
   const sig = url.searchParams.get('sig')
 
@@ -74,9 +74,7 @@ export async function GET(request: Request) {
   const memberGroupIds = sessionWithGroups.memberships.map(
     (m: { group: { id: string } }) => m.group.id
   )
-  const ancestorGroupIds = await getAncestorGroupIds(prisma, memberGroupIds)
-  const allGroupIds = [...memberGroupIds, ...ancestorGroupIds]
-  const groups = await getUserGroupSlugs(prisma, allGroupIds)
+  const groups = await getUserGroupSlugs(prisma, memberGroupIds)
 
   const responseParams = new URLSearchParams({
     nonce,

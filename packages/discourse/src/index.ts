@@ -24,4 +24,10 @@ export type {
   UpdateCategoryData,
   UpdateGroupData,
 } from './types'
-export { DISCOURSE_TAG_NAME, isDiscourseTagName, resolveDiscourseExternalId } from './types'
+export {
+  DISCOURSE_TAG_NAME,
+  flattenCategoryList,
+  isDiscourseTagName,
+  mergeWatchedTags,
+  resolveDiscourseExternalId,
+} from './types'

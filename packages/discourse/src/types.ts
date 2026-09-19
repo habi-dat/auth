@@ -66,6 +66,21 @@ export interface DiscourseCategoryApi {
   [key: string]: unknown
 }
 
+/** Flatten `subcategory_list` to any depth (Discourse only sends one nested array per node). */
+export function flattenCategoryList<T extends { subcategory_list?: T[] }>(categories: T[]): T[] {
+  const flat: T[] = []
+  for (const cat of categories) {
+    flat.push(cat)
+    const subs = cat.subcategory_list
+    if (subs && subs.length > 0) {
+      for (const nested of flattenCategoryList(subs)) {
+        flat.push(nested)
+      }
+    }
+  }
+  return flat
+}
+
 /** Payload for creating a category (POST /categories.json). */
 export interface CreateCategoryData {
   name: string
@@ -118,12 +133,19 @@ export function isDiscourseTagName(name: string): boolean {
   return DISCOURSE_TAG_NAME.test(name)
 }
 
+/** Read-modify-write helper for Discourse `watched_tags` CSV lists. */
+export function mergeWatchedTags(current: string[], tagName: string, watching: boolean): string[] {
+  const without = current.filter((t) => t !== tagName)
+  return watching ? [...without, tagName] : without
+}
+
 /** Single tag as returned by GET /tags.json */
 export interface DiscourseTagBasic {
   id: string
   name: string
   count: number
   description?: string | null
+  staff?: boolean
 }
 
 /** Tag notification entry as returned by GET /tag-notifications.json */

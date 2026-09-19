@@ -577,7 +577,7 @@
     },
     "echoOwnMessages": {
       "title": "Echo own messages",
-      "description": "When enabled, you will also receive emails for your own posts in categories and tags. This does not apply to group messages."
+      "description": "When enabled, you will also receive emails for your own posts in categories and tags. Group inboxes are not mailing lists, so this does not apply to them."
     },
     "kindFilter": {
       "all": "All",

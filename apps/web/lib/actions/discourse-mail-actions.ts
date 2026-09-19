@@ -41,7 +41,7 @@ export async function getMailSwitchData(): Promise<MailSwitchLoadResult> {
 
     const [categories, allTags] = await Promise.all([
       discourse.getCategoriesWithNotifications(username),
-      discourse.getAllTags(),
+      discourse.getAllTags(username),
     ])
 
     return { status: 'ok', ...profile, categories, allTags }

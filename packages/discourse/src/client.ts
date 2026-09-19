@@ -1,7 +1,6 @@
 import { DiscourseApiError, isDiscourseNotFound } from './errors'
 import { hmacSha256Hex } from './sso'
 import {
-  isDiscourseTagName,
   type CreateCategoryData,
   type CreateGroupData,
   type DiscourseCategoryApi,
@@ -10,7 +9,10 @@ import {
   type DiscourseGroupBasic,
   type DiscourseTagBasic,
   type DiscourseUserMailProfile,
+  flattenCategoryList,
+  isDiscourseTagName,
   type ListCategoriesResponse,
+  mergeWatchedTags,
   type ShowCategoryResponse,
   type SsoUserData,
   type UpdateCategoryData,
@@ -268,13 +270,7 @@ export class DiscourseService {
     const result = await this.request<ListCategoriesResponse>(`/categories.json${q}`)
     const topLevel = result?.category_list?.categories ?? []
     if (!includeSubcategories) return topLevel
-    const flat: DiscourseCategoryApi[] = []
-    for (const cat of topLevel) {
-      flat.push(cat)
-      const subs = cat.subcategory_list ?? []
-      for (const sub of subs) flat.push(sub)
-    }
-    return flat
+    return flattenCategoryList(topLevel)
   }
 
   /**
@@ -365,7 +361,10 @@ export class DiscourseService {
     const opt = user?.user_option
     const groups = (user?.groups ?? []).filter((g) => !g.automatic)
     const notifByGroupId = Object.fromEntries(
-      (user?.group_users ?? []).map((gu) => [gu.group_id, gu.notification_level as 0 | 1 | 2 | 3 | 4])
+      (user?.group_users ?? []).map((gu) => [
+        gu.group_id,
+        gu.notification_level as 0 | 1 | 2 | 3 | 4,
+      ])
     )
 
     return {
@@ -404,20 +403,15 @@ export class DiscourseService {
    * List all categories including the acting user's notification level for each.
    * GET /categories.json (called as the target user via Api-Username)
    */
-  async getCategoriesWithNotifications(username: string): Promise<DiscourseCategoryWithNotification[]> {
+  async getCategoriesWithNotifications(
+    username: string
+  ): Promise<DiscourseCategoryWithNotification[]> {
     const result = await this.request<ListCategoriesResponse>(
       '/categories.json?include_subcategories=true',
       { headers: { 'Api-Username': username } }
     )
     const topLevel = result?.category_list?.categories ?? []
-    const flat: DiscourseCategoryWithNotification[] = []
-    for (const cat of topLevel) {
-      flat.push(cat as DiscourseCategoryWithNotification)
-      for (const sub of cat.subcategory_list ?? []) {
-        flat.push(sub as DiscourseCategoryWithNotification)
-      }
-    }
-    return flat
+    return flattenCategoryList(topLevel) as DiscourseCategoryWithNotification[]
   }
 
   /**
@@ -437,10 +431,12 @@ export class DiscourseService {
     })
   }
 
-  /** List all available tags. GET /tags.json */
-  async getAllTags(): Promise<DiscourseTagBasic[]> {
-    const result = await this.request<{ tags: DiscourseTagBasic[] }>('/tags.json')
-    return result?.tags ?? []
+  /** Tags visible to the given user. GET /tags.json (acted as the user; staff tags omitted). */
+  async getAllTags(username: string): Promise<DiscourseTagBasic[]> {
+    const result = await this.request<{ tags: DiscourseTagBasic[] }>('/tags.json', {
+      headers: { 'Api-Username': username },
+    })
+    return (result?.tags ?? []).filter((t) => !t.staff)
   }
 
   /**
@@ -461,8 +457,7 @@ export class DiscourseService {
         `/u/${encodeURIComponent(username)}.json`
       )
       const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
-      const without = current.filter((t) => t !== tagName)
-      const newList = level === 3 ? [...without, tagName] : without
+      const newList = mergeWatchedTags(current, tagName, level === 3)
       await this.request(`/u/${encodeURIComponent(username)}`, {
         method: 'PUT',
         headers: { 'Api-Username': username },

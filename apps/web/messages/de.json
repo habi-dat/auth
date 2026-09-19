@@ -577,7 +577,7 @@
     },
     "echoOwnMessages": {
       "title": "Eigene Nachrichten empfangen",
-      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge in Kategorien und Tags. Für Gruppen-Nachrichten gilt das nicht."
+      "description": "Wenn aktiviert, erhältst du auch E-Mails für deine eigenen Beiträge in Kategorien und Tags. Gruppenpostfächer sind keine Mailinglisten — das gilt für sie nicht."
     },
     "kindFilter": {
       "all": "Alles",

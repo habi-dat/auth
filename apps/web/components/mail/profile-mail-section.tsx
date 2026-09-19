@@ -178,7 +178,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     color: c.color,
     description: c.description_text ?? undefined,
     email: c.email_in,
-    subscribed: (categoryLevels[c.id] ?? 1) >= WATCHING,
+    subscribed: (categoryLevels[c.id] ?? 1) === WATCHING,
     pending: categoryPending.has(c.id),
   }))
 
@@ -187,7 +187,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     kind: 'tag' as const,
     name: tag.name,
     description: tag.description ?? undefined,
-    subscribed: (tagLevels[tag.name] ?? 1) >= WATCHING,
+    subscribed: (tagLevels[tag.name] ?? 1) === WATCHING,
     pending: tagPending.has(tag.name),
   }))
 
@@ -197,7 +197,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     name: g.display_name || g.name,
     email: g.incoming_email,
     description: g.bio_excerpt,
-    subscribed: (groupLevels[g.name] ?? 1) >= WATCHING,
+    subscribed: (groupLevels[g.name] ?? 1) === WATCHING,
     pending: groupPending.has(g.name),
   }))
 
