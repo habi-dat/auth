@@ -3,12 +3,12 @@ import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { PageLayout } from '@/components/layout/page-layout'
+import { ProfileMailSection } from '@/components/mail/profile-mail-section'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getMailSwitchData } from '@/lib/actions/discourse-mail-actions'
-import { ProfileMailSection } from '@/components/mail/profile-mail-section'
 
 export default async function ProfilePage() {
   const t = await getTranslations('profile')

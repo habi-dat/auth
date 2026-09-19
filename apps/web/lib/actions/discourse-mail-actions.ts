@@ -3,11 +3,11 @@
 import { requireUserWithGroups } from '@habidat/auth/session'
 import {
   DISCOURSE_TAG_NAME,
-  isDiscourseNotFound,
   type DiscourseCategoryWithNotification,
   type DiscourseGroupBasic,
   type DiscourseTagBasic,
   type DiscourseTagNotification,
+  isDiscourseNotFound,
 } from '@habidat/discourse'
 import { z } from 'zod'
 import { getDiscourseClient } from '../discourse/client'

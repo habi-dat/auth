@@ -6,7 +6,13 @@ import { useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 
 export interface SubscriptionItem {
@@ -21,7 +27,8 @@ export interface SubscriptionItem {
 }
 
 const KindIcon = ({ kind }: { kind: SubscriptionItem['kind'] }) => {
-  if (kind === 'category') return <Layers className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+  if (kind === 'category')
+    return <Layers className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
   if (kind === 'tag') return <Tag className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
   return <Users className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
 }
@@ -38,11 +45,17 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
   const t = useTranslations('mailSettings')
   const [filter, setFilter] = useQueryState(filterKey, { defaultValue: '', shallow: true })
   const [kindFilter, setKindFilter] = useState<Kind | 'all'>('all')
-  const [subscribedFilter, setSubscribedFilter] = useState<'all' | 'subscribed' | 'unsubscribed'>('all')
+  const [subscribedFilter, setSubscribedFilter] = useState<'all' | 'subscribed' | 'unsubscribed'>(
+    'all'
+  )
 
   const filtered = items
     .filter((i) => kindFilter === 'all' || i.kind === kindFilter)
-    .filter((i) => subscribedFilter === 'all' || (subscribedFilter === 'subscribed' ? i.subscribed : !i.subscribed))
+    .filter(
+      (i) =>
+        subscribedFilter === 'all' ||
+        (subscribedFilter === 'subscribed' ? i.subscribed : !i.subscribed)
+    )
     .filter((i) => {
       if (!filter.trim()) return true
       const q = filter.toLowerCase()
@@ -62,19 +75,31 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
             <SelectContent>
               <SelectItem value="all">{t('kindFilter.all')}</SelectItem>
               <SelectItem value="group">
-                <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" />{t('kindFilter.groups')}</span>
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  {t('kindFilter.groups')}
+                </span>
               </SelectItem>
               <SelectItem value="category">
-                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" />{t('kindFilter.categories')}</span>
+                <span className="flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5" />
+                  {t('kindFilter.categories')}
+                </span>
               </SelectItem>
               <SelectItem value="tag">
-                <span className="flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{t('kindFilter.tags')}</span>
+                <span className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5" />
+                  {t('kindFilter.tags')}
+                </span>
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="w-[calc(50%-4px)] sm:w-auto sm:order-3 sm:shrink-0">
-          <Select value={subscribedFilter} onValueChange={(v) => setSubscribedFilter(v as typeof subscribedFilter)}>
+          <Select
+            value={subscribedFilter}
+            onValueChange={(v) => setSubscribedFilter(v as typeof subscribedFilter)}
+          >
             <SelectTrigger className="h-8 text-sm w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
@@ -97,7 +122,10 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
       ) : (
         <ul className="divide-y rounded-md border">
           {filtered.map((item) => (
-            <li key={`${item.kind}-${item.id}`} className="flex items-center justify-between gap-4 px-4 py-3">
+            <li
+              key={`${item.kind}-${item.id}`}
+              className="flex items-center justify-between gap-4 px-4 py-3"
+            >
               <div className="flex items-start gap-2 min-w-0 flex-1">
                 <KindIcon kind={item.kind} />
                 <div className="min-w-0">
@@ -111,9 +139,7 @@ export function SubscriptionList({ items, filterKey, onToggle }: SubscriptionLis
                     <p className="text-xs text-muted-foreground mt-0.5 font-mono">{item.email}</p>
                   )}
                   {item.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {item.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
                   )}
                 </div>
               </div>
