@@ -37,10 +37,7 @@
     "description": "Deine verfügbaren Anwendungen",
     "mainApps": "Hauptanwendungen",
     "otherApps": "Weitere Anwendungen",
-    "noApps": "Keine Apps verfügbar. Kontaktiere einen Administrator.",
-    "toolsSection": "Tools",
-    "mailSettingsTitle": "Mail-Einstellungen",
-    "mailSettingsDescription": "Mailing-List-Modus und Abonnements verwalten"
+    "noApps": "Keine Apps verfügbar. Kontaktiere einen Administrator."
   },
   "auth": {
     "login": {
@@ -125,7 +122,6 @@
     "title": "Profil",
     "edit": "Bearbeiten",
     "changePassword": "Passwort ändern",
-    "mailSettings": "Mail-Einstellungen",
     "email": "E-Mail",
     "location": "Ort",
     "language": "Sprache",
@@ -568,16 +564,13 @@
   },
   "mailSettings": {
     "heading": "E-Mail Modus",
-    "title": "Mail-Einstellungen",
     "notConfigured": "Discourse ist nicht konfiguriert. Mail-Einstellungen sind nicht verfügbar.",
     "errorTitle": "Fehler",
     "filterPlaceholder": "Suchen...",
     "noResults": "Keine Ergebnisse.",
     "mailingListMode": {
       "title": "E-Mail Modus aktiv",
-      "description": "Wenn du die Syndikatsnachrichten in deinem Mailprogramm bekommen und den Treffpunkt nicht verwenden möchtest, aktiviere diese Option und entscheide dann, über was du informiert werden möchtest.",
-      "on": "Aktiviert",
-      "off": "Deaktiviert"
+      "description": "Wenn du die Syndikatsnachrichten in deinem Mailprogramm bekommen und den Treffpunkt nicht verwenden möchtest, aktiviere diese Option und entscheide dann, über was du informiert werden möchtest."
     },
     "echoOwnMessages": {
       "title": "Eigene Nachrichten empfangen",

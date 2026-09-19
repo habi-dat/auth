@@ -37,10 +37,7 @@
     "description": "Your applications and services",
     "mainApps": "Main Applications",
     "otherApps": "Other Applications",
-    "noApps": "No apps available. Contact an administrator.",
-    "toolsSection": "Tools",
-    "mailSettingsTitle": "Mail settings",
-    "mailSettingsDescription": "Manage mailing list mode and subscriptions"
+    "noApps": "No apps available. Contact an administrator."
   },
   "auth": {
     "login": {
@@ -125,7 +122,6 @@
     "title": "Profile",
     "edit": "Edit",
     "changePassword": "Change password",
-    "mailSettings": "Mail settings",
     "email": "Email",
     "location": "Location",
     "language": "Language",
@@ -568,16 +564,13 @@
   },
   "mailSettings": {
     "heading": "E-mail mode",
-    "title": "Mail settings",
     "notConfigured": "Discourse is not configured. Mail settings are not available.",
     "errorTitle": "Error",
     "filterPlaceholder": "Filter...",
     "noResults": "No results.",
     "mailingListMode": {
       "title": "E-mail mode active",
-      "description": "When enabled, you will receive an email for every new post in topics you are watching.",
-      "on": "Enabled",
-      "off": "Disabled"
+      "description": "When enabled, you will receive an email for every new post in topics you are watching."
     },
     "echoOwnMessages": {
       "title": "Echo own messages",
