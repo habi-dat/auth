@@ -46,25 +46,41 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
   )
   const [groupPending, setGroupPending] = useState<Set<string>>(new Set())
 
+  const showMailError = useCallback(() => {
+    toast({ title: t('errorTitle'), description: t('errorGeneric'), variant: 'destructive' })
+  }, [t, toast])
+
   const handleMailingListMode = async (enabled: boolean) => {
     setMailingListMode(enabled)
     setMlmPending(true)
-    const result = await toggleMailingListModeAction({ enabled })
-    setMlmPending(false)
-    if (result?.serverError) {
+    try {
+      const result = await toggleMailingListModeAction({ enabled })
+      if (result?.serverError) {
+        setMailingListMode(!enabled)
+        showMailError()
+      }
+    } catch {
       setMailingListMode(!enabled)
-      toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+      showMailError()
+    } finally {
+      setMlmPending(false)
     }
   }
 
   const handleEchoOwnPosts = async (echo: boolean) => {
     setEchoOwnPosts(echo)
     setEchoPending(true)
-    const result = await toggleEchoOwnMessagesAction({ echo })
-    setEchoPending(false)
-    if (result?.serverError) {
+    try {
+      const result = await toggleEchoOwnMessagesAction({ echo })
+      if (result?.serverError) {
+        setEchoOwnPosts(!echo)
+        showMailError()
+      }
+    } catch {
       setEchoOwnPosts(!echo)
-      toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+      showMailError()
+    } finally {
+      setEchoPending(false)
     }
   }
 
@@ -74,14 +90,24 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       const prev = categoryLevels[catId]
       setCategoryLevels((l) => ({ ...l, [catId]: subscribed ? WATCHING : 1 }))
       setCategoryPending((p) => new Set(p).add(catId))
-      const result = await setCategorySubscriptionAction({ categoryId: catId, subscribed })
-      setCategoryPending((p) => { const next = new Set(p); next.delete(catId); return next })
-      if (result?.serverError) {
+      try {
+        const result = await setCategorySubscriptionAction({ categoryId: catId, subscribed })
+        if (result?.serverError) {
+          setCategoryLevels((l) => ({ ...l, [catId]: prev }))
+          showMailError()
+        }
+      } catch {
         setCategoryLevels((l) => ({ ...l, [catId]: prev }))
-        toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+        showMailError()
+      } finally {
+        setCategoryPending((p) => {
+          const next = new Set(p)
+          next.delete(catId)
+          return next
+        })
       }
     },
-    [categoryLevels, t, toast]
+    [categoryLevels, showMailError]
   )
 
   const handleTagToggle = useCallback(
@@ -90,14 +116,24 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       const prev = tagLevels[tagName]
       setTagLevels((l) => ({ ...l, [tagName]: subscribed ? WATCHING : 1 }))
       setTagPending((p) => new Set(p).add(tagName))
-      const result = await setTagSubscriptionAction({ tagName, subscribed })
-      setTagPending((p) => { const next = new Set(p); next.delete(tagName); return next })
-      if (result?.serverError) {
+      try {
+        const result = await setTagSubscriptionAction({ tagName, subscribed })
+        if (result?.serverError) {
+          setTagLevels((l) => ({ ...l, [tagName]: prev }))
+          showMailError()
+        }
+      } catch {
         setTagLevels((l) => ({ ...l, [tagName]: prev }))
-        toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+        showMailError()
+      } finally {
+        setTagPending((p) => {
+          const next = new Set(p)
+          next.delete(tagName)
+          return next
+        })
       }
     },
-    [tagLevels, t, toast]
+    [tagLevels, showMailError]
   )
 
   const handleGroupToggle = useCallback(
@@ -106,14 +142,24 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       const prev = groupLevels[groupName]
       setGroupLevels((l) => ({ ...l, [groupName]: subscribed ? WATCHING : 1 }))
       setGroupPending((p) => new Set(p).add(groupName))
-      const result = await setGroupSubscriptionAction({ groupName, subscribed })
-      setGroupPending((p) => { const next = new Set(p); next.delete(groupName); return next })
-      if (result?.serverError) {
+      try {
+        const result = await setGroupSubscriptionAction({ groupName, subscribed })
+        if (result?.serverError) {
+          setGroupLevels((l) => ({ ...l, [groupName]: prev }))
+          showMailError()
+        }
+      } catch {
         setGroupLevels((l) => ({ ...l, [groupName]: prev }))
-        toast({ title: t('errorTitle'), description: result.serverError, variant: 'destructive' })
+        showMailError()
+      } finally {
+        setGroupPending((p) => {
+          const next = new Set(p)
+          next.delete(groupName)
+          return next
+        })
       }
     },
-    [groupLevels, t, toast]
+    [groupLevels, showMailError]
   )
 
   const handleToggle = useCallback(

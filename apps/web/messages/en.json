@@ -568,6 +568,7 @@
     "userNotSynced": "Your forum account is not ready yet. Mail settings will appear once it has been created.",
     "loadError": "Mail settings could not be loaded. Try again later.",
     "errorTitle": "Error",
+    "errorGeneric": "Could not update mail settings. Try again later.",
     "filterPlaceholder": "Filter...",
     "noResults": "No results.",
     "mailingListMode": {
