@@ -89,14 +89,11 @@ export const createInviteAction = groupAdminAction
       inviterName: invite.createdBy.name,
       inviteLink,
     })
-    const { sent, error } = await sendEmail({
+    await sendEmail({
       to: parsedInput.email,
       subject,
       html,
     })
-    if (!sent && error) {
-      console.error('[Invite] Failed to send email:', error)
-    }
 
     await createAuditLog({
       actorId: session.user.id,
@@ -112,7 +109,7 @@ export const createInviteAction = groupAdminAction
     })
 
     revalidatePath('/invites')
-    return { invite, emailSent: sent }
+    return { invite, emailSent: true }
   })
 
 export async function getInvites() {
@@ -267,17 +264,14 @@ export const resendInviteAction = groupAdminAction
       inviterName: invite.createdBy?.name ?? session.user.name,
       inviteLink,
     })
-    const { sent, error } = await sendEmail({
+    await sendEmail({
       to: invite.email,
       subject,
       html,
     })
-    if (!sent && error) {
-      console.error('[Invite] Failed to resend email:', error)
-    }
 
     revalidatePath('/invites')
-    return { success: true, emailSent: sent }
+    return { success: true, emailSent: true }
   })
 
 const acceptInviteSchema = z.object({

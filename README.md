@@ -102,7 +102,7 @@ This starts the dev stack defined in `docker/docker-compose.dev.yml` (DB, Redis,
 ## SSO
 
 - **DiscourseConnect** is served by habidat-auth at `/sso/discourse`. Point Discourse `discourse_connect_url` there (not the Nextcloud `discoursesso` app). The shared secret is `DISCOURSE_SSO_SECRET`.
-- **SAML** IdP endpoints are `/sso/login/<appSlug>`, `/sso/logout/<appSlug>`, and `/sso/metadata`.
+- **SAML** IdP endpoints are `/sso/login` and `/sso/logout` (resolve the app from the SAML Issuer), `/sso/login/<appSlug>`, `/sso/logout/<appSlug>`, and `/sso/metadata`.
 
 ## Floating app menu
 

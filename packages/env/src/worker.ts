@@ -21,17 +21,6 @@ export const workerEnv = createEnv({
     DISCOURSE_API_USERNAME: z.string().optional(),
     DISCOURSE_SSO_SECRET: z.string().optional(),
 
-    // SMTP
-    SMTP_HOST: z.string(),
-    SMTP_PORT: z.coerce.number(),
-    SMTP_SECURE: z
-      .string()
-      .transform((v) => v === 'true')
-      .default('false'),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASS: z.string().optional(),
-    SMTP_FROM: z.string().email(),
-
     // App
     APP_URL: z.string().url(),
   },

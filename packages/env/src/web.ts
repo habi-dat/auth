@@ -11,6 +11,15 @@ export const webEnv = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
     SAML_PRIVATE_KEY: z.string().optional(),
     SAML_CERTIFICATE: z.string().optional(),
+    SMTP_HOST: z.string().min(1),
+    SMTP_PORT: z.coerce.number(),
+    SMTP_SECURE: z
+      .string()
+      .transform((v) => v === 'true')
+      .default('false'),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    SMTP_FROM: z.string().email(),
     // Discourse (for category management via API)
     DISCOURSE_URL: z.string().url().optional(),
     DISCOURSE_API_KEY: z.string().optional(),
@@ -30,6 +39,12 @@ export const webEnv = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     SAML_PRIVATE_KEY: process.env.SAML_PRIVATE_KEY,
     SAML_CERTIFICATE: process.env.SAML_CERTIFICATE,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_SECURE: process.env.SMTP_SECURE,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM: process.env.SMTP_FROM,
     DISCOURSE_URL: process.env.DISCOURSE_URL,
     DISCOURSE_API_KEY: process.env.DISCOURSE_API_KEY,
     DISCOURSE_API_USERNAME: process.env.DISCOURSE_API_USERNAME,

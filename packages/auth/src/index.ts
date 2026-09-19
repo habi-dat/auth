@@ -51,6 +51,7 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
   const syncLdapPassword = overrides.syncLdapPassword
   return betterAuth({
     baseURL,
+    trustHost: true,
     database: prismaAdapter(prisma, {
       provider: 'postgresql',
     }),

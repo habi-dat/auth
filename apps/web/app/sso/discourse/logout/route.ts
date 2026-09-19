@@ -1,7 +1,4 @@
-import {
-  parseAllowedLogoutReturnUrl,
-  publicDiscourseOrigin,
-} from '@habidat/discourse'
+import { parseAllowedLogoutReturnUrl, publicDiscourseOrigin } from '@habidat/discourse'
 import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 

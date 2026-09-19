@@ -78,6 +78,7 @@ async function importFromLdap(
 
   const userDnToId = new Map<string, string>()
   const groupDnToId = new Map<string, string>()
+  const skippedPasswordUids: string[] = []
 
   await prisma.$transaction(
     async (tx) => {
@@ -127,8 +128,8 @@ async function importFromLdap(
 
         const storedPassword = (u.userPassword ?? '').trim()
         if (storedPassword) {
-          let password: string
-          let passwordHashType: string
+          let password: string | null = null
+          let passwordHashType: string | null = null
           if (storedPassword.startsWith('{SSHA}')) {
             password = storedPassword
             passwordHashType = 'ssha'
@@ -136,18 +137,19 @@ async function importFromLdap(
             password = storedPassword
             passwordHashType = 'scrypt'
           } else {
-            password = await hashPassword(storedPassword)
-            passwordHashType = 'scrypt'
+            skippedPasswordUids.push(u.uid)
           }
-          await tx.account.create({
-            data: {
-              userId: user.id,
-              accountId: user.id,
-              providerId: 'credential',
-              password,
-              passwordHashType,
-            },
-          })
+          if (password && passwordHashType) {
+            await tx.account.create({
+              data: {
+                userId: user.id,
+                accountId: user.id,
+                providerId: 'credential',
+                password,
+                passwordHashType,
+              },
+            })
+          }
         }
       }
 
@@ -303,6 +305,12 @@ async function importFromLdap(
     },
     { timeout: 300_000 }
   )
+
+  if (skippedPasswordUids.length > 0) {
+    console.log(
+      `LDAP import: skipped unusable password hashes for ${skippedPasswordUids.length} user(s): ${skippedPasswordUids.join(', ')}. They can sign in after a password reset.`
+    )
+  }
 
   console.log('LDAP import completed.')
   return true

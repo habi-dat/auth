@@ -3,7 +3,8 @@ import { getIdentityProvider, getServiceProvider } from './config'
 import { createTemplateCallback } from './template'
 
 export interface SamlLoginRequest {
-  query: { SAMLRequest?: string; RelayState?: string }
+  query?: { SAMLRequest?: string; RelayState?: string }
+  body?: { SAMLRequest?: string; RelayState?: string }
 }
 
 /** Result of parsing a SAML AuthnRequest; pass to createLoginResponse. */
@@ -12,16 +13,16 @@ export type ParsedLoginRequest = Awaited<
 >
 
 /**
- * Parse incoming SAML AuthnRequest (GET redirect binding).
+ * Parse incoming SAML AuthnRequest (HTTP-Redirect or HTTP-POST).
  * @throws Promise rejection with string code on parse/signature failure
  */
 export async function parseLoginRequest(
   app: AppSaml,
-  req: SamlLoginRequest
+  req: SamlLoginRequest,
+  binding: 'redirect' | 'post' = 'redirect'
 ): Promise<ParsedLoginRequest> {
   const idp = getIdentityProvider()
   const sp = getServiceProvider(app)
-  const binding = 'redirect'
   return idp.parseLoginRequest(sp, binding, req)
 }
 
