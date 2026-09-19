@@ -38,6 +38,8 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
     },
     emailAndPassword: {
       enabled: true,
+      // Users are created by admins or invite accept, not public /sign-up/email.
+      disableSignUp: true,
       requireEmailVerification: false,
       minPasswordLength: 8,
       ...(overrides.sendResetPassword && { sendResetPassword: overrides.sendResetPassword }),
