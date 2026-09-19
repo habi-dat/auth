@@ -100,11 +100,11 @@ export async function GET(request: Request, context: { params: Promise<{ appSlug
       where: {
         sessionId_appId: { sessionId: session.id, appId: app.id },
       },
-      update: { nameId: sessionWithGroups.user.email },
+      update: { nameId: sessionWithGroups.user.username },
       create: {
         sessionId: session.id,
         appId: app.id,
-        nameId: sessionWithGroups.user.email,
+        nameId: sessionWithGroups.user.username,
       },
     })
   }

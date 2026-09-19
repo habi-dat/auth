@@ -57,7 +57,7 @@ export const samlIdpConfig = {
   get sloUrl() {
     return `${getAppUrl()}/sso/logout`
   },
-  nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+  nameIdFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified',
   assertionLifetimeMs: 5 * 60 * 1000, // 5 minutes
   privateKey: getSecret('SAML_PRIVATE_KEY', '/app/saml/key.pem'),
   certificate: getSecret('SAML_CERTIFICATE', '/app/saml/cert.cer'),
