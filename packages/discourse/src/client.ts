@@ -1,25 +1,41 @@
 import { hmacSha256Hex } from './sso'
-import type {
-  CreateCategoryData,
-  CreateGroupData,
-  DiscourseCategoryApi,
-  DiscourseCategoryWithNotification,
-  DiscourseConfig,
-  DiscourseGroupBasic,
-  DiscourseTagBasic,
-  DiscourseTagNotification,
-  ListCategoriesResponse,
-  ShowCategoryResponse,
-  SsoUserData,
-  UpdateCategoryData,
-  UpdateGroupData,
+import {
+  isDiscourseTagName,
+  type CreateCategoryData,
+  type CreateGroupData,
+  type DiscourseCategoryApi,
+  type DiscourseCategoryWithNotification,
+  type DiscourseConfig,
+  type DiscourseGroupBasic,
+  type DiscourseTagBasic,
+  type DiscourseTagNotification,
+  type ListCategoriesResponse,
+  type ShowCategoryResponse,
+  type SsoUserData,
+  type UpdateCategoryData,
+  type UpdateGroupData,
 } from './types'
 
 export class DiscourseService {
   private config: DiscourseConfig
+  /** Serializes watched-tags read-modify-write per Discourse username. */
+  private tagUpdateByUser = new Map<string, Promise<void>>()
 
   constructor(config: DiscourseConfig) {
     this.config = config
+  }
+
+  private enqueueUserTagUpdate(username: string, task: () => Promise<void>): Promise<void> {
+    const next = (this.tagUpdateByUser.get(username) ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(task)
+    this.tagUpdateByUser.set(username, next)
+    void next.finally(() => {
+      if (this.tagUpdateByUser.get(username) === next) {
+        this.tagUpdateByUser.delete(username)
+      }
+    })
+    return next
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -416,16 +432,21 @@ export class DiscourseService {
     tagName: string,
     level: 0 | 1 | 3
   ): Promise<void> {
-    const userData = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
-      `/u/${encodeURIComponent(username)}.json`
-    )
-    const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
-    const without = current.filter((t) => t !== tagName)
-    const newList = level === 3 ? [...without, tagName] : without
-    await this.request(`/u/${encodeURIComponent(username)}`, {
-      method: 'PUT',
-      headers: { 'Api-Username': username },
-      body: JSON.stringify({ watched_tags: newList.join(',') }),
+    if (!isDiscourseTagName(tagName)) {
+      throw new Error('Invalid tag name')
+    }
+    return this.enqueueUserTagUpdate(username, async () => {
+      const userData = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
+      const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
+      const without = current.filter((t) => t !== tagName)
+      const newList = level === 3 ? [...without, tagName] : without
+      await this.request(`/u/${encodeURIComponent(username)}`, {
+        method: 'PUT',
+        headers: { 'Api-Username': username },
+        body: JSON.stringify({ watched_tags: newList.join(',') }),
+      })
     })
   }
 

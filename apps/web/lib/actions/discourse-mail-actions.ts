@@ -1,6 +1,7 @@
 'use server'
 
 import { requireUserWithGroups } from '@habidat/auth/session'
+import { DISCOURSE_TAG_NAME } from '@habidat/discourse'
 import { z } from 'zod'
 import { getDiscourseClient } from '../discourse/client'
 import { userAction } from './client'
@@ -55,7 +56,7 @@ export const setCategorySubscriptionAction = userAction
   })
 
 export const setTagSubscriptionAction = userAction
-  .schema(z.object({ tagName: z.string(), subscribed: z.boolean() }))
+  .schema(z.object({ tagName: z.string().regex(DISCOURSE_TAG_NAME), subscribed: z.boolean() }))
   .action(async ({ parsedInput, ctx }) => {
     const discourse = getDiscourseClient()
     if (!discourse) throw new Error('Discourse not configured')

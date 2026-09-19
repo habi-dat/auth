@@ -111,6 +111,13 @@ export interface DiscourseCategoryWithNotification extends DiscourseCategoryApi 
   email_in?: string | null
 }
 
+/** Tag names must not be empty or contain commas (watched_tags is a CSV). */
+export const DISCOURSE_TAG_NAME = /^[^\s,]{1,100}$/
+
+export function isDiscourseTagName(name: string): boolean {
+  return DISCOURSE_TAG_NAME.test(name)
+}
+
 /** Single tag as returned by GET /tags.json */
 export interface DiscourseTagBasic {
   id: string

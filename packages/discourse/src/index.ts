@@ -20,4 +20,4 @@ export type {
   UpdateCategoryData,
   UpdateGroupData,
 } from './types'
-export { resolveDiscourseExternalId } from './types'
+export { DISCOURSE_TAG_NAME, isDiscourseTagName, resolveDiscourseExternalId } from './types'
