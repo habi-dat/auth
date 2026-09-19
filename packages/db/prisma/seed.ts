@@ -13,7 +13,9 @@ import { resolve } from 'node:path'
  * - If LDAP env is set and LDAP has users/groups: import from LDAP into DB (member = users + subgroups, owner = group admins).
  * - If LDAP is empty or not set: create admin user/group in DB, then optionally bootstrap LDAP.
  * - Always import JSON stores from /app/import when present (apps/settings/invites), even if users already exist.
- * Imported users keep LDAP hashed passwords (SSHA); passwordHashType is set so they can still log in.
+ * Imported users keep LDAP hashed passwords (SSHA) or have plaintext LDAP
+ * passwords hashed with scrypt so they can log in. After import (and on
+ * re-run), the ADMIN_EMAIL user always gets a credential account if missing.
  */
 import { hashPasswordSsha, LdapService } from '@habidat/ldap'
 import { PrismaPg } from '@prisma/adapter-pg'
@@ -128,27 +130,19 @@ async function importFromLdap(
 
         const storedPassword = (u.userPassword ?? '').trim()
         if (storedPassword) {
-          let password: string | null = null
-          let passwordHashType: string | null = null
-          if (storedPassword.startsWith('{SSHA}')) {
-            password = storedPassword
-            passwordHashType = 'ssha'
-          } else if (storedPassword.startsWith('$scrypt$') || storedPassword.startsWith('$2')) {
-            password = storedPassword
-            passwordHashType = 'scrypt'
-          } else {
-            skippedPasswordUids.push(u.uid)
-          }
-          if (password && passwordHashType) {
+          const credential = await credentialFromLdapPassword(storedPassword)
+          if (credential) {
             await tx.account.create({
               data: {
                 userId: user.id,
                 accountId: user.id,
                 providerId: 'credential',
-                password,
-                passwordHashType,
+                password: credential.password,
+                passwordHashType: credential.passwordHashType,
               },
             })
+          } else {
+            skippedPasswordUids.push(u.uid)
           }
         }
       }
@@ -661,10 +655,81 @@ async function main() {
       }
     }
 
+    await ensureAdminCredentialAccount(prisma, adminEmail, adminPassword, adminUsername)
     await importJsonData(prisma)
   } finally {
     await pool.end()
   }
+}
+
+/** Map an LDAP userPassword value to a Better Auth credential hash. */
+async function credentialFromLdapPassword(
+  storedPassword: string
+): Promise<{ password: string; passwordHashType: string } | null> {
+  if (storedPassword.startsWith('{SSHA}')) {
+    return { password: storedPassword, passwordHashType: 'ssha' }
+  }
+  if (storedPassword.startsWith('$scrypt$') || storedPassword.startsWith('$2')) {
+    return { password: storedPassword, passwordHashType: 'scrypt' }
+  }
+  const cleartext = storedPassword.match(/^\{(?:CLEARTEXT|PLAIN)\}(.*)$/i)
+  if (cleartext) {
+    return { password: await hashPassword(cleartext[1]), passwordHashType: 'scrypt' }
+  }
+  // Unknown LDAP scheme (e.g. {CRYPT}, {MD5}) cannot be verified by Better Auth.
+  if (storedPassword.startsWith('{')) {
+    return null
+  }
+  // OpenLDAP bootstrap often stores the password in plaintext.
+  return { password: await hashPassword(storedPassword), passwordHashType: 'scrypt' }
+}
+
+/**
+ * LDAP import skips admin creation, so a missing credential account would
+ * lock the admin out. Also repairs installs whose first seed skipped plaintext
+ * LDAP passwords. Idempotent: does nothing when a password already exists.
+ */
+async function ensureAdminCredentialAccount(
+  prisma: PrismaClient,
+  adminEmail: string,
+  adminPassword: string,
+  adminUsername: string
+) {
+  const adminUser = await prisma.user.findFirst({
+    where: { OR: [{ email: adminEmail }, { username: adminUsername }] },
+  })
+  if (!adminUser) {
+    console.log('Admin user not found; skipping credential account ensure.')
+    return
+  }
+
+  const existing = await prisma.account.findFirst({
+    where: { userId: adminUser.id, providerId: 'credential' },
+  })
+  if (existing?.password) {
+    return
+  }
+
+  const hashedPassword = await hashPassword(adminPassword)
+  if (existing) {
+    await prisma.account.update({
+      where: { id: existing.id },
+      data: { password: hashedPassword, passwordHashType: 'scrypt' },
+    })
+    console.log(`Set credential password for admin user ${adminUser.email}`)
+    return
+  }
+
+  await prisma.account.create({
+    data: {
+      userId: adminUser.id,
+      accountId: adminUser.id,
+      providerId: 'credential',
+      password: hashedPassword,
+      passwordHashType: 'scrypt',
+    },
+  })
+  console.log(`Created credential account for admin user ${adminUser.email}`)
 }
 
 async function importJsonData(prisma: PrismaClient) {
