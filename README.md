@@ -21,7 +21,7 @@ This is a monorepo containing:
 
 ## Development setup (with habidat-setup)
 
-This project is designed to run against a local `habidat-setup` instance so auth can integrate with LDAP, Nextcloud and Discourse.
+This project is designed to run against a local `habidat-setup` instance so auth can integrate with LDAP, Discourse, and other habidat apps.
 
 ### 1. Checkout and install habidat-setup
 
@@ -98,6 +98,12 @@ pnpm dev
 ```
 
 This starts the dev stack defined in `docker/docker-compose.dev.yml` (DB, Redis, Mailhog, web, worker) and connects to your local `habidat-setup` networks.
+
+## SSO
+
+- **DiscourseConnect** is served by habidat-auth at `/sso/discourse`. Point Discourse `discourse_connect_url` there (not the Nextcloud `discoursesso` app). The shared secret is `DISCOURSE_SSO_SECRET`.
+- **SAML** IdP endpoints are `/sso/login` and `/sso/logout` (resolve the app from the SAML Issuer), `/sso/login/<appSlug>`, `/sso/logout/<appSlug>`, and `/sso/metadata`.
+- **OpenID Connect** issuer is `{APP_URL}/oidc` (discovery at `/oidc/.well-known/openid-configuration`). Enable OIDC on an app and set client ID, redirect URIs, and optional secret.
 
 ## Floating app menu
 

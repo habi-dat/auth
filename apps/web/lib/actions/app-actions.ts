@@ -1,6 +1,7 @@
 'use server'
 
 import { getAncestorGroupIds } from '@habidat/auth/group-slugs'
+import { requireAdmin } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -8,6 +9,7 @@ import { adminAction } from '@/lib/actions/client'
 import { createAuditLog } from '@/lib/audit'
 
 export async function getApps() {
+  await requireAdmin()
   return prisma.app.findMany({
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     include: {
@@ -47,7 +49,7 @@ const appSchema = z.object({
   slug: z
     .string()
     .min(2)
-    .regex(/^[a-zA-Z0-9-]+$/, 'Slug must be letters, numbers, hyphens only'),
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/, 'Slug must be letters, numbers, dots, and hyphens'),
   name: z.string().min(2),
   description: z.string().optional().nullable(),
   url: z.string().url(),
@@ -62,7 +64,21 @@ const appSchema = z.object({
   samlCertificate: z.string().optional().nullable(),
   oidcEnabled: z.boolean().default(false),
   oidcClientId: z.string().optional().nullable(),
-  oidcRedirectUris: z.string().optional().nullable(),
+  oidcRedirectUris: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => {
+      if (!val) return true
+      try {
+        const parsed = JSON.parse(val) as unknown
+        return (
+          Array.isArray(parsed) && parsed.every((u) => typeof u === 'string' && URL.canParse(u))
+        )
+      } catch {
+        return false
+      }
+    }, 'Must be a JSON array of URLs'),
   oidcClientSecret: z.string().optional().nullable(),
   groupIds: z.array(z.string()).optional(),
   isMain: z.boolean().default(true),
@@ -95,6 +111,8 @@ export const createAppAction = adminAction
         samlCertificate: parsedInput.samlCertificate ?? undefined,
         oidcEnabled: parsedInput.oidcEnabled,
         oidcClientId: parsedInput.oidcClientId ?? undefined,
+        oidcRedirectUris: parsedInput.oidcRedirectUris ?? undefined,
+        oidcClientSecret: parsedInput.oidcClientSecret ?? undefined,
         isMain: parsedInput.isMain,
         groupAccess: {
           create: (parsedInput.groupIds ?? []).map((groupId) => ({ groupId })),

@@ -1,3 +1,4 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 /**
  * Prisma seed: creates admin group and admin user (DB + optional LDAP), or imports from LDAP.
@@ -11,6 +12,7 @@ import { resolve } from 'node:path'
  * Behaviour:
  * - If LDAP env is set and LDAP has users/groups: import from LDAP into DB (member = users + subgroups, owner = group admins).
  * - If LDAP is empty or not set: create admin user/group in DB, then optionally bootstrap LDAP.
+ * - Always import JSON stores from /app/import when present (apps/settings/invites), even if users already exist.
  * Imported users keep LDAP hashed passwords (SSHA); passwordHashType is set so they can still log in.
  */
 import { hashPasswordSsha, LdapService } from '@habidat/ldap'
@@ -76,6 +78,7 @@ async function importFromLdap(
 
   const userDnToId = new Map<string, string>()
   const groupDnToId = new Map<string, string>()
+  const skippedPasswordUids: string[] = []
 
   await prisma.$transaction(
     async (tx) => {
@@ -125,8 +128,8 @@ async function importFromLdap(
 
         const storedPassword = (u.userPassword ?? '').trim()
         if (storedPassword) {
-          let password: string
-          let passwordHashType: string
+          let password: string | null = null
+          let passwordHashType: string | null = null
           if (storedPassword.startsWith('{SSHA}')) {
             password = storedPassword
             passwordHashType = 'ssha'
@@ -134,18 +137,19 @@ async function importFromLdap(
             password = storedPassword
             passwordHashType = 'scrypt'
           } else {
-            password = await hashPassword(storedPassword)
-            passwordHashType = 'scrypt'
+            skippedPasswordUids.push(u.uid)
           }
-          await tx.account.create({
-            data: {
-              userId: user.id,
-              accountId: user.id,
-              providerId: 'credential',
-              password,
-              passwordHashType,
-            },
-          })
+          if (password && passwordHashType) {
+            await tx.account.create({
+              data: {
+                userId: user.id,
+                accountId: user.id,
+                providerId: 'credential',
+                password,
+                passwordHashType,
+              },
+            })
+          }
         }
       }
 
@@ -302,6 +306,12 @@ async function importFromLdap(
     { timeout: 300_000 }
   )
 
+  if (skippedPasswordUids.length > 0) {
+    console.log(
+      `LDAP import: skipped unusable password hashes for ${skippedPasswordUids.length} user(s): ${skippedPasswordUids.join(', ')}. They can sign in after a password reset.`
+    )
+  }
+
   console.log('LDAP import completed.')
   return true
 }
@@ -405,255 +415,257 @@ async function main() {
   const prisma = new PrismaClient({ adapter })
 
   const userCount = await prisma.user.count()
-  if (userCount > 0) {
-    console.log('User count is greater than 0 – skipping seed.')
-    return
-  }
 
   try {
-    const ldapEnv = getLdapEnv()
-    if (ldapEnv) {
-      const ldap = new LdapService(ldapEnv)
-      await ldap.connect()
-      try {
-        const didImport = await importFromLdap(ldap, prisma, ldapEnv.usersDn, ldapEnv.groupsDn)
-        if (didImport) {
-          console.log('LDAP import completed. Skipping admin creation.')
-          // Try importing JSON data first or alongside
-          await importJsonData(prisma)
-          return
+    if (userCount > 0) {
+      console.log('User count is greater than 0 – skipping LDAP/admin bootstrap.')
+    } else {
+      const ldapEnv = getLdapEnv()
+      let skipAdminCreate = false
+      if (ldapEnv) {
+        const ldap = new LdapService(ldapEnv)
+        await ldap.connect()
+        try {
+          const didImport = await importFromLdap(ldap, prisma, ldapEnv.usersDn, ldapEnv.groupsDn)
+          if (didImport) {
+            console.log('LDAP import completed. Skipping admin creation.')
+            skipAdminCreate = true
+          }
+        } finally {
+          await ldap.disconnect()
         }
-      } finally {
-        await ldap.disconnect()
+        if (!skipAdminCreate) {
+          console.log('LDAP empty – creating admin user/group in DB and bootstrapping LDAP.')
+        }
+      } else {
+        console.log('LDAP env not set – creating admin user/group in DB only.')
       }
-      console.log('LDAP empty – creating admin user/group in DB and bootstrapping LDAP.')
-    } else {
-      console.log('LDAP env not set – creating admin user/group in DB only.')
-    }
 
-    const adminGroupSlug = process.env.ADMIN_GROUP_SLUG ?? 'admin'
-    const adminGroupName = process.env.ADMIN_GROUP_NAME ?? 'Admin'
+      if (!skipAdminCreate) {
+        const adminGroupSlug = process.env.ADMIN_GROUP_SLUG ?? 'admin'
+        const adminGroupName = process.env.ADMIN_GROUP_NAME ?? 'Admin'
 
-    let adminGroup = await prisma.group.findUnique({
-      where: { slug: adminGroupSlug },
-    })
-
-    if (!adminGroup) {
-      adminGroup = await prisma.group.create({
-        data: {
-          slug: adminGroupSlug,
-          name: adminGroupName,
-          description: 'System administrator group',
-          isSystem: true,
-        },
-      })
-      console.log(`Created admin group: ${adminGroup.name} (${adminGroup.slug})`)
-    } else {
-      console.log(`Admin group already exists: ${adminGroup.name} (${adminGroup.slug})`)
-    }
-
-    // System group "groupadmin": holds all users who have admin rights to any group (managed automatically)
-    let groupAdminGroup = await prisma.group.findUnique({
-      where: { slug: 'groupadmin' },
-    })
-    if (!groupAdminGroup) {
-      groupAdminGroup = await prisma.group.create({
-        data: {
-          slug: 'groupadmin',
-          name: 'Group Admins',
-          description: 'System group: all users who are admin of any group (managed automatically)',
-          isSystem: true,
-        },
-      })
-      console.log(
-        `Created groupadmin system group: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
-      )
-    } else {
-      console.log(
-        `Groupadmin system group already exists: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
-      )
-    }
-
-    let adminUser = await prisma.user.findUnique({
-      where: { email: adminEmail },
-    })
-
-    if (!adminUser) {
-      const maxUid = await prisma.user.aggregate({
-        _max: { ldapUidNumber: true },
-      })
-      const ldapUidNumber = (maxUid._max.ldapUidNumber ?? 10000) + 1
-      const hashedPassword = await hashPassword(adminPassword)
-
-      adminUser = await prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            name: adminName,
-            username: adminUsername,
-            email: adminEmail,
-            emailVerified: true,
-            ldapUidNumber,
-            primaryGroupId: adminGroup!.id,
-          },
+        let adminGroup = await prisma.group.findUnique({
+          where: { slug: adminGroupSlug },
         })
 
-        await tx.account.create({
-          data: {
-            userId: user.id,
-            accountId: user.id,
-            providerId: 'credential',
-            password: hashedPassword,
-            passwordHashType: 'scrypt',
-          },
+        if (!adminGroup) {
+          adminGroup = await prisma.group.create({
+            data: {
+              slug: adminGroupSlug,
+              name: adminGroupName,
+              description: 'System administrator group',
+              isSystem: true,
+            },
+          })
+          console.log(`Created admin group: ${adminGroup.name} (${adminGroup.slug})`)
+        } else {
+          console.log(`Admin group already exists: ${adminGroup.name} (${adminGroup.slug})`)
+        }
+
+        // System group "groupadmin": holds all users who have admin rights to any group (managed automatically)
+        let groupAdminGroup = await prisma.group.findUnique({
+          where: { slug: 'groupadmin' },
+        })
+        if (!groupAdminGroup) {
+          groupAdminGroup = await prisma.group.create({
+            data: {
+              slug: 'groupadmin',
+              name: 'Group Admins',
+              description:
+                'System group: all users who are admin of any group (managed automatically)',
+              isSystem: true,
+            },
+          })
+          console.log(
+            `Created groupadmin system group: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
+          )
+        } else {
+          console.log(
+            `Groupadmin system group already exists: ${groupAdminGroup.name} (${groupAdminGroup.slug})`
+          )
+        }
+
+        let adminUser = await prisma.user.findUnique({
+          where: { email: adminEmail },
         })
 
-        await tx.groupMembership.create({
-          data: {
-            userId: user.id,
-            groupId: adminGroup!.id,
-          },
-        })
+        if (!adminUser) {
+          const maxUid = await prisma.user.aggregate({
+            _max: { ldapUidNumber: true },
+          })
+          const ldapUidNumber = (maxUid._max.ldapUidNumber ?? 10000) + 1
+          const hashedPassword = await hashPassword(adminPassword)
 
-        await tx.groupOwnership.create({
-          data: {
-            userId: user.id,
-            groupId: adminGroup!.id,
-          },
-        })
+          adminUser = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+              data: {
+                name: adminName,
+                username: adminUsername,
+                email: adminEmail,
+                emailVerified: true,
+                ldapUidNumber,
+                primaryGroupId: adminGroup!.id,
+              },
+            })
 
-        // Admin user is an owner of admin group → add to groupadmin system group
-        await tx.groupMembership.upsert({
-          where: {
-            userId_groupId: { userId: user.id, groupId: groupAdminGroup!.id },
+            await tx.account.create({
+              data: {
+                userId: user.id,
+                accountId: user.id,
+                providerId: 'credential',
+                password: hashedPassword,
+                passwordHashType: 'scrypt',
+              },
+            })
+
+            await tx.groupMembership.create({
+              data: {
+                userId: user.id,
+                groupId: adminGroup!.id,
+              },
+            })
+
+            await tx.groupOwnership.create({
+              data: {
+                userId: user.id,
+                groupId: adminGroup!.id,
+              },
+            })
+
+            // Admin user is an owner of admin group → add to groupadmin system group
+            await tx.groupMembership.upsert({
+              where: {
+                userId_groupId: { userId: user.id, groupId: groupAdminGroup!.id },
+              },
+              create: { userId: user.id, groupId: groupAdminGroup!.id },
+              update: {},
+            })
+
+            return user
+          })
+
+          console.log(`Created admin user: ${adminUser.name} (${adminUser.email})`)
+        } else {
+          console.log(`Admin user already exists: ${adminUser.name} (${adminUser.email})`)
+
+          const [membership, ownership] = await Promise.all([
+            prisma.groupMembership.findUnique({
+              where: {
+                userId_groupId: { userId: adminUser.id, groupId: adminGroup.id },
+              },
+            }),
+            prisma.groupOwnership.findUnique({
+              where: {
+                userId_groupId: { userId: adminUser.id, groupId: adminGroup.id },
+              },
+            }),
+          ])
+
+          if (!membership) {
+            await prisma.groupMembership.create({
+              data: { userId: adminUser.id, groupId: adminGroup.id },
+            })
+            console.log('Added admin user to admin group as member')
+          }
+          if (!ownership) {
+            await prisma.groupOwnership.create({
+              data: { userId: adminUser.id, groupId: adminGroup.id },
+            })
+            console.log('Added admin user to admin group as owner')
+          }
+          // Ensure admin user is in groupadmin (they are an owner of admin group)
+          if (groupAdminGroup) {
+            await prisma.groupMembership.upsert({
+              where: {
+                userId_groupId: { userId: adminUser.id, groupId: groupAdminGroup.id },
+              },
+              create: { userId: adminUser.id, groupId: groupAdminGroup.id },
+              update: {},
+            })
+          }
+        }
+
+        // Ensure default email templates exist (invite, passwordReset)
+        const defaultInviteConfig = {
+          greeting: 'Hello,',
+          mainText:
+            'You have been invited to join. Click the button below to accept the invitation and create your account.',
+          ctaText: 'Accept invitation',
+          footer: 'If you did not expect this invitation, you can ignore this email.',
+        }
+        const defaultPasswordResetConfig = {
+          greeting: 'Hello,',
+          mainText:
+            'We received a request to reset your password. Click the button below to set a new password.',
+          ctaText: 'Reset password',
+          footer: 'If you did not request a password reset, you can ignore this email.',
+        }
+        await prisma.emailTemplate.upsert({
+          where: { key: 'invite' },
+          create: {
+            key: 'invite',
+            subject: 'You are invited',
+            config: defaultInviteConfig,
+            enabled: true,
           },
-          create: { userId: user.id, groupId: groupAdminGroup!.id },
           update: {},
         })
-
-        return user
-      })
-
-      console.log(`Created admin user: ${adminUser.name} (${adminUser.email})`)
-    } else {
-      console.log(`Admin user already exists: ${adminUser.name} (${adminUser.email})`)
-
-      const [membership, ownership] = await Promise.all([
-        prisma.groupMembership.findUnique({
-          where: {
-            userId_groupId: { userId: adminUser.id, groupId: adminGroup.id },
+        await prisma.emailTemplate.upsert({
+          where: { key: 'passwordReset' },
+          create: {
+            key: 'passwordReset',
+            subject: 'Reset your password',
+            config: defaultPasswordResetConfig,
+            enabled: true,
           },
-        }),
-        prisma.groupOwnership.findUnique({
-          where: {
-            userId_groupId: { userId: adminUser.id, groupId: adminGroup.id },
-          },
-        }),
-      ])
-
-      if (!membership) {
-        await prisma.groupMembership.create({
-          data: { userId: adminUser.id, groupId: adminGroup.id },
-        })
-        console.log('Added admin user to admin group as member')
-      }
-      if (!ownership) {
-        await prisma.groupOwnership.create({
-          data: { userId: adminUser.id, groupId: adminGroup.id },
-        })
-        console.log('Added admin user to admin group as owner')
-      }
-      // Ensure admin user is in groupadmin (they are an owner of admin group)
-      if (groupAdminGroup) {
-        await prisma.groupMembership.upsert({
-          where: {
-            userId_groupId: { userId: adminUser.id, groupId: groupAdminGroup.id },
-          },
-          create: { userId: adminUser.id, groupId: groupAdminGroup.id },
           update: {},
         })
+        console.log('Email templates (invite, passwordReset) ensured.')
+
+        if (ldapEnv) {
+          let adminUserForLdap = adminUser
+          if (adminUser.ldapUidNumber == null) {
+            const maxUid = await prisma.user.aggregate({
+              _max: { ldapUidNumber: true },
+            })
+            const ldapUidNumber = (maxUid._max.ldapUidNumber ?? 10000) + 1
+            adminUserForLdap = await prisma.user.update({
+              where: { id: adminUser.id },
+              data: { ldapUidNumber },
+            })
+          }
+          const ldap = new LdapService(ldapEnv)
+          await ldap.connect()
+          try {
+            const adminPasswordSsha = hashPasswordSsha(adminPassword)
+            await bootstrapLdap(
+              ldap,
+              prisma,
+              {
+                id: adminUserForLdap.id,
+                username: adminUserForLdap.username,
+                name: adminUserForLdap.name,
+                email: adminUserForLdap.email,
+                ldapUidNumber: adminUserForLdap.ldapUidNumber ?? 10000,
+              },
+              adminGroup,
+              adminPasswordSsha
+            )
+          } finally {
+            await ldap.disconnect()
+          }
+        } else {
+          console.log('LDAP env not set (LDAP_URL, LDAP_BIND_DN, etc.) – skipping LDAP bootstrap.')
+        }
       }
     }
 
-    // Ensure default email templates exist (invite, passwordReset)
-    const defaultInviteConfig = {
-      greeting: 'Hello,',
-      mainText:
-        'You have been invited to join. Click the button below to accept the invitation and create your account.',
-      ctaText: 'Accept invitation',
-      footer: 'If you did not expect this invitation, you can ignore this email.',
-    }
-    const defaultPasswordResetConfig = {
-      greeting: 'Hello,',
-      mainText:
-        'We received a request to reset your password. Click the button below to set a new password.',
-      ctaText: 'Reset password',
-      footer: 'If you did not request a password reset, you can ignore this email.',
-    }
-    await prisma.emailTemplate.upsert({
-      where: { key: 'invite' },
-      create: {
-        key: 'invite',
-        subject: 'You are invited',
-        config: defaultInviteConfig,
-        enabled: true,
-      },
-      update: {},
-    })
-    await prisma.emailTemplate.upsert({
-      where: { key: 'passwordReset' },
-      create: {
-        key: 'passwordReset',
-        subject: 'Reset your password',
-        config: defaultPasswordResetConfig,
-        enabled: true,
-      },
-      update: {},
-    })
-    console.log('Email templates (invite, passwordReset) ensured.')
-
-    if (ldapEnv) {
-      let adminUserForLdap = adminUser
-      if (adminUser.ldapUidNumber == null) {
-        const maxUid = await prisma.user.aggregate({
-          _max: { ldapUidNumber: true },
-        })
-        const ldapUidNumber = (maxUid._max.ldapUidNumber ?? 10000) + 1
-        adminUserForLdap = await prisma.user.update({
-          where: { id: adminUser.id },
-          data: { ldapUidNumber },
-        })
-      }
-      const ldap = new LdapService(ldapEnv)
-      await ldap.connect()
-      try {
-        const adminPasswordSsha = hashPasswordSsha(adminPassword)
-        await bootstrapLdap(
-          ldap,
-          prisma,
-          {
-            id: adminUserForLdap.id,
-            username: adminUserForLdap.username,
-            name: adminUserForLdap.name,
-            email: adminUserForLdap.email,
-            ldapUidNumber: adminUserForLdap.ldapUidNumber ?? 10000,
-          },
-          adminGroup,
-          adminPasswordSsha
-        )
-      } finally {
-        await ldap.disconnect()
-      }
-    } else {
-      console.log('LDAP env not set (LDAP_URL, LDAP_BIND_DN, etc.) – skipping LDAP bootstrap.')
-    }
+    await importJsonData(prisma)
   } finally {
     await pool.end()
   }
 }
-
-import { existsSync, readFileSync } from 'node:fs'
-
-// ... existing code ...
 
 async function importJsonData(prisma: PrismaClient) {
   const importDir = '/app/import'
@@ -674,35 +686,88 @@ async function importJsonData(prisma: PrismaClient) {
 
       if (platformName || themeColor) {
         const current = await prisma.setting.findUnique({ where: { key: 'general' } })
-        let value = (current?.value as object) || {}
-        if (platformName) value = { ...value, platformName }
-        if (themeColor) value = { ...value, themeColor }
+        const value: Record<string, unknown> =
+          current?.value && typeof current.value === 'object' && !Array.isArray(current.value)
+            ? { ...(current.value as Record<string, unknown>) }
+            : {}
+        let changed = false
+        if (
+          typeof platformName === 'string' &&
+          platformName.trim() &&
+          (typeof value.platformName !== 'string' || !value.platformName.trim())
+        ) {
+          value.platformName = platformName
+          changed = true
+        }
+        if (
+          typeof themeColor === 'string' &&
+          themeColor.trim() &&
+          (typeof value.themeColor !== 'string' || !value.themeColor.trim())
+        ) {
+          value.themeColor = themeColor
+          changed = true
+        }
 
-        await prisma.setting.upsert({
-          where: { key: 'general' },
-          create: { key: 'general', value },
-          update: { value },
-        })
-        console.log('Imported general settings from settingsStore.json')
+        if (changed) {
+          await prisma.setting.upsert({
+            where: { key: 'general' },
+            create: { key: 'general', value },
+            update: { value },
+          })
+          console.log('Imported general settings from settingsStore.json')
+        } else {
+          console.log('General settings already set, skipping settingsStore.json overwrite.')
+        }
       }
     } catch (e) {
       console.error('Failed to import settingsStore.json:', e)
     }
   }
 
-  // 2. Import Apps
-  const appsPath = resolve(importDir, 'appStore.json')
-  if (existsSync(appsPath)) {
-    try {
-      const appsData = JSON.parse(readFileSync(appsPath, 'utf-8'))
-      if (Array.isArray(appsData)) {
-        for (const app of appsData) {
-          const slug = app.id
-          // Skip if exists
+  // 2. Import Apps (appStore.json and per-module files like appStore-mediawiki-wiki.json)
+  try {
+    const appStoreFiles = existsSync(importDir)
+      ? readdirSync(importDir)
+          .filter((name) => name.startsWith('appStore') && name.endsWith('.json'))
+          .sort()
+      : []
+    for (const fileName of appStoreFiles) {
+      const appsPath = resolve(importDir, fileName)
+      try {
+        const appsData = JSON.parse(readFileSync(appsPath, 'utf-8'))
+        const apps = Array.isArray(appsData) ? appsData : appsData ? [appsData] : []
+        for (const app of apps) {
+          const slug = app?.id
+          if (typeof slug !== 'string' || !slug.trim()) {
+            console.log(`Skipping app without id in ${fileName}`)
+            continue
+          }
           const exists = await prisma.app.findUnique({ where: { slug } })
           if (exists) {
             console.log(`App ${slug} already exists, skipping import.`)
             continue
+          }
+
+          const groupSlugs = Array.isArray(app.groups)
+            ? app.groups.filter(
+                (g: unknown): g is string => typeof g === 'string' && g.trim() !== ''
+              )
+            : []
+          const groups = groupSlugs.length
+            ? await prisma.group.findMany({
+                where: { slug: { in: groupSlugs } },
+                select: { id: true, slug: true },
+              })
+            : []
+          const missingGroups = groupSlugs.filter(
+            (g: string) => !groups.some((found) => found.slug === g)
+          )
+          if (missingGroups.length > 0) {
+            console.log(
+              `App ${slug}: group(s) not found (${missingGroups.join(', ')})${
+                groups.length > 0 ? ', attaching remaining groups' : ', leaving unrestricted'
+              }.`
+            )
           }
 
           await prisma.app.create({
@@ -714,14 +779,19 @@ async function importJsonData(prisma: PrismaClient) {
               samlEntityId: app.saml?.entityId,
               samlAcsUrl: app.saml?.acs,
               samlSloUrl: app.saml?.slo,
+              ...(groups.length > 0 && {
+                groupAccess: { create: groups.map((g) => ({ groupId: g.id })) },
+              }),
             },
           })
           console.log(`Imported app: ${slug}`)
         }
+      } catch (e) {
+        console.error(`Failed to import ${fileName}:`, e)
       }
-    } catch (e) {
-      console.error('Failed to import appStore.json:', e)
     }
+  } catch (e) {
+    console.error('Failed to scan import directory for app stores:', e)
   }
 
   // 3. Import Invites
@@ -790,6 +860,13 @@ async function importJsonData(prisma: PrismaClient) {
     } catch (e) {
       console.error('Failed to import activationStore.json:', e)
     }
+  }
+
+  const emailTemplatesPath = resolve(importDir, 'emailTemplateStore.json')
+  if (existsSync(emailTemplatesPath)) {
+    console.log(
+      'Found emailTemplateStore.json (legacy GrapesJS HTML). Not imported: the new app uses structured invite/passwordReset templates. File kept in /app/import for manual recovery.'
+    )
   }
 }
 

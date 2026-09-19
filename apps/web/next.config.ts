@@ -6,11 +6,17 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 const nextConfig: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@habidat/db', '@habidat/env'],
-  serverExternalPackages: ['@prisma/client'],
+  serverExternalPackages: ['@prisma/client', 'oidc-provider'],
   experimental: {
     serverActions: {
       bodySizeLimit: '20mb',
     },
+  },
+  async redirects() {
+    return [
+      { source: '/lostpasswd', destination: '/forgot-password', permanent: true },
+      { source: '/forgot-passwd', destination: '/forgot-password', permanent: true },
+    ]
   },
   allowedDevOrigins: ['http://localhost:3000', 'https://user.habidat.local'],
   images: {

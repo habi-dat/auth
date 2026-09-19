@@ -1,6 +1,15 @@
 import { type IdentityProvider, SamlLib, type ServiceProvider } from 'samlify'
 import type { SamlUser } from './config'
 
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 export const buildLoginResponseTemplate = () => {
   let attributes = `${['username', 'uid', 'place', 'email', 'title'].map((attribute) => `<saml:Attribute Name="${attribute}" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attr_${attribute}}</saml:AttributeValue></saml:Attribute>`).join('')}`
   attributes += `<saml:Attribute Name="groups" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">{attr_groups}</saml:Attribute>`
@@ -31,29 +40,32 @@ export const createTemplateCallback =
     fiveMinutesLater.setMinutes(fiveMinutesLater.getMinutes() + 5)
 
     const tvalue: Record<string, string | null | undefined> = {
-      ID: _id,
-      AssertionID: assertionID,
-      Destination: acs,
-      Audience: spEntityID,
-      SubjectRecipient: acs,
+      ID: escapeXml(_id),
+      AssertionID: escapeXml(assertionID),
+      Destination: escapeXml(acs),
+      Audience: escapeXml(spEntityID),
+      SubjectRecipient: escapeXml(acs),
       NameIDFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified',
-      NameID: user.uid,
-      Issuer: _idp.entityMeta.getEntityID() as string,
+      NameID: escapeXml(user.uid),
+      Issuer: escapeXml(_idp.entityMeta.getEntityID() as string),
       IssueInstant: now.toISOString(),
       ConditionsNotBefore: now.toISOString(),
       ConditionsNotOnOrAfter: fiveMinutesLater.toISOString(),
       SubjectConfirmationDataNotOnOrAfter: fiveMinutesLater.toISOString(),
-      AssertionConsumerServiceURL: acs,
-      EntityID: spEntityID,
-      InResponseTo: requestId,
+      AssertionConsumerServiceURL: escapeXml(acs),
+      EntityID: escapeXml(spEntityID),
+      InResponseTo: escapeXml(requestId),
       StatusCode: 'urn:oasis:names:tc:SAML:2.0:status:Success',
-      attr_username: user.username,
-      attr_uid: user.uid,
-      attr_place: user.location,
-      attr_email: user.email,
-      attr_title: user.title,
+      attr_username: escapeXml(user.username),
+      attr_uid: escapeXml(user.uid),
+      attr_place: escapeXml(user.location ?? ''),
+      attr_email: escapeXml(user.email),
+      attr_title: escapeXml(user.title ?? ''),
       attr_groups: (user.groups || [])
-        .map((group) => `<saml:AttributeValue xsi:type="xs:string">${group}</saml:AttributeValue>`)
+        .map(
+          (group) =>
+            `<saml:AttributeValue xsi:type="xs:string">${escapeXml(group)}</saml:AttributeValue>`
+        )
         .join(''),
     }
 

@@ -66,7 +66,6 @@ services:
       VIRTUAL_HOST: user.${DOMAIN}
       LETSENCRYPT_HOST: user.${DOMAIN}
       CERT_NAME: ${DOMAIN}
-      SESSION_SECRET: ${SESSION_SECRET}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -75,7 +74,7 @@ services:
       SMTP_SECURE: "false"
       SMTP_FROM: dev@${DOMAIN}
       SMTP_USER: ""
-      SMTP_PASSWORD: ""      
+      SMTP_PASS: ""
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
@@ -89,6 +88,7 @@ services:
       DISCOURSE_SSO_SECRET: ${DISCOURSE_SSO_SECRET:-}
       SAML_PRIVATE_KEY: ${SAML_PRIVATE_KEY:-}
       SAML_CERTIFICATE: ${SAML_CERTIFICATE:-}
+      OIDC_COOKIE_KEYS: ${OIDC_COOKIE_KEYS:-dev-oidc-cookie-key}
       TZ: Europe/Berlin
     volumes:
       - .:/app
@@ -112,12 +112,6 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/habidat_auth
       REDIS_URL: redis://redis:6379
       APP_URL: https://auth.${DOMAIN}
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
-      SMTP_SECURE: "false"
-      SMTP_FROM: dev@${DOMAIN}
-      SMTP_USER: ""
-      SMTP_PASSWORD: ""
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
@@ -132,7 +126,6 @@ services:
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
-      mailhog: { condition: service_started }
     command: pnpm dev:worker
     volumes:
       - .:/app

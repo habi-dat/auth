@@ -1,3 +1,4 @@
+import { requireAdmin } from '@habidat/auth/session'
 import { type AuditAction, type AuditEntityType, prisma } from '@habidat/db'
 
 /** Deep equality for JSON-serializable values (used to detect changed attributes). */
@@ -116,6 +117,7 @@ export async function getAuditLogsByActor(actorId: string, limit = 50) {
 
 // Get recent audit logs for the audit log page (admin)
 export async function getAuditLogs(limit = 100) {
+  await requireAdmin()
   return prisma.auditLog.findMany({
     include: {
       actor: {

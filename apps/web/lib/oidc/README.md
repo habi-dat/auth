@@ -1,31 +1,31 @@
 # OIDC Provider (node-oidc-provider)
 
-This app acts as an OpenID Connect / OAuth 2.0 authorization server using [node-oidc-provider](https://github.com/panva/node-oidc-provider).
+This app is an OpenID Connect / OAuth 2.0 authorization server. Endpoints are Next.js App Router routes under `/oidc` (same process as the rest of habidat-auth).
 
-## Running with OIDC
+## Endpoints
 
-- **Plain Next.js** (no OIDC): `pnpm dev`
-- **Next.js + OIDC provider**: `pnpm dev:oidc`
+Issuer: `{APP_URL}/oidc`
 
-The custom server (`server.ts`) runs both Next.js and the OIDC provider on the same port. OIDC routes are under `/oidc` (e.g. `/.well-known/openid-configuration`, `/auth`, `/token`, `/userinfo`). Issuer URL: `{APP_URL}/oidc`.
+- Discovery: `{APP_URL}/oidc/.well-known/openid-configuration`
+- Authorization: `{APP_URL}/oidc/auth`
+- Token: `{APP_URL}/oidc/token`
+- UserInfo: `{APP_URL}/oidc/userinfo`
+- JWKS: `{APP_URL}/oidc/jwks`
 
 ## App configuration
 
-For an app to be an OIDC client:
-
-1. Enable **OIDC** and set **Client ID** (e.g. app slug or custom id).
+1. Enable **OIDC** and set **Client ID**.
 2. Set **Redirect URIs** as a JSON array, e.g. `["https://myapp.example/auth/callback"]`. If empty, `{App URL}/auth/callback` is used.
-3. Optionally set **Client secret** for confidential clients; leave empty for public clients (e.g. SPAs with PKCE).
+3. Optionally set **Client secret** for confidential clients (`client_secret_basic`). Leave empty for public clients (PKCE required).
+
+Clients are loaded from the database on each lookup; no restart is needed after editing an app.
 
 ## Interaction (login)
 
-When a user hits the authorization endpoint without a session, they are redirected to `/oidc-interaction`, then to `/login?callbackUrl=...` if not logged in. After login they are sent back to complete the OIDC flow.
+Unauthorized authorization requests go to `/oidc-interaction/<uid>`, then `/login?callbackUrl=...` if there is no session. After login the user is returned to finish the code flow. App group restrictions are applied the same way as SAML.
 
 ## Environment
 
-- `APP_URL` / `NEXT_PUBLIC_APP_URL`: Base URL (default `http://localhost:3000`).
-- `OIDC_COOKIE_KEYS`: Comma-separated keys for signing cookies (default uses a single dev key).
-
-## Database
-
-Ensure the `App` model has `oidcRedirectUris` and `oidcClientSecret` (and existing `oidcEnabled`, `oidcClientId`). Run `prisma db push` or your migration to apply schema changes.
+- `APP_URL` / `NEXT_PUBLIC_APP_URL`: public origin.
+- `OIDC_COOKIE_KEYS`: comma-separated cookie signing keys. **Required in production** (habidat-setup writes this to `auth.env`).
+- `OIDC_JWKS`: optional JSON JWKS. If unset, keys are created at `OIDC_JWKS_PATH` (default `/app/saml/oidc-jwks.json`, the SAML cert volume).

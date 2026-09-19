@@ -1,5 +1,7 @@
 import { getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { isAllowedBrowserOrigin } from '@habidat/discourse'
+import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 import { getUserApps } from '@/lib/actions/app-actions'
 import { getGeneralSettings } from '@/lib/settings/general'
@@ -14,50 +16,73 @@ interface AppInfo {
   useIconAsLogo?: boolean
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function safeHttpUrl(raw: string | null | undefined, baseUrl: string): string | null {
+  if (!raw) return null
+  const trimmed = raw.trim()
+  if (!trimmed || trimmed.startsWith('//')) return null
+  try {
+    const resolved = trimmed.startsWith('/') ? new URL(trimmed, baseUrl) : new URL(trimmed)
+    if (resolved.protocol !== 'http:' && resolved.protocol !== 'https:') return null
+    return resolved.href
+  } catch {
+    return null
+  }
+}
+
 function renderWidgetHtml(apps: AppInfo[], logoUrl?: string | null, title?: string | null) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const absoluteLogoUrl = logoUrl
-    ? logoUrl.startsWith('http')
-      ? logoUrl
-      : `${baseUrl}${logoUrl}`
-    : null
+  const absoluteLogoUrl = safeHttpUrl(logoUrl, baseUrl)
+  const heading = escapeHtml(title?.trim() || 'SSO Apps')
+
+  const items = apps
+    .map((app) => {
+      const href = safeHttpUrl(app.url, baseUrl)
+      if (!href) return ''
+      const name = escapeHtml(app.name)
+      const description = app.description ? escapeHtml(app.description) : ''
+      const iconUrl = safeHttpUrl(app.iconUrl, baseUrl)
+      const logo = safeHttpUrl(app.logoUrl, baseUrl)
+      const initial = escapeHtml(app.name.trim().charAt(0).toUpperCase() || '?')
+      const icon =
+        app.useIconAsLogo && iconUrl
+          ? `<img src="${escapeHtml(iconUrl)}" alt="${name}" class="app-icon" />`
+          : logo
+            ? `<img src="${escapeHtml(logo)}" alt="${name}" class="app-icon" style="object-fit: contain;" />`
+            : `<div class="app-icon">${initial}</div>`
+      return `
+            <li class="app-item">
+              <a href="${escapeHtml(href)}" class="app-link">
+                ${icon}
+                <div class="app-info">
+                  <span class="app-name">${name}</span>
+                  ${description ? `<span class="app-desc">${description}</span>` : ''}
+                </div>
+              </a>
+            </li>`
+    })
+    .join('')
 
   return `
     <div class="widget-container">
       <div class="app-menu" id="habidat-app-menu">
-        <div class="app-menu-header">${title || 'SSO Apps'}</div>
+        <div class="app-menu-header">${heading}</div>
         <ul class="app-list">
-          ${apps
-            .map(
-              (app) => `
-            <li class="app-item">
-              <a href="${app.url}" class="app-link">
-                ${
-                  app.useIconAsLogo && app.iconUrl
-                    ? `<img src="${
-                        app.iconUrl.startsWith('http') ? app.iconUrl : `${baseUrl}${app.iconUrl}`
-                      }" alt="${app.name}" class="app-icon" />`
-                    : app.logoUrl
-                      ? `<img src="${
-                          app.logoUrl.startsWith('http') ? app.logoUrl : `${baseUrl}${app.logoUrl}`
-                        }" alt="${app.name}" class="app-icon" style="object-fit: contain;" />`
-                      : `<div class="app-icon">${app.name.charAt(0).toUpperCase()}</div>`
-                }
-                <div class="app-info">
-                  <span class="app-name">${app.name}</span>
-                  ${app.description ? `<span class="app-desc">${app.description}</span>` : ''}
-                </div>
-              </a>
-            </li>
-          `
-            )
-            .join('')}
+          ${items}
         </ul>
       </div>
       <button type="button" class="menu-button ${absoluteLogoUrl ? 'has-logo' : ''}" id="habidat-menu-button" aria-label="Toggle App Menu">
         ${
           absoluteLogoUrl
-            ? `<img src="${absoluteLogoUrl}" alt="Menu" />`
+            ? `<img src="${escapeHtml(absoluteLogoUrl)}" alt="Menu" />`
             : `<svg viewBox="0 0 24 24" aria-hidden="true">
                 <title>Toggle App Menu</title>
                 <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
@@ -68,13 +93,28 @@ function renderWidgetHtml(apps: AppInfo[], logoUrl?: string | null, title?: stri
   `
 }
 
-export async function GET() {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
+function widgetCorsHeaders(request: Request): Record<string, string> {
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    Vary: 'Origin',
   }
+  const origin = request.headers.get('Origin')
+  if (
+    origin &&
+    isAllowedBrowserOrigin(origin, {
+      appUrl: webEnv.APP_URL,
+      trustedOrigins: webEnv.TRUSTED_ORIGINS,
+    })
+  ) {
+    headers['Access-Control-Allow-Origin'] = origin
+    headers['Access-Control-Allow-Credentials'] = 'true'
+  }
+  return headers
+}
+
+export async function GET(request: Request) {
+  const headers = widgetCorsHeaders(request)
 
   try {
     const sessionData = await getSession()
@@ -329,16 +369,6 @@ export async function GET() {
   }
 }
 
-export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-      },
-    }
-  )
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, { headers: widgetCorsHeaders(request) })
 }

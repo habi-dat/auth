@@ -12,6 +12,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
+    "test": "tsx --test src/*.test.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
     "@types/node": "^22.13.4",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
 }

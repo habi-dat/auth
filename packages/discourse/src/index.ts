@@ -3,6 +3,7 @@ export { DiscourseApiError, isDiscourseNotFound } from './errors'
 export type { DiscourseReturnUrlAllowlist } from './sso'
 export {
   hmacSha256Hex,
+  isAllowedBrowserOrigin,
   parseAllowedDiscourseReturnUrl,
   parseAllowedLogoutReturnUrl,
   publicDiscourseOrigin,

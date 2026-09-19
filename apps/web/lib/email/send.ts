@@ -1,36 +1,29 @@
+import { webEnv } from '@habidat/env/web'
 import nodemailer from 'nodemailer'
 
 function getTransporter() {
-  const host = process.env.SMTP_HOST
-  const port = process.env.SMTP_PORT
-  if (!host || !port) return null
   return nodemailer.createTransport({
-    host,
-    port: Number(port),
-    secure: process.env.SMTP_SECURE === 'true',
+    host: webEnv.SMTP_HOST,
+    port: webEnv.SMTP_PORT,
+    secure: webEnv.SMTP_SECURE,
     auth:
-      process.env.SMTP_USER && process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      webEnv.SMTP_USER && webEnv.SMTP_PASS
+        ? { user: webEnv.SMTP_USER, pass: webEnv.SMTP_PASS }
         : undefined,
   })
 }
 
-/** Send an HTML email. No-op if SMTP is not configured. */
+/** Send an HTML email. Throws if SMTP delivery fails. */
 export async function sendEmail(params: {
   to: string
   subject: string
   html: string
-}): Promise<{ sent: boolean; error?: string }> {
+}): Promise<{ sent: true }> {
   const transporter = getTransporter()
-  const from = process.env.SMTP_FROM
-  if (!transporter || !from) {
-    console.error(`SMTP not configured, cannot send email ${params.subject} to ${params.to}`)
-    return { sent: false }
-  }
   try {
     console.log(`Sending email ${params.subject} to ${params.to}`)
     await transporter.sendMail({
-      from,
+      from: webEnv.SMTP_FROM,
       to: params.to,
       subject: params.subject,
       html: params.html,
@@ -39,6 +32,6 @@ export async function sendEmail(params: {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`Failed to send email ${params.subject} to ${params.to}: ${message}`)
-    return { sent: false, error: message }
+    throw new Error(`Failed to send email: ${message}`)
   }
 }

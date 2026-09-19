@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
-import { cn } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
@@ -15,6 +14,7 @@ import {
   toggleEchoOwnMessagesAction,
   toggleMailingListModeAction,
 } from '@/lib/actions/discourse-mail-actions'
+import { cn } from '@/lib/utils'
 import { type SubscriptionItem, SubscriptionList } from './subscription-list'
 
 const WATCHING = 3
@@ -28,21 +28,21 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
   const [echoOwnPosts, setEchoOwnPosts] = useState(initialData.echoOwnPosts)
   const [echoPending, setEchoPending] = useState(false)
 
-  const [categoryLevels, setCategoryLevels] = useState<Record<number, 0 | 1 | 2 | 3 | 4>>(
-    () => Object.fromEntries(initialData.categories.map((c) => [c.id, c.notification_level ?? 1]))
+  const [categoryLevels, setCategoryLevels] = useState<Record<number, 0 | 1 | 2 | 3 | 4>>(() =>
+    Object.fromEntries(initialData.categories.map((c) => [c.id, c.notification_level ?? 1]))
   )
   const [categoryPending, setCategoryPending] = useState<Set<number>>(new Set())
 
   const tagNotifMap = Object.fromEntries(
     initialData.tagNotifications.map((n) => [n.tag_name, n.notification_level])
   )
-  const [tagLevels, setTagLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(
-    () => Object.fromEntries(initialData.allTags.map((tg) => [tg.name, tagNotifMap[tg.name] ?? 1]))
+  const [tagLevels, setTagLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(() =>
+    Object.fromEntries(initialData.allTags.map((tg) => [tg.name, tagNotifMap[tg.name] ?? 1]))
   )
   const [tagPending, setTagPending] = useState<Set<string>>(new Set())
 
-  const [groupLevels, setGroupLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(
-    () => Object.fromEntries(initialData.groups.map((g) => [g.name, g.notification_level ?? 1]))
+  const [groupLevels, setGroupLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(() =>
+    Object.fromEntries(initialData.groups.map((g) => [g.name, g.notification_level ?? 1]))
   )
   const [groupPending, setGroupPending] = useState<Set<string>>(new Set())
 
@@ -251,7 +251,9 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
               <Separator />
               <div className="space-y-1">
                 <p className="text-base font-semibold">{t('subscriptions.title')}</p>
-                <p className="text-sm text-muted-foreground leading-snug">{t('subscriptions.description')}</p>
+                <p className="text-sm text-muted-foreground leading-snug">
+                  {t('subscriptions.description')}
+                </p>
               </div>
               <SubscriptionList items={allItems} filterKey="sf" onToggle={handleToggle} />
             </div>
