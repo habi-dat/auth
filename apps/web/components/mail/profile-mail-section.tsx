@@ -1,11 +1,5 @@
 'use client'
 
-import type {
-  DiscourseCategoryWithNotification,
-  DiscourseGroupBasic,
-  DiscourseTagBasic,
-  DiscourseTagNotification,
-} from '@habidat/discourse'
 import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -14,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/use-toast'
 import {
+  type MailSwitchData,
   setCategorySubscriptionAction,
   setGroupSubscriptionAction,
   setTagSubscriptionAction,
@@ -21,15 +16,6 @@ import {
   toggleMailingListModeAction,
 } from '@/lib/actions/discourse-mail-actions'
 import { type SubscriptionItem, SubscriptionList } from './subscription-list'
-
-export interface MailSwitchData {
-  mailingListMode: boolean
-  echoOwnPosts: boolean
-  categories: DiscourseCategoryWithNotification[]
-  allTags: DiscourseTagBasic[]
-  tagNotifications: DiscourseTagNotification[]
-  groups: DiscourseGroupBasic[]
-}
 
 const WATCHING = 3
 

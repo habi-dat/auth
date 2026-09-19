@@ -565,6 +565,8 @@
   "mailSettings": {
     "heading": "E-Mail Modus",
     "notConfigured": "Discourse ist nicht konfiguriert. Mail-Einstellungen sind nicht verfügbar.",
+    "userNotSynced": "Dein Syndikat-Konto ist noch nicht bereit. Die Mail-Einstellungen erscheinen, sobald es angelegt wurde.",
+    "loadError": "Die Mail-Einstellungen konnten nicht geladen werden. Versuche es später erneut.",
     "errorTitle": "Fehler",
     "filterPlaceholder": "Suchen...",
     "noResults": "Keine Ergebnisse.",

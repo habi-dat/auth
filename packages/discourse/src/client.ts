@@ -1,3 +1,4 @@
+import { DiscourseApiError, isDiscourseNotFound } from './errors'
 import { hmacSha256Hex } from './sso'
 import {
   isDiscourseTagName,
@@ -8,7 +9,7 @@ import {
   type DiscourseConfig,
   type DiscourseGroupBasic,
   type DiscourseTagBasic,
-  type DiscourseTagNotification,
+  type DiscourseUserMailProfile,
   type ListCategoriesResponse,
   type ShowCategoryResponse,
   type SsoUserData,
@@ -54,8 +55,9 @@ export class DiscourseService {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`Discourse API error: ${response.status} - ${error}`)
+      const body = await response.text()
+      console.error(`Discourse API ${response.status} ${path}:`, body.slice(0, 500))
+      throw new DiscourseApiError(response.status)
     }
 
     const text = await response.text()
@@ -73,8 +75,7 @@ export class DiscourseService {
       )
       return result?.group?.id ?? null
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return null
+      if (isDiscourseNotFound(err)) return null
       throw err
     }
   }
@@ -117,8 +118,7 @@ export class DiscourseService {
     try {
       user = await this.request<{ user: { id: number } }>(`/u/${encodeURIComponent(username)}.json`)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('404')) return { notFound: true }
+      if (isDiscourseNotFound(err)) return { notFound: true }
       throw err
     }
 
@@ -328,23 +328,45 @@ export class DiscourseService {
   // User mail / notification settings (act as the user via Api-Username header)
   // -------------------------------------------------------------------------
 
-  /** Returns mailing list mode and frequency (0=echo own posts, 1=no echo). GET /u/{username}.json */
-  async getUserMailingListOptions(
-    username: string
-  ): Promise<{ mailingListMode: boolean; echoOwnPosts: boolean }> {
-    const result = await this.request<{
-      user: { user_option?: { mailing_list_mode?: boolean; mailing_list_mode_frequency?: number } }
-    }>(`/u/${encodeURIComponent(username)}.json`)
-    const opt = result?.user?.user_option
+  /**
+   * Mail options, watched tags, and group notification levels from one
+   * GET /u/{username}.json. Returns null when the user does not exist.
+   */
+  async getUserMailProfile(username: string): Promise<DiscourseUserMailProfile | null> {
+    let result: {
+      user?: {
+        user_option?: { mailing_list_mode?: boolean; mailing_list_mode_frequency?: number }
+        watched_tags?: Array<{ name: string }>
+        groups?: DiscourseGroupBasic[]
+        group_users?: Array<{ group_id: number; notification_level: number }>
+      }
+    }
+    try {
+      result = await this.request(`/u/${encodeURIComponent(username)}.json`)
+    } catch (err) {
+      if (isDiscourseNotFound(err)) return null
+      throw err
+    }
+
+    const user = result?.user
+    const opt = user?.user_option
+    const groups = (user?.groups ?? []).filter((g) => !g.automatic)
+    const notifByGroupId = Object.fromEntries(
+      (user?.group_users ?? []).map((gu) => [gu.group_id, gu.notification_level as 0 | 1 | 2 | 3 | 4])
+    )
+
     return {
       mailingListMode: opt?.mailing_list_mode ?? false,
       echoOwnPosts: (opt?.mailing_list_mode_frequency ?? 1) === 0,
+      tagNotifications: (user?.watched_tags ?? []).map((t) => ({
+        tag_name: t.name,
+        notification_level: 3 as const,
+      })),
+      groups: groups.map((g) => ({
+        ...g,
+        notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4,
+      })),
     }
-  }
-
-  /** @deprecated Use getUserMailingListOptions */
-  async getUserMailingListMode(username: string): Promise<boolean> {
-    return (await this.getUserMailingListOptions(username)).mailingListMode
   }
 
   /** Enable or disable mailing list mode for a user. PUT /u/{username} */
@@ -409,20 +431,6 @@ export class DiscourseService {
   }
 
   /**
-   * Get the user's watched tags via their profile. Returns tags at watching level (3).
-   * /tag-notifications.json is unreliable; profile endpoint is authoritative.
-   */
-  async getTagNotifications(username: string): Promise<DiscourseTagNotification[]> {
-    const result = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
-      `/u/${encodeURIComponent(username)}.json`
-    )
-    return (result?.user?.watched_tags ?? []).map((t) => ({
-      tag_name: t.name,
-      notification_level: 3 as const,
-    }))
-  }
-
-  /**
    * Set notification level for a tag via PUT /u/{username}.
    * Discourse manages tags as lists (watched_tags, tracked_tags, muted_tags) not numeric levels.
    * Level 3 = watching, level 1 = regular (remove from all lists).
@@ -448,24 +456,6 @@ export class DiscourseService {
         body: JSON.stringify({ watched_tags: newList.join(',') }),
       })
     })
-  }
-
-  /**
-   * List groups the user is a member of, with per-user notification levels.
-   * Uses user profile instead of /groups.json (which returns all visible groups,
-   * including groups the user cannot set notification levels for).
-   */
-  async getGroupsWithNotifications(username: string): Promise<DiscourseGroupBasic[]> {
-    const result = await this.request<{
-      user: {
-        groups?: DiscourseGroupBasic[]
-        group_users?: Array<{ group_id: number; notification_level: number }>
-      }
-    }>(`/u/${encodeURIComponent(username)}.json`)
-    const groups = (result?.user?.groups ?? []).filter((g) => !g.automatic)
-    const groupUsers = result?.user?.group_users ?? []
-    const notifByGroupId = Object.fromEntries(groupUsers.map((gu) => [gu.group_id, gu.notification_level as 0 | 1 | 2 | 3 | 4]))
-    return groups.map((g) => ({ ...g, notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4 }))
   }
 
   /**

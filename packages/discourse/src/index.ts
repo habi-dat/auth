@@ -1,4 +1,5 @@
 export { DiscourseService } from './client'
+export { DiscourseApiError, isDiscourseNotFound } from './errors'
 export type { DiscourseReturnUrlAllowlist } from './sso'
 export {
   hmacSha256Hex,
@@ -14,6 +15,7 @@ export type {
   DiscourseGroupBasic,
   DiscourseTagBasic,
   DiscourseTagNotification,
+  DiscourseUserMailProfile,
   ListCategoriesResponse,
   ShowCategoryResponse,
   SsoUserData,

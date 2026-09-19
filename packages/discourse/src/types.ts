@@ -142,3 +142,11 @@ export interface DiscourseGroupBasic {
   bio_excerpt?: string | null
   incoming_email?: string | null
 }
+
+/** Mail-related fields from a single GET /u/{username}.json */
+export interface DiscourseUserMailProfile {
+  mailingListMode: boolean
+  echoOwnPosts: boolean
+  tagNotifications: DiscourseTagNotification[]
+  groups: DiscourseGroupBasic[]
+}

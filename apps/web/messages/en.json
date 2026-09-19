@@ -565,6 +565,8 @@
   "mailSettings": {
     "heading": "E-mail mode",
     "notConfigured": "Discourse is not configured. Mail settings are not available.",
+    "userNotSynced": "Your forum account is not ready yet. Mail settings will appear once it has been created.",
+    "loadError": "Mail settings could not be loaded. Try again later.",
     "errorTitle": "Error",
     "filterPlaceholder": "Filter...",
     "noResults": "No results.",

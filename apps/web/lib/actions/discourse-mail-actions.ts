@@ -1,27 +1,55 @@
 'use server'
 
 import { requireUserWithGroups } from '@habidat/auth/session'
-import { DISCOURSE_TAG_NAME } from '@habidat/discourse'
+import {
+  DISCOURSE_TAG_NAME,
+  isDiscourseNotFound,
+  type DiscourseCategoryWithNotification,
+  type DiscourseGroupBasic,
+  type DiscourseTagBasic,
+  type DiscourseTagNotification,
+} from '@habidat/discourse'
 import { z } from 'zod'
 import { getDiscourseClient } from '../discourse/client'
 import { userAction } from './client'
 
-export async function getMailSwitchData() {
+export interface MailSwitchData {
+  mailingListMode: boolean
+  echoOwnPosts: boolean
+  categories: DiscourseCategoryWithNotification[]
+  allTags: DiscourseTagBasic[]
+  tagNotifications: DiscourseTagNotification[]
+  groups: DiscourseGroupBasic[]
+}
+
+export type MailSwitchLoadResult =
+  | { status: 'unconfigured' }
+  | { status: 'missingUser' }
+  | { status: 'error' }
+  | ({ status: 'ok' } & MailSwitchData)
+
+export async function getMailSwitchData(): Promise<MailSwitchLoadResult> {
   const discourse = getDiscourseClient()
-  if (!discourse) return null
+  if (!discourse) return { status: 'unconfigured' }
 
   const { user } = await requireUserWithGroups()
   const username = user.username
 
-  const [mailingListOptions, categories, allTags, tagNotifications, groups] = await Promise.all([
-    discourse.getUserMailingListOptions(username),
-    discourse.getCategoriesWithNotifications(username),
-    discourse.getAllTags(),
-    discourse.getTagNotifications(username),
-    discourse.getGroupsWithNotifications(username),
-  ])
+  try {
+    const profile = await discourse.getUserMailProfile(username)
+    if (!profile) return { status: 'missingUser' }
 
-  return { ...mailingListOptions, categories, allTags, tagNotifications, groups }
+    const [categories, allTags] = await Promise.all([
+      discourse.getCategoriesWithNotifications(username),
+      discourse.getAllTags(),
+    ])
+
+    return { status: 'ok', ...profile, categories, allTags }
+  } catch (err) {
+    if (isDiscourseNotFound(err)) return { status: 'missingUser' }
+    console.error('Failed to load mail settings:', err)
+    return { status: 'error' }
+  }
 }
 
 export const toggleMailingListModeAction = userAction

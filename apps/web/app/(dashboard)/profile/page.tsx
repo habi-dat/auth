@@ -1,6 +1,5 @@
 import { requireUserWithGroups } from '@habidat/auth/session'
 import { Globe, HardDrive, Key, Mail, MapPin, Pencil, ShieldCheck, Users } from 'lucide-react'
-import { isDiscourseConfigured } from '@/lib/discourse/client'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { PageLayout } from '@/components/layout/page-layout'
@@ -15,9 +14,7 @@ export default async function ProfilePage() {
   const t = await getTranslations('profile')
   const tMail = await getTranslations('mailSettings')
   const { user, memberships, ownerships, primaryGroup } = await requireUserWithGroups()
-  const discourseConfigured = isDiscourseConfigured()
-
-  const mailData = discourseConfigured ? await getMailSwitchData().catch(() => null) : null
+  const mailResult = await getMailSwitchData()
 
   const initials = user.name
     .split(' ')
@@ -138,10 +135,22 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
 
-        {mailData && (
+        {mailResult.status === 'ok' && (
           <>
             <h2 className="text-2xl font-bold">{tMail('heading')}</h2>
-            <ProfileMailSection initialData={mailData} />
+            <ProfileMailSection initialData={mailResult} />
+          </>
+        )}
+        {mailResult.status === 'missingUser' && (
+          <>
+            <h2 className="text-2xl font-bold">{tMail('heading')}</h2>
+            <p className="text-muted-foreground">{tMail('userNotSynced')}</p>
+          </>
+        )}
+        {mailResult.status === 'error' && (
+          <>
+            <h2 className="text-2xl font-bold">{tMail('heading')}</h2>
+            <p className="text-muted-foreground">{tMail('loadError')}</p>
           </>
         )}
       </div>
