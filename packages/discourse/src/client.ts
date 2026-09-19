@@ -105,7 +105,8 @@ export class DiscourseService {
       name: user.name,
       require_activation: 'false',
       ...(user.title != null && user.title !== '' && { title: user.title }),
-      ...(user.groups != null && user.groups.length > 0 && { groups: user.groups.join(',') }),
+      // Always send groups (including empty) so discourse_connect_overrides_groups can clear memberships.
+      groups: (user.groups ?? []).join(','),
     })
     return Buffer.from(params.toString()).toString('base64')
   }

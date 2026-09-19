@@ -170,7 +170,7 @@ async function handleSyncUser(
     username: user.username,
     name: user.name,
     title: user.primaryGroup?.name ?? undefined,
-    groups: groupSlugs.length > 0 ? groupSlugs : undefined,
+    groups: groupSlugs,
   })
 
   await prisma.user.update({

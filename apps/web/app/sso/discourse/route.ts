@@ -83,10 +83,8 @@ export async function GET(request: Request) {
     username: user.username ?? user.name ?? '',
     name: user.name ?? '',
     require_activation: 'false',
+    groups: groups.join(','),
   })
-  if (groups.length > 0) {
-    responseParams.set('groups', groups.join(','))
-  }
 
   const payload = Buffer.from(responseParams.toString()).toString('base64')
   const responseSig = hmacSha256Hex(DISCOURSE_SSO_SECRET, payload)
