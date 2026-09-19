@@ -64,7 +64,21 @@ const appSchema = z.object({
   samlCertificate: z.string().optional().nullable(),
   oidcEnabled: z.boolean().default(false),
   oidcClientId: z.string().optional().nullable(),
-  oidcRedirectUris: z.string().optional().nullable(),
+  oidcRedirectUris: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => {
+      if (!val) return true
+      try {
+        const parsed = JSON.parse(val) as unknown
+        return (
+          Array.isArray(parsed) && parsed.every((u) => typeof u === 'string' && URL.canParse(u))
+        )
+      } catch {
+        return false
+      }
+    }, 'Must be a JSON array of URLs'),
   oidcClientSecret: z.string().optional().nullable(),
   groupIds: z.array(z.string()).optional(),
   isMain: z.boolean().default(true),
@@ -97,6 +111,8 @@ export const createAppAction = adminAction
         samlCertificate: parsedInput.samlCertificate ?? undefined,
         oidcEnabled: parsedInput.oidcEnabled,
         oidcClientId: parsedInput.oidcClientId ?? undefined,
+        oidcRedirectUris: parsedInput.oidcRedirectUris ?? undefined,
+        oidcClientSecret: parsedInput.oidcClientSecret ?? undefined,
         isMain: parsedInput.isMain,
         groupAccess: {
           create: (parsedInput.groupIds ?? []).map((groupId) => ({ groupId })),

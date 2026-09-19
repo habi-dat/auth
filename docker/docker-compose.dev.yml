@@ -88,6 +88,7 @@ services:
       DISCOURSE_SSO_SECRET: ${DISCOURSE_SSO_SECRET:-}
       SAML_PRIVATE_KEY: ${SAML_PRIVATE_KEY:-}
       SAML_CERTIFICATE: ${SAML_CERTIFICATE:-}
+      OIDC_COOKIE_KEYS: ${OIDC_COOKIE_KEYS:-dev-oidc-cookie-key}
       TZ: Europe/Berlin
     volumes:
       - .:/app

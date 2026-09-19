@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 const nextConfig: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@habidat/db', '@habidat/env'],
-  serverExternalPackages: ['@prisma/client'],
+  serverExternalPackages: ['@prisma/client', 'oidc-provider'],
   experimental: {
     serverActions: {
       bodySizeLimit: '20mb',

@@ -1,56 +1,66 @@
-import type { IncomingMessage, ServerResponse } from 'node:http'
-import type Provider from 'oidc-provider'
-import { auth } from '@/lib/auth'
+import { getAncestorGroupIds } from '@habidat/auth/group-slugs'
+import { canAccessApp } from '@habidat/auth/roles'
+import { getCurrentUserWithGroups } from '@habidat/auth/session'
+import { prisma } from '@habidat/db'
+import { dispatchToNodeHandler } from './http'
+import { getOidcProvider } from './provider'
 
 const APP_URL = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-function nodeHeadersToWebHeaders(req: IncomingMessage): Headers {
-  const headers = new Headers()
-  for (const [k, v] of Object.entries(req.headers)) {
-    if (v != null) headers.set(k.toLowerCase(), Array.isArray(v) ? v.join(', ') : v)
-  }
-  return headers
-}
+export async function handleOidcInteraction(request: Request, uid: string): Promise<Response> {
+  const provider = getOidcProvider()
 
-/**
- * Handle OIDC interaction: check better-auth session and complete or redirect to login.
- * Call this when path is /oidc-interaction; req/res are Node's.
- */
-export async function handleOidcInteraction(
-  provider: Provider,
-  req: IncomingMessage,
-  res: ServerResponse
-): Promise<void> {
-  try {
-    const details = await provider.interactionDetails(req, res)
-    if (!details) {
-      res.writeHead(400, { 'Content-Type': 'text/plain' })
-      res.end('Invalid interaction')
-      return
+  return dispatchToNodeHandler(request, async (req, res) => {
+    try {
+      const details = await provider.interactionDetails(req, res)
+      if (!details) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' })
+        res.end('Invalid interaction')
+        return
+      }
+
+      const sessionWithGroups = await getCurrentUserWithGroups()
+      if (!sessionWithGroups) {
+        const returnUrl = `${APP_URL}/oidc-interaction/${uid}`
+        res.writeHead(302, {
+          Location: `/login?callbackUrl=${encodeURIComponent(returnUrl)}`,
+        })
+        res.end()
+        return
+      }
+
+      const clientId = details.params.client_id
+      if (typeof clientId === 'string') {
+        const app = await prisma.app.findFirst({
+          where: { oidcEnabled: true, oidcClientId: clientId },
+          include: { groupAccess: true },
+        })
+        if (app) {
+          const memberGroupIds = sessionWithGroups.memberships.map((m) => m.group.id)
+          const ancestorGroupIds = await getAncestorGroupIds(prisma, memberGroupIds)
+          if (!canAccessApp(sessionWithGroups, app, ancestorGroupIds)) {
+            res.writeHead(302, { Location: '/unauthorized' })
+            res.end()
+            return
+          }
+        }
+      }
+
+      await provider.interactionResult(
+        req,
+        res,
+        {
+          login: { accountId: sessionWithGroups.user.id },
+          consent: {},
+        },
+        { mergeWithLastSubmission: false }
+      )
+    } catch (error) {
+      console.error('OIDC interaction error:', error)
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' })
+        res.end('Interaction error')
+      }
     }
-    const headers = nodeHeadersToWebHeaders(req)
-    const session = await auth.api.getSession({ headers })
-    if (!session?.user) {
-      const returnUrl = `${APP_URL}/oidc-interaction${req.url?.startsWith('?') ? req.url : ''}`
-      res.writeHead(302, {
-        Location: `/login?callbackUrl=${encodeURIComponent(returnUrl)}`,
-        'Content-Type': 'text/html',
-      })
-      res.end('Redirecting to login...')
-      return
-    }
-    await provider.interactionResult(
-      req,
-      res,
-      {
-        login: { accountId: session.user.id },
-        consent: {},
-      },
-      { mergeWithLastSubmission: false }
-    )
-  } catch (err) {
-    console.error('OIDC interaction error:', err)
-    res.writeHead(500, { 'Content-Type': 'text/plain' })
-    res.end('Interaction error')
-  }
+  })
 }
