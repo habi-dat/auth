@@ -19,7 +19,12 @@ import { resolve } from 'node:path'
  * passwords hashed with scrypt so they can log in. After import (and on
  * re-run), the ADMIN_EMAIL user always gets a credential account if missing.
  */
-import { hashPasswordSsha, LdapService } from '@habidat/ldap'
+import {
+  hashPasswordSsha,
+  LdapService,
+  rdnAttributeType,
+  rdnAttributeValue,
+} from '@habidat/ldap'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { hashPassword } from 'better-auth/crypto'
 import { config } from 'dotenv'
@@ -60,6 +65,46 @@ const PG_INT_MIN = -2_147_483_648
 const PG_INT_MAX = 2_147_483_647
 function fitsInPgInt(n: number): boolean {
   return Number.isInteger(n) && n >= PG_INT_MIN && n <= PG_INT_MAX
+}
+
+type GroupRef = { id: string; slug: string }
+
+/** v1 appStore.json stores full group DNs; v2 apps store slugs. */
+function resolveAppGroupRefs(
+  refs: string[],
+  bySlug: Map<string, GroupRef>,
+  byDn: Map<string, GroupRef>
+): { groups: GroupRef[]; missing: string[] } {
+  const groups: GroupRef[] = []
+  const seen = new Set<string>()
+  const missing: string[] = []
+
+  for (const raw of refs) {
+    const ref = raw.trim()
+    if (!ref) continue
+
+    let group = byDn.get(normalizeDn(ref))
+    if (!group) {
+      const slug =
+        rdnAttributeType(ref) === 'cn'
+          ? rdnAttributeValue(ref)
+          : ref.includes('=')
+            ? ''
+            : ref
+      if (slug) group = bySlug.get(slug.toLowerCase())
+    }
+
+    if (!group) {
+      missing.push(ref)
+      continue
+    }
+    if (!seen.has(group.id)) {
+      seen.add(group.id)
+      groups.push(group)
+    }
+  }
+
+  return { groups, missing }
 }
 
 /**
@@ -802,6 +847,18 @@ async function importJsonData(prisma: PrismaClient) {
           .filter((name) => name.startsWith('appStore') && name.endsWith('.json'))
           .sort()
       : []
+    const allGroups = await prisma.group.findMany({
+      select: { id: true, slug: true, ldapDn: true },
+    })
+    const groupsBySlug = new Map(
+      allGroups.map((g) => [g.slug.toLowerCase(), { id: g.id, slug: g.slug }])
+    )
+    const groupsByDn = new Map(
+      allGroups
+        .filter((g) => g.ldapDn)
+        .map((g) => [normalizeDn(g.ldapDn!), { id: g.id, slug: g.slug }])
+    )
+
     for (const fileName of appStoreFiles) {
       const appsPath = resolve(importDir, fileName)
       try {
@@ -813,25 +870,16 @@ async function importJsonData(prisma: PrismaClient) {
             console.log(`Skipping app without id in ${fileName}`)
             continue
           }
-          const exists = await prisma.app.findUnique({ where: { slug } })
-          if (exists) {
-            console.log(`App ${slug} already exists, skipping import.`)
-            continue
-          }
 
-          const groupSlugs = Array.isArray(app.groups)
+          const groupRefs = Array.isArray(app.groups)
             ? app.groups.filter(
                 (g: unknown): g is string => typeof g === 'string' && g.trim() !== ''
               )
             : []
-          const groups = groupSlugs.length
-            ? await prisma.group.findMany({
-                where: { slug: { in: groupSlugs } },
-                select: { id: true, slug: true },
-              })
-            : []
-          const missingGroups = groupSlugs.filter(
-            (g: string) => !groups.some((found) => found.slug === g)
+          const { groups, missing: missingGroups } = resolveAppGroupRefs(
+            groupRefs,
+            groupsBySlug,
+            groupsByDn
           )
           if (missingGroups.length > 0) {
             console.log(
@@ -839,6 +887,20 @@ async function importJsonData(prisma: PrismaClient) {
                 groups.length > 0 ? ', attaching remaining groups' : ', leaving unrestricted'
               }.`
             )
+          }
+
+          const exists = await prisma.app.findUnique({ where: { slug } })
+          if (exists) {
+            if (groups.length > 0) {
+              await prisma.appGroupAccess.createMany({
+                data: groups.map((g) => ({ appId: exists.id, groupId: g.id })),
+                skipDuplicates: true,
+              })
+              console.log(`App ${slug} already exists, attached ${groups.length} group(s).`)
+            } else {
+              console.log(`App ${slug} already exists, skipping import.`)
+            }
+            continue
           }
 
           await prisma.app.create({
