@@ -10,7 +10,7 @@ import { webEnv } from '@habidat/env/web'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createAuditLog } from '@/lib/audit'
-import { encodeAvatarJpeg } from '@/lib/avatar/encode'
+import { encodeAvatarJpeg, ensureRemovedAvatarFile } from '@/lib/avatar/encode'
 import {
   createSyncEvent,
   dispatchDiscourseSyncAfterCommit,
@@ -26,13 +26,12 @@ async function enqueueAvatarSync(
   opts: { avatarRemoved?: boolean; imagePath?: string | null } = {}
 ) {
   const avatarRemoved = opts.avatarRemoved === true
-  const avatarUrl =
-    !avatarRemoved && opts.imagePath
-      ? avatarUrlForDiscourse(opts.imagePath, {
-          appUrl: webEnv.APP_URL,
-          fetchBaseUrl: webEnv.DISCOURSE_AVATAR_BASE_URL,
-        })
-      : undefined
+  const avatarUrl = opts.imagePath
+    ? avatarUrlForDiscourse(opts.imagePath, {
+        appUrl: webEnv.APP_URL,
+        fetchBaseUrl: webEnv.DISCOURSE_AVATAR_BASE_URL,
+      })
+    : undefined
   const { ldapSyncEventId, discourseSyncEventId } = await prisma.$transaction(async (tx) => {
     const ldapSyncEvent = await createSyncEvent(tx, {
       target: 'LDAP',
@@ -137,7 +136,8 @@ export const removeAvatarAction = userAction.schema(z.object({})).action(async (
     where: { id: userId },
     data: { image: null },
   })
-  await enqueueAvatarSync(userId, { avatarRemoved: true })
+  const removedPath = await ensureRemovedAvatarFile()
+  await enqueueAvatarSync(userId, { avatarRemoved: true, imagePath: removedPath })
   await createAuditLog({
     actorId: userId,
     action: 'UPDATE',
