@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  transpilePackages: ['@habidat/db', '@habidat/env'],
+  transpilePackages: ['@habidat/auth', '@habidat/db', '@habidat/env', '@habidat/ldap'],
   serverExternalPackages: ['@prisma/client', 'oidc-provider', 'sharp'],
   experimental: {
     serverActions: {

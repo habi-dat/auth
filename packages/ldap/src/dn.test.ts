@@ -8,7 +8,7 @@ import {
   rdnAttributeValue,
   remapDns,
   uidUserDn,
-} from './dn.js'
+} from './dn'
 
 describe('rdn helpers', () => {
   it('reads the RDN type and value from a cn-named user', () => {

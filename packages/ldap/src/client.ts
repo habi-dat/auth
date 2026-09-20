@@ -12,7 +12,7 @@ import {
   rdnAttributeValue,
   remapDns,
   uidUserDn,
-} from './dn.js'
+} from './dn'
 import type {
   CreateGroupData,
   CreateUserData,
@@ -21,7 +21,7 @@ import type {
   LdapUserEntry,
   UpdateGroupData,
   UpdateUserData,
-} from './types.js'
+} from './types'
 
 /** ldapjs-client modifyDN always sends deleteOldRdn=true. Keep a spare cn so inetOrgPerson stays valid. */
 const RDN_KEEP_CN = '__habidat_rdn__'

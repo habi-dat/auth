@@ -7,6 +7,9 @@ import { getEmailTemplates } from '@/lib/email/templates'
 import type { EmailTemplateConfigByLocale, SupportedEmailLocale } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
 
+// Route segment config. Cannot live in the "use server" action file.
+export const maxDuration = 300
+
 export default async function SettingsPage() {
   await requireAdmin()
   const t = await getTranslations('settings')
