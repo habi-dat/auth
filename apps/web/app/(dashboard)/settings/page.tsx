@@ -7,8 +7,6 @@ import { getEmailTemplates } from '@/lib/email/templates'
 import type { EmailTemplateConfigByLocale, SupportedEmailLocale } from '@/lib/email/types'
 import { getGeneralSettings } from '@/lib/settings/general'
 
-export const maxDuration = 300
-
 export default async function SettingsPage() {
   await requireAdmin()
   const t = await getTranslations('settings')

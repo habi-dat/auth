@@ -14,6 +14,8 @@ import { getDiscourseClient } from '@/lib/discourse/client'
 import { createSyncEvent, dispatchLdapSyncAfterCommit } from '@/lib/sync/create-sync-event'
 import { adminAction } from './client'
 
+export const maxDuration = 300
+
 export interface ImportDiscourseAvatarsResult {
   imported: number
   skippedHasPicture: number
