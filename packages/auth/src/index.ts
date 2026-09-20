@@ -6,12 +6,15 @@ import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
 import { nextCookies } from 'better-auth/next-js'
+import { cookieParentDomain } from './cookie-domain'
 
 const baseURL = (
   process.env.APP_URL ||
   process.env.BETTER_AUTH_URL ||
   'http://localhost:3000'
 ).replace(/\/$/, '')
+
+const sessionCookieDomain = cookieParentDomain(baseURL)
 
 export type SendResetPasswordParams = {
   user: { id: string; email: string; name: string }
@@ -103,6 +106,19 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
         ldapSyncedAt: { type: 'date', required: false },
       },
     },
+    // Host-only cookies are not sent on fetch() from sibling apps (cloud.*,
+    // discourse.*) under Firefox Total Cookie Protection. Sharing the session
+    // on the parent domain makes it first-party on every habidat subdomain.
+    ...(sessionCookieDomain
+      ? {
+          advanced: {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: sessionCookieDomain,
+            },
+          },
+        }
+      : {}),
     plugins: [nextCookies()],
     ...(syncLdapPassword
       ? {

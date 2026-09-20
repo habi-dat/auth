@@ -108,16 +108,20 @@ This starts the dev stack defined in `docker/docker-compose.dev.yml` (DB, Redis,
 
 ## Floating app menu
 
-When Apps run in a subdomain of the same domain as the auth instance, you can integrate a floating menu on the bottom right corner by inserting a javascript snippet into those apps. This can be for example done with the JSLoader app in nextcloud or with a custom layout component on discourse:
+When apps run on a subdomain of the same domain as the auth instance, you can show a floating menu in the bottom-right corner by loading `/api/widget/script`. Discourse gets this from `habidat-setup`; Nextcloud uses the [JSLoader](https://apps.nextcloud.com/apps/jsloader) app.
+
+JSLoader wraps your snippet in `DOMContentLoaded` and serves it as a nonce-backed Nextcloud script, which is required because Nextcloud's CSP uses `'strict-dynamic'` (host allowlists in `script-src-elem` are ignored — those console warnings are expected).
+
+1. Install and enable JSLoader.
+2. Paste this snippet (use your auth origin):
 
 ```
 const script = document.createElement('script');
-script.src = 'https://user.habidat.local/api/widget/script';
-script.async = true; // Don't block the rest of the page load
+script.src = 'https://user.example.org/api/widget/script';
+script.async = true;
 
 script.onload = function() {
     console.log("Central menu script loaded and executed.");
-    // Initialize your menu here if needed
 };
 
 script.onerror = function() {
@@ -126,6 +130,11 @@ script.onerror = function() {
 
 document.head.appendChild(script);
 ```
+
+3. Set **Domain where external JavaScript is loaded from** to that same origin, with no path: `https://user.example.org`. JSLoader adds it to `connect-src` so the widget can `fetch` `/api/widget/content`. Leave this empty and the script will run but the menu will never appear.
+4. After deploying auth, sign out of habidat-auth and sign in again. The session cookie is scoped to the parent domain (e.g. `habidat.org`) so Firefox will send it from `cloud.*` / `discourse.*`. Host-only cookies are treated as third-party there and the widget stays empty.
+
+If the menu still does not show, the console logs `Habidat SSO widget: no menu to show (…)` with `not signed in` or `no apps assigned`.
 
 ## Scripts
 

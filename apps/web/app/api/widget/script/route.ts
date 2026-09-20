@@ -26,7 +26,10 @@ export async function GET() {
     })
     .then(data => {
       // If no HTML is returned, the user is likely not logged in or has no apps
-      if (!data.html || !data.css) return;
+      if (!data.html || !data.css) {
+        console.info('Habidat SSO widget: no menu to show (' + (data.reason || 'empty content') + ').');
+        return;
+      }
       
       const style = document.createElement('style');
       style.textContent = data.css;

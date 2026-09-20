@@ -119,7 +119,7 @@ export async function GET(request: Request) {
   try {
     const sessionData = await getSession()
     if (!sessionData?.session) {
-      return NextResponse.json({ html: '', css: '' }, { headers })
+      return NextResponse.json({ html: '', css: '', reason: 'not signed in' }, { headers })
     }
 
     const user = await prisma.user.findUnique({
@@ -130,14 +130,14 @@ export async function GET(request: Request) {
     })
 
     if (!user) {
-      return NextResponse.json({ html: '', css: '' }, { headers })
+      return NextResponse.json({ html: '', css: '', reason: 'unknown user' }, { headers })
     }
 
     const userGroupIds = user.memberships.map((m) => m.groupId)
     const apps = await getUserApps(userGroupIds)
 
     if (!apps || apps.length === 0) {
-      return NextResponse.json({ html: '', css: '' }, { headers })
+      return NextResponse.json({ html: '', css: '', reason: 'no apps assigned' }, { headers })
     }
 
     const settings = await getGeneralSettings()
@@ -365,7 +365,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ html, css }, { headers })
   } catch (error) {
     console.error('Error generating widget content:', error)
-    return NextResponse.json({ html: '', css: '' }, { headers, status: 500 })
+    return NextResponse.json({ html: '', css: '', reason: 'error' }, { headers, status: 500 })
   }
 }
 
