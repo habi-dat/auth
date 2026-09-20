@@ -94,7 +94,6 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
         username: { type: 'string', required: true, unique: true },
         location: { type: 'string', required: false },
         preferredLanguage: { type: 'string', required: false, defaultValue: 'de' },
-        preferredTheme: { type: 'string', required: false },
         preferredColorMode: { type: 'string', required: false },
         storageQuota: { type: 'string', required: false, defaultValue: '1 GB' },
         primaryGroupId: { type: 'string', required: false },
