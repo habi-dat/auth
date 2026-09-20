@@ -275,12 +275,10 @@ export default function AcceptInvitePage() {
         )}
       </CardContent>
 
-      <CardFooter className="flex justify-center border-t border-border/60 pt-6">
-        <div className="text-center text-sm">
-          <Link href="/login" className="text-primary hover:underline">
-            {t('backToLogin')}
-          </Link>
-        </div>
+      <CardFooter className="border-t border-border/60 pt-6">
+        <Link href="/login" className="text-sm text-primary hover:underline">
+          {t('backToLogin')}
+        </Link>
       </CardFooter>
     </Card>
   )

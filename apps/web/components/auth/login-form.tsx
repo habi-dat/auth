@@ -16,12 +16,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { resolveLoginEmail } from '@/lib/actions/auth-actions'
 import { resolvePostLoginHref } from '@/lib/auth/post-login-redirect'
 
-interface LoginFormProps {
-  platformName?: string
-  loginPageText?: string
-}
-
-export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
+export function LoginForm() {
   const t = useTranslations('auth.login')
   const tVal = useTranslations('auth.validation')
   const tCommon = useTranslations('common')
@@ -42,7 +37,6 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
   const samlApp = searchParams.get('samlApp')
   const samlRequest = searchParams.get('SAMLRequest')
   const relayState = searchParams.get('RelayState')
-  const displayName = platformName?.trim() || t('title')
 
   const {
     register,
@@ -109,22 +103,12 @@ export function LoginForm({ platformName, loginPageText }: LoginFormProps) {
   }
 
   return (
-    <div className="relative w-full space-y-8">
-      {/* Title / intro inside card */}
-      <div className="flex flex-col items-center gap-5 text-center">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground px-12">{displayName}</h1>
-          {loginPageText?.trim() ? (
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px] mx-auto">
-              {loginPageText.trim()}
-            </p>
-          ) : null}
-        </div>
+    <div className="w-full space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">{t('title')}</h2>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
-      <div className="border-t border-border/60" role="presentation" />
-
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div className="space-y-2">
           <Label htmlFor="identity" className="text-foreground/90">

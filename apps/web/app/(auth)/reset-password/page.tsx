@@ -138,8 +138,8 @@ export default function ResetPasswordPage() {
     return (
       <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">{t('invalidLink')}</CardTitle>
-          <CardDescription className="text-center">{t('invalidLinkDescription')}</CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('invalidLink')}</CardTitle>
+          <CardDescription>{t('invalidLinkDescription')}</CardDescription>
         </CardHeader>
         <CardFooter>
           <Link href="/forgot-password" className="w-full">
@@ -154,11 +154,11 @@ export default function ResetPasswordPage() {
     return (
       <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
         <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
+          <div className="mb-4">
             <CheckCircle className="h-12 w-12 text-green-500" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">{t('success')}</CardTitle>
-          <CardDescription className="text-center">{t('successDescription')}</CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('success')}</CardTitle>
+          <CardDescription>{t('successDescription')}</CardDescription>
         </CardHeader>
         <CardFooter>
           <Link href="/login" className="w-full">
