@@ -94,7 +94,6 @@ export async function GET(request: Request) {
         appUrl,
         fetchBaseUrl: DISCOURSE_AVATAR_BASE_URL,
       }),
-      avatarForceUpdate: true,
     })
   }
 

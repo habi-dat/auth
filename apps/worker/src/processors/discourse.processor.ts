@@ -181,10 +181,10 @@ async function handleSyncUser(
           fetchBaseUrl: workerEnv.DISCOURSE_AVATAR_BASE_URL,
         })
       : undefined)
+  // Same public path is reused on every upload; force only when this job is about the picture.
+  const avatarForceUpdate = Boolean(payload.avatarUrl || payload.avatarRemoved)
   console.log(
-    `[Discourse] sync user ${user.username} avatarUrl=${avatarUrl ?? '(none)'} force=${Boolean(
-      avatarUrl || payload.avatarRemoved
-    )}`
+    `[Discourse] sync user ${user.username} avatarUrl=${avatarUrl ?? '(none)'} force=${avatarForceUpdate}`
   )
   await discourse.syncUserViaSso({
     externalId,
@@ -193,11 +193,7 @@ async function handleSyncUser(
     name: user.name,
     title: user.primaryGroup?.name ?? undefined,
     groups: groupSlugs,
-    ...(avatarUrl
-      ? { avatarUrl, avatarForceUpdate: true }
-      : payload.avatarRemoved
-        ? { avatarForceUpdate: true }
-        : {}),
+    ...(avatarUrl ? { avatarUrl, avatarForceUpdate } : {}),
   })
 
   await prisma.user.update({
