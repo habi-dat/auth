@@ -22,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const showSidebar = session.isAdmin || session.isGroupAdmin
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen items-stretch">
       {showSidebar && (
         <Sidebar
           isAdmin={session.isAdmin}
@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           brandName={generalSettings.platformName?.trim() || undefined}
           logoUrl={generalSettings.logoUrl?.trim() || undefined}
           logoUpdatedAt={generalSettings.logoUpdatedAt}
-          className="hidden md:flex"
+          className="hidden md:flex self-stretch min-h-screen"
         />
       )}
       <div className="flex-1 flex flex-col min-w-0">

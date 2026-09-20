@@ -66,7 +66,7 @@ export function Sidebar({
   })
 
   return (
-    <aside className={cn('h-full w-64 border-r bg-card flex flex-col', className)}>
+    <aside className={cn('min-h-screen w-64 border-r bg-muted/40 flex flex-col', className)}>
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
@@ -89,8 +89,8 @@ export function Sidebar({
           <span className="font-semibold text-lg truncate">{displayName}</span>
         </Link>
       </div>
-      <nav className="px-3">
-        <ul className="space-y-1">
+      <nav className="flex-1 overflow-y-auto">
+        <ul>
           {filteredNavItems.map((item) => {
             const Icon = item.icon
             // For home, only exact match; for others, also match subpaths
@@ -104,7 +104,7 @@ export function Sidebar({
                   href={item.href}
                   onClick={onItemClick}
                   className={cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                    'flex items-center gap-3 px-6 py-2.5 text-sm transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'

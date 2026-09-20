@@ -85,7 +85,7 @@ export function Header({ user, sidebarProps }: HeaderProps) {
     .slice(0, 2)
 
   return (
-    <header className="border-b bg-card px-6 py-3">
+    <header className="border-b bg-muted/40 px-6 py-3">
       <div className="flex items-center justify-between w-full">
         {/* Left side: Mobile menu toggle */}
         <div className="flex items-center">
@@ -101,7 +101,7 @@ export function Header({ user, sidebarProps }: HeaderProps) {
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <Sidebar
                   {...sidebarProps}
-                  className="w-full border-r-0 md:flex flex-1"
+                  className="w-full min-h-full border-r-0 md:flex flex-1"
                   onItemClick={() => setIsSidebarOpen(false)}
                 />
               </SheetContent>
