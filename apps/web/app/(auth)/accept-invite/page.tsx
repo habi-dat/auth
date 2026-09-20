@@ -1,9 +1,12 @@
 'use client'
 
+import { signIn } from '@habidat/auth/client'
+import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
+import zxcvbn from 'zxcvbn'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -26,8 +29,18 @@ import { useToast } from '@/components/ui/use-toast'
 import { acceptInviteAction, getInviteByToken } from '@/lib/actions/invite-actions'
 import { slugify } from '@/lib/utils'
 
+const PASSWORD_STRENGTH_KEYS = [
+  'passwordStrengthVeryWeak',
+  'passwordStrengthWeak',
+  'passwordStrengthMedium',
+  'passwordStrengthStrong',
+  'passwordStrengthVeryStrong',
+] as const
+
 export default function AcceptInvitePage() {
   const t = useTranslations('acceptInvite')
+  const tReg = useTranslations('auth.register')
+  const tVal = useTranslations('auth.validation')
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''
@@ -36,6 +49,8 @@ export default function AcceptInvitePage() {
   const [username, setUsername] = useState('')
   const usernameManuallyEdited = useRef(false)
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordStrength, setPasswordStrength] = useState(0)
   const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null)
   const [inviteGroups, setInviteGroups] = useState<{ id: string; name: string; slug: string }[]>([])
   const [isPending, setIsPending] = useState(false)
@@ -53,12 +68,43 @@ export default function AcceptInvitePage() {
     })
   }, [token])
 
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case 0:
+      case 1:
+        return 'bg-destructive'
+      case 2:
+        return 'bg-yellow-500'
+      case 3:
+        return 'bg-blue-500'
+      case 4:
+        return 'bg-green-500'
+      default:
+        return 'bg-muted'
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!token) {
       toast({
         title: t('invalidOrExpired'),
         variant: 'destructive',
+      })
+      return
+    }
+    if (password !== confirmPassword) {
+      toast({
+        title: tVal('passwordsMismatch'),
+        variant: 'destructive',
+      })
+      return
+    }
+    if (passwordStrength < 3) {
+      toast({
+        variant: 'destructive',
+        title: tReg('passwordTooWeak'),
+        description: tReg('passwordTooWeakDescription'),
       })
       return
     }
@@ -70,22 +116,45 @@ export default function AcceptInvitePage() {
       password,
       primaryGroupId: primaryGroupId ?? undefined,
     })
-    setIsPending(false)
-    if (result?.data?.user) {
-      toast({
-        title: t('submit'),
-        description: t('successDescription'),
-      })
-      router.push('/login')
-      router.refresh()
-    }
     if (result?.serverError) {
+      setIsPending(false)
       toast({
         title: t('submit'),
         description: result.serverError,
         variant: 'destructive',
       })
+      return
     }
+    const email = result?.data?.user?.email
+    if (!email) {
+      setIsPending(false)
+      toast({
+        title: t('submit'),
+        description: t('signInFailed'),
+        variant: 'destructive',
+      })
+      router.push('/login')
+      router.refresh()
+      return
+    }
+    const signInResult = await signIn.email({ email, password })
+    setIsPending(false)
+    if (signInResult.error) {
+      toast({
+        title: t('submit'),
+        description: t('signInFailed'),
+        variant: 'destructive',
+      })
+      router.push('/login')
+      router.refresh()
+      return
+    }
+    toast({
+      title: t('submit'),
+      description: t('successDescription'),
+    })
+    router.push('/')
+    router.refresh()
   }
 
   return (
@@ -134,11 +203,47 @@ export default function AcceptInvitePage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setPasswordStrength(zxcvbn(e.target.value).score)
+                }}
                 required
                 minLength={8}
               />
+              {password ? (
+                <div className="space-y-1">
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded ${
+                          i < passwordStrength ? getPasswordStrengthColor() : 'bg-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {tReg('passwordStrength')}: {tReg(PASSWORD_STRENGTH_KEYS[passwordStrength] ?? '')}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+              {confirmPassword && confirmPassword !== password ? (
+                <p className="text-sm text-destructive">{tVal('passwordsMismatch')}</p>
+              ) : null}
             </div>
             {inviteGroups.length > 0 && (
               <div className="space-y-2">
@@ -163,7 +268,8 @@ export default function AcceptInvitePage() {
               </div>
             )}
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? '…' : t('submit')}
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('submit')}
             </Button>
           </form>
         )}
