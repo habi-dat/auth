@@ -23,7 +23,7 @@ function groupAttributeValuesXml(groups: string[] | undefined): string {
 }
 
 export const buildLoginResponseTemplate = () => {
-  const attributes = `${['username', 'uid', 'place', 'email', 'title']
+  const attributes = `${['username', 'uid', 'displayName', 'place', 'email', 'title']
     .map(
       (attribute) =>
         `<saml:Attribute Name="${attribute}" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attr_${attribute}}</saml:AttributeValue></saml:Attribute>`
@@ -78,6 +78,7 @@ export const createTemplateCallback =
       StatusCode: 'urn:oasis:names:tc:SAML:2.0:status:Success',
       attr_username: user.username,
       attr_uid: user.uid,
+      attr_displayName: user.username,
       attr_place: user.location ?? '',
       attr_email: user.email,
       attr_title: user.title ?? '',

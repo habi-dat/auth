@@ -8,6 +8,7 @@ import {
   generateSamlPostForm,
   type ParsedLoginRequest,
   parseLoginRequest,
+  resolveAssertionConsumerServiceUrl,
 } from '@habidat/saml'
 import { NextResponse } from 'next/server'
 
@@ -122,10 +123,22 @@ export async function handleSamlLogin(params: {
     return NextResponse.json({ error: 'Invalid SAML request' }, { status: 400 })
   }
 
-  const acsUrl = app.samlAcsUrl ?? ''
+  const requestFields = requestInfo.extract?.request as
+    | { assertionConsumerServiceURL?: unknown }
+    | undefined
+  const requestedAcsUrl =
+    typeof requestFields?.assertionConsumerServiceURL === 'string'
+      ? requestFields.assertionConsumerServiceURL
+      : null
+  const acsUrl = resolveAssertionConsumerServiceUrl({
+    configuredAcsUrl: app.samlAcsUrl,
+    appUrl: app.url,
+    requestedAcsUrl,
+  })
   if (!acsUrl) {
     return NextResponse.json({ error: 'App ACS URL not configured' }, { status: 400 })
   }
+  const appForResponse = { ...app, samlAcsUrl: acsUrl }
 
   const groups = await getUserGroupSlugs(prisma, memberGroupIds)
   const user = {
@@ -140,7 +153,7 @@ export async function handleSamlLogin(params: {
 
   let result: { entityEndpoint: string; context: string; relayState?: string | null }
   try {
-    result = await createLoginResponse(app, requestInfo, user, relayState)
+    result = await createLoginResponse(appForResponse, requestInfo, user, relayState)
   } catch (e) {
     console.error('Failed to create login response:', e)
     return NextResponse.json({ error: 'Failed to create login response' }, { status: 500 })

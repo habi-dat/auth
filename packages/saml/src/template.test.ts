@@ -59,6 +59,7 @@ describe('SAML login response template', () => {
     )
     assert.match(context, />a&amp;b@example.com</)
     assert.match(context, />alice&lt;admin&gt;</)
+    assert.match(context, /Name="displayName"/)
     assert.match(context, />Member &quot;core&quot;</)
     assert.equal(context.includes('&amp;amp;'), false)
     assert.equal(context.includes('&lt;script&gt;'), true)
