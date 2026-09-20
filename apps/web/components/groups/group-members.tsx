@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { GenericAction, RowActions } from '@/components/ui/data-table-cells'
 import { useToast } from '@/components/ui/use-toast'
@@ -52,6 +53,8 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
   const { toast } = useToast()
   const router = useRouter()
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<User | null>(null)
+  const [adminToRemove, setAdminToRemove] = useState<User | null>(null)
 
   const memberIds = new Set(group.memberships.map((m) => m.user.id))
   const ownerIds = new Set(group.ownerships.map((o) => o.user.id))
@@ -80,6 +83,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
         title: t('memberRemoved'),
         description: t('memberRemovedDescription'),
       })
+      setMemberToRemove(null)
       router.refresh()
     },
     onError: ({ error }) => {
@@ -114,6 +118,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
         title: t('ownerRemoved'),
         description: t('ownerRemovedDescription'),
       })
+      setAdminToRemove(null)
       router.refresh()
     },
     onError: ({ error }) => {
@@ -176,7 +181,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
             <RowActions>
               {isOwner ? (
                 <GenericAction
-                  onClick={() => removeOwner.execute({ groupId: group.id, userId })}
+                  onClick={() => setAdminToRemove(row.original.user)}
                   title={t('removeAdmin')}
                   disabled={removeOwner.isPending}
                   icon={
@@ -202,8 +207,9 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
                 />
               )}
               <GenericAction
-                onClick={() => removeMember.execute({ groupId: group.id, userId })}
-                title={t('memberRemoved')}
+                variant="outline"
+                onClick={() => setMemberToRemove(row.original.user)}
+                title={t('removeFromGroup')}
                 disabled={removeMember.isPending}
                 icon={
                   removeMember.isPending ? (
@@ -225,39 +231,69 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
   const data = group.memberships
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('membersCount', { count: group.memberships.length })}</CardTitle>
-        <CardDescription>{t('membersDescription', { name: group.name })}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {canManage && (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <UserSelector
-              users={users}
-              value={selectedUserId}
-              onChange={setSelectedUserId}
-              placeholder={t('addMemberPlaceholder')}
-              searchPlaceholder={t('searchUsers')}
-              emptyText={t('noUsersFound')}
-              excludeUserIds={Array.from(memberIds)}
-              className="flex-1"
-            />
-            <Button onClick={handleAddMember} disabled={!selectedUserId || addMember.isPending}>
-              {addMember.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  {t('addMember')}
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('membersCount', { count: group.memberships.length })}</CardTitle>
+          <CardDescription>{t('membersDescription', { name: group.name })}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {canManage && (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <UserSelector
+                users={users}
+                value={selectedUserId}
+                onChange={setSelectedUserId}
+                placeholder={t('addMemberPlaceholder')}
+                searchPlaceholder={t('searchUsers')}
+                emptyText={t('noUsersFound')}
+                excludeUserIds={Array.from(memberIds)}
+                className="flex-1"
+              />
+              <Button onClick={handleAddMember} disabled={!selectedUserId || addMember.isPending}>
+                {addMember.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    {t('addMember')}
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
 
-        <DataTable columns={columns} data={data} emptyMessage={t('noMembers')} />
-      </CardContent>
-    </Card>
+          <DataTable columns={columns} data={data} emptyMessage={t('noMembers')} />
+        </CardContent>
+      </Card>
+      <ConfirmDialog
+        open={!!memberToRemove}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+        title={t('confirmRemoveMember.title')}
+        description={
+          memberToRemove ? t('confirmRemoveMember.description', { name: memberToRemove.name }) : ''
+        }
+        confirmLabel={t('removeFromGroup')}
+        cancelLabel={tCommon('cancel')}
+        onConfirm={() =>
+          memberToRemove && removeMember.execute({ groupId: group.id, userId: memberToRemove.id })
+        }
+        isPending={removeMember.isPending}
+      />
+      <ConfirmDialog
+        open={!!adminToRemove}
+        onOpenChange={(open) => !open && setAdminToRemove(null)}
+        title={t('confirmRemoveAdmin.title')}
+        description={
+          adminToRemove ? t('confirmRemoveAdmin.description', { name: adminToRemove.name }) : ''
+        }
+        confirmLabel={t('removeAdmin')}
+        cancelLabel={tCommon('cancel')}
+        onConfirm={() =>
+          adminToRemove && removeOwner.execute({ groupId: group.id, userId: adminToRemove.id })
+        }
+        isPending={removeOwner.isPending}
+      />
+    </>
   )
 }

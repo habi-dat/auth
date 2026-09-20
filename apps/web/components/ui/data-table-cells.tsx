@@ -31,7 +31,7 @@ interface ActionButtonProps {
   onClick?: () => void
   title: string
   icon?: ReactNode
-  variant?: 'ghost' | 'destructive'
+  variant?: 'ghost' | 'destructive' | 'outline'
   disabled?: boolean
   className?: string
 }
@@ -69,10 +69,17 @@ export function DeleteAction({
   )
 }
 
-export function GenericAction({ onClick, title, icon, className, disabled }: ActionButtonProps) {
+export function GenericAction({
+  onClick,
+  title,
+  icon,
+  className,
+  disabled,
+  variant = 'ghost',
+}: ActionButtonProps) {
   return (
     <Button
-      variant="ghost"
+      variant={variant}
       size="icon"
       title={title}
       onClick={onClick}

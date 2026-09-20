@@ -537,6 +537,15 @@
     "member": "Mitglied",
     "makeAdmin": "Zum Admin machen",
     "removeAdmin": "Admin-Rechte entziehen",
+    "removeFromGroup": "Aus Gruppe entfernen",
+    "confirmRemoveMember": {
+      "title": "Mitglied entfernen?",
+      "description": "{name} aus dieser Gruppe entfernen?"
+    },
+    "confirmRemoveAdmin": {
+      "title": "Admin-Rechte entziehen?",
+      "description": "{name} die Gruppenadmin-Rechte entziehen? Die Person bleibt Mitglied."
+    },
     "ownerAdded": "Als Gruppenadmin hinzugefügt",
     "ownerAddedDescription": "Der Benutzer hat jetzt Admin-Rechte in dieser Gruppe.",
     "ownerRemoved": "Admin-Rechte entzogen",
