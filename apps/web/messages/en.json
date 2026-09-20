@@ -150,7 +150,25 @@
     "primaryGroupNone": "None",
     "primaryGroupHint": "Must be one of your member groups.",
     "groups": "Groups",
-    "groupAdmins": "Group admin of"
+    "groupAdmins": "Group admin of",
+    "avatar": "Profile photo",
+    "avatarUpload": "Upload photo",
+    "avatarChange": "Change photo",
+    "avatarRemove": "Remove photo",
+    "avatarHint": "JPEG, PNG or WebP, max 2MB. The photo is cropped to a square.",
+    "avatarUploaded": "Profile photo updated",
+    "avatarRemoved": "Profile photo removed",
+    "avatarUploadFailed": "The profile photo could not be saved.",
+    "avatarRemoveFailed": "The profile photo could not be removed.",
+    "avatarInvalidType": "Use a JPEG, PNG or WebP image.",
+    "avatarCropTitle": "Crop photo",
+    "avatarCropDescription": "Drag and zoom to choose a square crop.",
+    "avatarCropConfirm": "Use photo",
+    "avatarZoom": "Zoom",
+    "avatarRemoveConfirm": {
+      "title": "Remove profile photo?",
+      "description": "Your photo will be removed from habidat, Nextcloud and Discourse."
+    }
   },
   "password": {
     "changeTitle": "Change password",
@@ -233,6 +251,22 @@
     "description": "General settings and email templates",
     "tabGeneral": "General",
     "tabTemplates": "Email templates",
+    "tabSync": "Sync",
+    "sync": {
+      "title": "Sync",
+      "description": "Import existing custom Discourse avatars into habidat. Photos users already set here are never overwritten.",
+      "importAvatars": "Import Discourse avatars",
+      "importAvatarsHelp": "Only custom Discourse uploads are imported. Letter avatars and Gravatar are skipped.",
+      "importStarted": "Importing…",
+      "importFailed": "Import failed",
+      "resultsTitle": "Import results",
+      "imported": "Imported",
+      "skippedHasPicture": "Skipped (already has a photo)",
+      "skippedNoCustom": "Skipped (no custom Discourse avatar)",
+      "failed": "Failed",
+      "noFailures": "No errors.",
+      "close": "Close"
+    },
     "general": {
       "title": "General settings",
       "description": "Platform name, logo and support email (e.g. for emails and footers).",

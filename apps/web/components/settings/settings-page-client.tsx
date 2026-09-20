@@ -4,12 +4,13 @@ import { useTranslations } from 'next-intl'
 import { parseAsStringLiteral, useQueryState } from 'nuqs'
 import { EmailTemplateForm } from '@/components/settings/email-template-form'
 import { GeneralSettingsForm } from '@/components/settings/general-settings-form'
+import { SettingsSyncTab } from '@/components/settings/settings-sync-tab'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { EmailTemplateConfigByLocale } from '@/lib/email/types'
 import type { GeneralSettings } from '@/lib/settings/general'
 
-const SETTINGS_TABS = ['general', 'templates'] as const
+const SETTINGS_TABS = ['general', 'templates', 'sync'] as const
 
 type SettingsTab = (typeof SETTINGS_TABS)[number]
 
@@ -45,6 +46,7 @@ export function SettingsPageClient({
       <TabsList>
         <TabsTrigger value="general">{t('tabGeneral')}</TabsTrigger>
         <TabsTrigger value="templates">{t('tabTemplates')}</TabsTrigger>
+        <TabsTrigger value="sync">{t('tabSync')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="general" className="space-y-6">
@@ -88,6 +90,10 @@ export function SettingsPageClient({
             />
           </CardContent>
         </Card>
+      </TabsContent>
+
+      <TabsContent value="sync" className="space-y-6">
+        <SettingsSyncTab />
       </TabsContent>
     </Tabs>
   )

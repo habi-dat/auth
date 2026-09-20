@@ -2,7 +2,7 @@ import type { PrismaClient, SyncTarget } from '@habidat/db'
 import { queueDiscourseSync, queueLdapSync } from '@habidat/sync'
 
 export type SyncEventPayload =
-  | { userId: string; hashedPassword?: string }
+  | { userId: string; hashedPassword?: string; avatarRemoved?: boolean; avatarUrl?: string }
   | { groupId: string; oldSlug?: string }
   | { groupId: string; discourseId?: number; slug: string; oldSlug?: string }
   | { ldapDn: string; username: string }

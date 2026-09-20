@@ -1,3 +1,10 @@
+export {
+  absoluteAppAssetUrl,
+  applySsoAvatarFields,
+  avatarUrlForDiscourse,
+  isCustomDiscourseAvatar,
+  resolveDiscourseAvatarDownloadUrl,
+} from './avatar'
 export { DiscourseService } from './client'
 export { DiscourseApiError, isDiscourseNotFound } from './errors'
 export type { DiscourseReturnUrlAllowlist } from './sso'

@@ -10,6 +10,22 @@ import type {
   UpdateUserData,
 } from './types.js'
 
+const USER_SEARCH_ATTRIBUTES = [
+  'dn',
+  'uid',
+  'cn',
+  'sn',
+  'mail',
+  'l',
+  'preferredLanguage',
+  'description',
+  'uidNumber',
+  'userPassword',
+  'title',
+  'ou',
+  'jpegPhoto',
+]
+
 export class LdapService {
   private client: LdapClient | null = null
   private config: LdapConfig
@@ -57,19 +73,7 @@ export class LdapService {
       const results = await client.search(this.config.usersDn, {
         filter,
         scope: 'one',
-        attributes: [
-          'dn',
-          'uid',
-          'cn',
-          'mail',
-          'l',
-          'preferredLanguage',
-          'description',
-          'uidNumber',
-          'userPassword',
-          'title',
-          'ou',
-        ],
+        attributes: USER_SEARCH_ATTRIBUTES,
         sizeLimit: 1,
       })
       if (!results || results.length === 0) return null
@@ -87,19 +91,7 @@ export class LdapService {
       const results = await client.search(dn, {
         scope: 'base',
         filter: '(objectClass=*)',
-        attributes: [
-          'dn',
-          'uid',
-          'cn',
-          'mail',
-          'l',
-          'preferredLanguage',
-          'description',
-          'uidNumber',
-          'userPassword',
-          'title',
-          'ou',
-        ],
+        attributes: USER_SEARCH_ATTRIBUTES,
         sizeLimit: 1,
       })
       if (!results || results.length === 0) return null
@@ -136,20 +128,7 @@ export class LdapService {
       const results = await client.search(this.config.usersDn, {
         filter: '(objectClass=inetOrgPerson)',
         scope: 'one',
-        attributes: [
-          'dn',
-          'uid',
-          'cn',
-          'sn',
-          'mail',
-          'l',
-          'preferredLanguage',
-          'description',
-          'uidNumber',
-          'userPassword',
-          'title',
-          'ou',
-        ],
+        attributes: USER_SEARCH_ATTRIBUTES,
       })
       if (!results || results.length === 0) return []
       return results.map((entry) => mapSearchEntryToUser(entry as Record<string, unknown>))
@@ -202,17 +181,34 @@ export class LdapService {
     if (data.title != null && data.title.trim() !== '') entry.title = data.title.trim()
     if (data.ou != null && data.ou.trim() !== '') entry.ou = data.ou.trim()
 
+    // jpegPhoto is binary; ldapjs-client's add() stringifies values and would
+    // corrupt the JPEG. Create the entry first, then replace jpegPhoto.
     await client.add(dn, entry)
+    if (data.jpegPhoto && data.jpegPhoto.length > 0) {
+      await this.replaceJpegPhoto(dn, data.jpegPhoto)
+    }
 
     return dn
   }
 
   async updateUser(dn: string, data: UpdateUserData): Promise<void> {
     const client = this.ensureConnected()
-    const changes: Array<{ operation: 'replace'; modification: Record<string, string> }> = []
+    const changes: Array<{
+      operation: 'replace' | 'delete'
+      modification: Record<string, string | Buffer | string[]>
+    }> = []
+    const rdnType = rdnAttributeType(dn)
 
-    if (data.name !== undefined)
-      changes.push({ operation: 'replace', modification: { cn: data.name, sn: data.name } })
+    // habidat-setup users are named cn=<username>. Replacing cn with the
+    // display name drops the RDN value and OpenLDAP returns NamingViolation.
+    if (data.name !== undefined) {
+      if (rdnType !== 'cn') {
+        changes.push({ operation: 'replace', modification: { cn: data.name } })
+      }
+      if (rdnType !== 'sn') {
+        changes.push({ operation: 'replace', modification: { sn: data.name } })
+      }
+    }
     if (data.email !== undefined)
       changes.push({ operation: 'replace', modification: { mail: data.email } })
     if (data.location !== undefined)
@@ -231,7 +227,46 @@ export class LdapService {
     if (data.ou !== undefined) changes.push({ operation: 'replace', modification: { ou: data.ou } })
 
     for (const change of changes) {
-      await client.modify(dn, change)
+      const attr = Object.keys(change.modification)[0] ?? '?'
+      try {
+        await client.modify(dn, change)
+      } catch (err) {
+        throw wrapLdapError(err, `modify ${change.operation} ${attr} on ${dn}`)
+      }
+    }
+
+    if (data.jpegPhoto === null) {
+      await this.deleteJpegPhoto(dn)
+    } else if (data.jpegPhoto !== undefined) {
+      await this.replaceJpegPhoto(dn, data.jpegPhoto)
+    }
+  }
+
+  /**
+   * ldapjs-client stringifies modify values. Pass `{ type, vals: [Buffer] }`
+   * so the JPEG stays binary (see Change.fromObject / Attribute.addValue).
+   */
+  private async replaceJpegPhoto(dn: string, jpegPhoto: Buffer): Promise<void> {
+    const client = this.ensureConnected()
+    try {
+      await client.modify(dn, {
+        operation: 'replace',
+        modification: { type: 'jpegPhoto', vals: [jpegPhoto] },
+      })
+    } catch (err) {
+      throw wrapLdapError(err, `modify replace jpegPhoto on ${dn}`)
+    }
+  }
+
+  private async deleteJpegPhoto(dn: string): Promise<void> {
+    const client = this.ensureConnected()
+    try {
+      await client.modify(dn, {
+        operation: 'delete',
+        modification: { type: 'jpegPhoto', vals: [] },
+      })
+    } catch (err) {
+      if (!isNoSuchAttributeError(err)) throw err
     }
   }
 
@@ -316,6 +351,29 @@ function isNoSuchObjectError(err: unknown): boolean {
   return e.name === 'NoSuchObjectError' || e.code === 32
 }
 
+/** LDAP result code 16 = noSuchAttribute */
+function isNoSuchAttributeError(err: unknown): boolean {
+  if (err == null) return false
+  const e = err as { name?: string; code?: number }
+  return e.name === 'NoSuchAttributeError' || e.code === 16
+}
+
+function rdnAttributeType(dn: string): string {
+  const first = dn.split(',')[0] ?? ''
+  const eq = first.indexOf('=')
+  return eq > 0 ? first.slice(0, eq).trim().toLowerCase() : ''
+}
+
+/** ldapjs-client builds errors as `new NamingViolationError(null)`, so .message is useless. */
+function wrapLdapError(err: unknown, context: string): Error {
+  if (err instanceof Error) {
+    const detail = err.message && err.message !== 'null' ? err.message : err.name
+    err.message = `${context}: ${detail}`
+    return err
+  }
+  return new Error(`${context}: ${err != null ? String(err) : 'unknown'}`)
+}
+
 function escapeLdapFilter(value: string): string {
   return value
     .replace(/\\/g, '\\5c')
@@ -345,6 +403,7 @@ function mapSearchEntryToUser(entry: Record<string, unknown>): LdapUserEntry {
     dn: getStr('dn'),
     uid: getStr('uid'),
     cn: entry.cn != null ? getStr('cn') : undefined,
+    sn: entry.sn != null ? getStr('sn') : undefined,
     mail: entry.mail != null ? getStr('mail') : undefined,
     l: entry.l != null ? getStr('l') : undefined,
     preferredLanguage: entry.preferredLanguage != null ? getStr('preferredLanguage') : undefined,
@@ -353,7 +412,19 @@ function mapSearchEntryToUser(entry: Record<string, unknown>): LdapUserEntry {
     userPassword: entry.userPassword != null ? getStr('userPassword') : undefined,
     title: entry.title != null ? getStr('title') : undefined,
     ou: entry.ou != null ? getStr('ou') : undefined,
+    jpegPhoto: entry.jpegPhoto != null ? asJpegBuffer(entry.jpegPhoto) : undefined,
   }
+}
+
+function asJpegBuffer(value: unknown): Buffer | undefined {
+  if (value == null) return undefined
+  if (Buffer.isBuffer(value)) return value.length > 0 ? value : undefined
+  if (value instanceof Uint8Array) {
+    return value.length > 0 ? Buffer.from(value) : undefined
+  }
+  if (Array.isArray(value)) return asJpegBuffer(value[0])
+  if (typeof value === 'string' && value.length > 0) return Buffer.from(value, 'binary')
+  return undefined
 }
 
 function mapSearchEntryToGroup(entry: Record<string, unknown>): LdapGroupEntry {

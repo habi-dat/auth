@@ -21,6 +21,8 @@ export interface CreateUserData {
   title?: string
   /** Primary group LDAP DN → LDAP attribute "ou" */
   ou?: string
+  /** JPEG bytes for inetOrgPerson jpegPhoto */
+  jpegPhoto?: Buffer
 }
 
 export interface UpdateUserData {
@@ -35,6 +37,8 @@ export interface UpdateUserData {
   title?: string
   /** Primary group LDAP DN → LDAP attribute "ou" */
   ou?: string
+  /** JPEG bytes to replace jpegPhoto; null deletes the attribute */
+  jpegPhoto?: Buffer | null
 }
 
 export interface CreateGroupData {
@@ -55,6 +59,7 @@ export interface LdapUserEntry {
   dn: string
   uid: string
   cn?: string
+  sn?: string
   mail?: string
   l?: string
   preferredLanguage?: string
@@ -65,6 +70,8 @@ export interface LdapUserEntry {
   title?: string
   /** Primary group DN (LDAP "ou") */
   ou?: string
+  /** Present when the entry has jpegPhoto */
+  jpegPhoto?: Buffer
 }
 
 export interface LdapGroupEntry {

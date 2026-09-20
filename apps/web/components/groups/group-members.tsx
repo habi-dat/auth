@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { GenericAction, RowActions } from '@/components/ui/data-table-cells'
 import { useToast } from '@/components/ui/use-toast'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { UserSelector } from '@/components/users/user-selector'
 import {
   addMemberAction,
@@ -26,6 +27,8 @@ interface User {
   name: string
   email: string
   username?: string
+  image?: string | null
+  updatedAt?: Date | string
 }
 
 interface UserOption {
@@ -145,6 +148,12 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
           const isOwner = ownerIds.has(row.original.user.id)
           return (
             <div className="flex items-center gap-2 font-medium">
+              <UserAvatar
+                name={row.original.user.name}
+                image={row.original.user.image}
+                updatedAt={row.original.user.updatedAt}
+                className="h-8 w-8"
+              />
               {row.original.user.name}
               {isOwner && <ShieldCheck className="h-4 w-4 text-primary" />}
             </div>

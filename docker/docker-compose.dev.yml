@@ -62,6 +62,7 @@ services:
       REDIS_URL: redis://redis:6379
       APP_URL: https://user.${DOMAIN}
       NEXT_PUBLIC_APP_URL: https://user.${DOMAIN}
+      DISCOURSE_AVATAR_BASE_URL: http://${DOCKER_PREFIX}-user-avatars
       HOSTNAME: 0.0.0.0
       VIRTUAL_HOST: user.${DOMAIN}
       LETSENCRYPT_HOST: user.${DOMAIN}
@@ -111,7 +112,8 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@db:5432/habidat_auth
       REDIS_URL: redis://redis:6379
-      APP_URL: https://auth.${DOMAIN}
+      APP_URL: https://user.${DOMAIN}
+      DISCOURSE_AVATAR_BASE_URL: http://${DOCKER_PREFIX}-user-avatars
       LDAP_URL: ldap://ldap:389
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_BIND_DN: cn=admin,${LDAP_BASE_DN}
@@ -132,6 +134,17 @@ services:
     networks:
       - habidat-backend
       - habidat-user-dev
+
+  auth-avatars:
+    image: nginx:alpine
+    container_name: ${DOCKER_PREFIX}-user-avatars
+    # Skip alpine entrypoint apk/IPv6 probe; it hangs without package-index access.
+    entrypoint: ["/usr/sbin/nginx"]
+    command: ["-g", "daemon off;"]
+    volumes:
+      - ./apps/web/public/uploads:/usr/share/nginx/html/uploads:ro
+    networks:
+      - habidat-backend
 
 volumes:
   postgres_data_dev:

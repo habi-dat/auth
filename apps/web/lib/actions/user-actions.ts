@@ -1,8 +1,10 @@
 'use server'
 
+import { unlink } from 'node:fs/promises'
 import { canManageGroup, canManageUser } from '@habidat/auth/roles'
 import { requireAdmin, requireGroupAdmin } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
+import { avatarFilePath } from '@habidat/env/uploads'
 import { hashPassword } from 'better-auth/crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -660,6 +662,11 @@ export const deleteUserAction = groupAdminAction
     })
     await dispatchLdapSyncAfterCommit(ldapSyncEventId, 'LDAP')
     await dispatchDiscourseSyncAfterCommit(discourseSyncEventId, 'DISCOURSE')
+    try {
+      await unlink(avatarFilePath(user.id))
+    } catch {
+      // File might not exist
+    }
 
     await createAuditLog({
       actorId: session.user.id,

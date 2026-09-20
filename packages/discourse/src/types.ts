@@ -26,6 +26,10 @@ export interface SsoUserData {
   title?: string
   /** Group slugs (including parent groups for hierarchy); membership is set via sync_sso only */
   groups?: string[]
+  /** Absolute URL Discourse should fetch (sync_sso / DiscourseConnect). */
+  avatarUrl?: string
+  /** Force Discourse to refresh the avatar even if the URL is unchanged. */
+  avatarForceUpdate?: boolean
 }
 
 export interface CreateGroupData {

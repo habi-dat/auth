@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DataTable } from '@/components/ui/data-table'
 import { BadgeList, DeleteAction, EditAction, RowActions } from '@/components/ui/data-table-cells'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { deleteUserAction, type getUsers } from '@/lib/actions/user-actions'
 
 type UserRow = Awaited<ReturnType<typeof getUsers>>[number]
@@ -29,7 +30,17 @@ export function UsersTable({ users }: { users: UserRow[] }) {
     {
       accessorKey: 'name',
       header: t('name'),
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <UserAvatar
+            name={row.original.name}
+            image={row.original.image}
+            updatedAt={row.original.updatedAt}
+            className="h-8 w-8"
+          />
+          <span className="font-medium">{row.original.name}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'email',

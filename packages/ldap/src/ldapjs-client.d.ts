@@ -17,14 +17,16 @@ declare module 'ldapjs-client' {
 
   interface ModifyChange {
     operation: 'add' | 'delete' | 'replace'
-    modification: Record<string, string | string[]>
+    modification:
+      | Record<string, string | string[] | Buffer>
+      | { type: string; vals: Array<string | Buffer> }
   }
 
   class LdapClient {
     constructor(options: LdapClientOptions)
     bind(dn: string, password: string): Promise<void>
     unbind(): Promise<void>
-    add(dn: string, entry: Record<string, string | string[] | number>): Promise<void>
+    add(dn: string, entry: Record<string, string | string[] | number | Buffer>): Promise<void>
     modify(dn: string, change: ModifyChange): Promise<void>
     del(dn: string): Promise<void>
     search(base: string, options: SearchOptions): Promise<Record<string, unknown>[]>

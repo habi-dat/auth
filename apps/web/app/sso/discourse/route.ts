@@ -2,6 +2,8 @@ import { getUserGroupSlugs } from '@habidat/auth/group-slugs'
 import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
 import { prisma } from '@habidat/db'
 import {
+  applySsoAvatarFields,
+  avatarUrlForDiscourse,
   hmacSha256Hex,
   parseAllowedDiscourseReturnUrl,
   resolveDiscourseExternalId,
@@ -11,7 +13,8 @@ import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { DISCOURSE_SSO_SECRET, DISCOURSE_URL, APP_URL, TRUSTED_ORIGINS } = webEnv
+  const { DISCOURSE_SSO_SECRET, DISCOURSE_URL, APP_URL, DISCOURSE_AVATAR_BASE_URL, TRUSTED_ORIGINS } =
+    webEnv
   if (!DISCOURSE_SSO_SECRET) {
     return NextResponse.json({ error: 'Discourse SSO not configured' }, { status: 503 })
   }
@@ -85,6 +88,15 @@ export async function GET(request: Request) {
     require_activation: 'false',
     groups: groups.join(','),
   })
+  if (user.image) {
+    applySsoAvatarFields(responseParams, {
+      avatarUrl: avatarUrlForDiscourse(user.image, {
+        appUrl,
+        fetchBaseUrl: DISCOURSE_AVATAR_BASE_URL,
+      }),
+      avatarForceUpdate: true,
+    })
+  }
 
   const payload = Buffer.from(responseParams.toString()).toString('base64')
   const responseSig = hmacSha256Hex(DISCOURSE_SSO_SECRET, payload)

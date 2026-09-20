@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl'
 import { useAction } from 'next-safe-action/hooks'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -133,6 +134,13 @@ export function EditProfileForm({ initialUser, memberGroups }: EditProfileFormPr
             <CardDescription>{t('personalInfoDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <ProfileAvatarEditor
+              name={initialUser.name}
+              image={initialUser.image}
+              updatedAt={initialUser.updatedAt}
+              onChanged={() => router.refresh()}
+            />
+
             <div className="space-y-2">
               <Label htmlFor="name">{t('name')}</Label>
               <Input id="name" {...register('name')} disabled={isExecuting} />

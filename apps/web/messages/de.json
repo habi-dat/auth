@@ -150,7 +150,25 @@
     "primaryGroupNone": "Keine",
     "primaryGroupHint": "Muss eine deiner Mitgliedsgruppen sein.",
     "groups": "Gruppen",
-    "groupAdmins": "Gruppenadmin*a von"
+    "groupAdmins": "Gruppenadmin*a von",
+    "avatar": "Profilbild",
+    "avatarUpload": "Foto hochladen",
+    "avatarChange": "Foto ändern",
+    "avatarRemove": "Foto entfernen",
+    "avatarHint": "JPEG, PNG oder WebP, max. 2 MB. Das Foto wird quadratisch zugeschnitten.",
+    "avatarUploaded": "Profilbild aktualisiert",
+    "avatarRemoved": "Profilbild entfernt",
+    "avatarUploadFailed": "Das Profilbild konnte nicht gespeichert werden.",
+    "avatarRemoveFailed": "Das Profilbild konnte nicht entfernt werden.",
+    "avatarInvalidType": "Bitte ein JPEG-, PNG- oder WebP-Bild verwenden.",
+    "avatarCropTitle": "Foto zuschneiden",
+    "avatarCropDescription": "Ziehe und zoome, um den quadratischen Ausschnitt festzulegen.",
+    "avatarCropConfirm": "Foto verwenden",
+    "avatarZoom": "Zoom",
+    "avatarRemoveConfirm": {
+      "title": "Profilbild entfernen?",
+      "description": "Dein Foto wird in habidat, Nextcloud und Discourse entfernt."
+    }
   },
   "password": {
     "changeTitle": "Passwort ändern",
@@ -233,6 +251,22 @@
     "description": "Allgemeine Einstellungen und E-Mail-Vorlagen",
     "tabGeneral": "Allgemein",
     "tabTemplates": "E-Mail-Vorlagen",
+    "tabSync": "Sync",
+    "sync": {
+      "title": "Sync",
+      "description": "Bestehende benutzerdefinierte Discourse-Avatare nach habidat importieren. Bereits gesetzte Profilbilder werden nicht überschrieben.",
+      "importAvatars": "Discourse-Avatare importieren",
+      "importAvatarsHelp": "Nur selbst hochgeladene Discourse-Profilbilder werden importiert. Buchstaben-Avatare und Gravatar werden übersprungen.",
+      "importStarted": "Import läuft…",
+      "importFailed": "Import fehlgeschlagen",
+      "resultsTitle": "Import-Ergebnis",
+      "imported": "Importiert",
+      "skippedHasPicture": "Übersprungen (Profilbild vorhanden)",
+      "skippedNoCustom": "Übersprungen (kein eigenes Discourse-Profilbild)",
+      "failed": "Fehlgeschlagen",
+      "noFailures": "Keine Fehler.",
+      "close": "Schließen"
+    },
     "general": {
       "title": "Allgemeine Einstellungen",
       "description": "Plattformname, Logo und Support-E-Mail (z. B. für E-Mails und Fußzeilen).",

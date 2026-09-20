@@ -8,7 +8,6 @@ import { useAction } from 'next-safe-action/hooks'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { Sidebar } from '@/components/layout/sidebar'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -22,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { updateProfileAction } from '@/lib/actions/user-actions'
 import { performSignOut } from '@/lib/auth/perform-sign-out'
 
@@ -31,6 +31,7 @@ interface HeaderProps {
     name: string
     email: string
     image?: string | null
+    updatedAt?: Date | string | null
     preferredColorMode?: string | null
     primaryGroupId?: string | null
     preferredLanguage?: string
@@ -67,13 +68,6 @@ export function Header({ user, sidebarProps }: HeaderProps) {
 
   const handleSignOut = () => performSignOut(router)
 
-  const initials = user.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
   return (
     <header className="border-b bg-muted/40 px-6 py-3">
       <div className="flex items-center justify-between w-full">
@@ -104,12 +98,13 @@ export function Header({ user, sidebarProps }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="relative h-11 gap-2.5 rounded-md px-2 pr-3">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.image || undefined} alt={user.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  name={user.name}
+                  image={user.image}
+                  updatedAt={user.updatedAt}
+                  className="h-9 w-9"
+                  fallbackClassName="bg-primary text-primary-foreground text-xs font-semibold"
+                />
                 <span className="max-w-[10rem] truncate text-sm font-semibold">{user.name}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>

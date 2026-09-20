@@ -18,6 +18,7 @@ export type SessionUser = {
   ldapDn: string | null
   ldapUidNumber: number | null
   createdAt: Date
+  updatedAt?: Date
 }
 
 export type SessionWithGroups = {

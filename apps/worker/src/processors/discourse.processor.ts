@@ -1,5 +1,10 @@
 import type { PrismaClient } from '@habidat/db'
-import { type DiscourseService, resolveDiscourseExternalId } from '@habidat/discourse'
+import {
+  avatarUrlForDiscourse,
+  type DiscourseService,
+  resolveDiscourseExternalId,
+} from '@habidat/discourse'
+import { workerEnv } from '@habidat/env/worker'
 import type { DiscourseSyncJobData, JOB_NAMES } from '@habidat/sync'
 import type { Job } from 'bullmq'
 
@@ -40,7 +45,11 @@ export function createDiscourseProcessor(
             }
           )
         } else {
-          await handleSyncUser(discourse, prisma, event.payload as { userId: string })
+          await handleSyncUser(
+            discourse,
+            prisma,
+            event.payload as { userId: string; avatarRemoved?: boolean; avatarUrl?: string }
+          )
         }
       } else if (event.entityType === 'GROUP') {
         if (event.operation === 'DELETE') {
@@ -141,7 +150,7 @@ async function getGroupSlugAndAncestorSlugs(
 async function handleSyncUser(
   discourse: DiscourseService,
   prisma: PrismaClient,
-  payload: { userId: string }
+  payload: { userId: string; avatarRemoved?: boolean; avatarUrl?: string }
 ): Promise<void> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: payload.userId },
@@ -164,6 +173,19 @@ async function handleSyncUser(
   // Frozen DiscourseConnect key: existing discourseId, else username (LDAP uid).
   // Matches historical SSO (LDAP uid as external_id); once stored, username changes stay linked.
   const externalId = resolveDiscourseExternalId(user)
+  const avatarUrl =
+    payload.avatarUrl ??
+    (user.image
+      ? avatarUrlForDiscourse(user.image, {
+          appUrl: workerEnv.APP_URL,
+          fetchBaseUrl: workerEnv.DISCOURSE_AVATAR_BASE_URL,
+        })
+      : undefined)
+  console.log(
+    `[Discourse] sync user ${user.username} avatarUrl=${avatarUrl ?? '(none)'} force=${Boolean(
+      avatarUrl || payload.avatarRemoved
+    )}`
+  )
   await discourse.syncUserViaSso({
     externalId,
     email: user.email,
@@ -171,6 +193,11 @@ async function handleSyncUser(
     name: user.name,
     title: user.primaryGroup?.name ?? undefined,
     groups: groupSlugs,
+    ...(avatarUrl
+      ? { avatarUrl, avatarForceUpdate: true }
+      : payload.avatarRemoved
+        ? { avatarForceUpdate: true }
+        : {}),
   })
 
   await prisma.user.update({

@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { createUserAction, deleteUserAction, updateUserAction } from '@/lib/actions/user-actions'
 import { GROUPADMIN_GROUP_SLUG } from '@/lib/constants'
 import { slugify } from '@/lib/utils'
@@ -42,6 +43,8 @@ interface UserFormProps {
     preferredLanguage: string
     storageQuota: string
     primaryGroupId: string | null
+    image?: string | null
+    updatedAt?: Date | string
     memberships: Array<{ group: GroupWithSlug }>
     ownerships: Array<{ group: GroupWithSlug }>
   }
@@ -237,7 +240,17 @@ export function UserForm({ user, groups, isAdmin }: UserFormProps) {
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
-          <CardTitle>{isEditing ? t('form.titleEdit') : t('form.titleCreate')}</CardTitle>
+          <CardTitle className="flex items-center gap-3">
+            {isEditing && user && (
+              <UserAvatar
+                name={user.name}
+                image={user.image}
+                updatedAt={user.updatedAt}
+                className="h-10 w-10"
+              />
+            )}
+            {isEditing ? t('form.titleEdit') : t('form.titleCreate')}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">

@@ -10,10 +10,10 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
   if (value === undefined || value === null) return null
   const str = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
   return (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <span className="text-muted-foreground text-sm font-medium">{label}</span>
-      <pre className="max-h-48 overflow-auto rounded border bg-muted/50 p-3 font-mono text-xs">
-        <code>{str}</code>
+      <pre className="max-h-48 min-w-0 max-w-full overflow-x-auto overflow-y-auto rounded border bg-muted/50 p-3 font-mono text-xs">
+        <code className="block w-max whitespace-pre">{str}</code>
       </pre>
     </div>
   )
@@ -34,11 +34,11 @@ export function SyncDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg min-w-0 overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('detailsTitle')}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="grid grid-cols-2 gap-2 text-sm">
             <span className="text-muted-foreground">{t('target')}</span>
             <span>{event.target}</span>

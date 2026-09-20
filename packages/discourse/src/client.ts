@@ -1,3 +1,4 @@
+import { applySsoAvatarFields } from './avatar'
 import { DiscourseApiError, isDiscourseNotFound } from './errors'
 import { hmacSha256Hex } from './sso'
 import {
@@ -107,6 +108,10 @@ export class DiscourseService {
       ...(user.title != null && user.title !== '' && { title: user.title }),
       // Always send groups (including empty) so discourse_connect_overrides_groups can clear memberships.
       groups: (user.groups ?? []).join(','),
+    })
+    applySsoAvatarFields(params, {
+      avatarUrl: user.avatarUrl,
+      avatarForceUpdate: user.avatarForceUpdate,
     })
     return Buffer.from(params.toString()).toString('base64')
   }
@@ -465,6 +470,43 @@ export class DiscourseService {
         body: JSON.stringify({ watched_tags: newList.join(',') }),
       })
     })
+  }
+
+  /**
+   * Avatar fields from GET /u/{username}.json. Returns null when the user does not exist.
+   */
+  async getUserAvatarInfo(
+    username: string
+  ): Promise<{ uploadedAvatarId: number | null; avatarTemplate: string } | null> {
+    let result: {
+      user?: { uploaded_avatar_id?: number | null; avatar_template?: string }
+    }
+    try {
+      result = await this.request(`/u/${encodeURIComponent(username)}.json`)
+    } catch (err) {
+      if (isDiscourseNotFound(err)) return null
+      throw err
+    }
+    const user = result?.user
+    if (!user) return null
+    return {
+      uploadedAvatarId: user.uploaded_avatar_id ?? null,
+      avatarTemplate: user.avatar_template ?? '',
+    }
+  }
+
+  /** Download a URL with the Discourse API key (avatars may not be public). */
+  async downloadBinary(url: string): Promise<Buffer> {
+    const response = await fetch(url, {
+      headers: {
+        'Api-Key': this.config.apiKey,
+        'Api-Username': this.config.apiUsername,
+      },
+    })
+    if (!response.ok) {
+      throw new DiscourseApiError(response.status)
+    }
+    return Buffer.from(await response.arrayBuffer())
   }
 
   /**

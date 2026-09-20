@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { PageLayout } from '@/components/layout/page-layout'
 import { ProfileMailSection } from '@/components/mail/profile-mail-section'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { getMailSwitchData } from '@/lib/actions/discourse-mail-actions'
 
 export default async function ProfilePage() {
@@ -15,13 +15,6 @@ export default async function ProfilePage() {
   const tMail = await getTranslations('mailSettings')
   const { user, memberships, ownerships, primaryGroup } = await requireUserWithGroups()
   const mailResult = await getMailSwitchData()
-
-  const initials = user.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
 
   const langLabel =
     user.preferredLanguage === 'de' ? t('languageDe') : user.preferredLanguage || t('languageDe')
@@ -51,10 +44,13 @@ export default async function ProfilePage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={user.name}
+                image={user.image}
+                updatedAt={user.updatedAt}
+                className="h-20 w-20"
+                fallbackClassName="text-2xl"
+              />
               <div>
                 <CardTitle className="text-2xl">{user.name}</CardTitle>
                 <CardDescription className="text-base">@{user.username}</CardDescription>

@@ -23,6 +23,13 @@ export const workerEnv = createEnv({
 
     // App
     APP_URL: z.string().url(),
+    /**
+     * Origin Discourse should GET avatars from (HTTP :80 Docker hostname).
+     * Falls back to APP_URL, which Discourse often cannot fetch.
+     */
+    DISCOURSE_AVATAR_BASE_URL: z.string().url().optional(),
+    /** Directory that contains avatars/ (same volume as web public/uploads). */
+    UPLOADS_DIR: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

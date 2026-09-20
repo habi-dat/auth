@@ -876,12 +876,30 @@ export async function getGroup(id: string) {
     include: {
       memberships: {
         include: {
-          user: { select: { id: true, name: true, email: true, username: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              image: true,
+              updatedAt: true,
+            },
+          },
         },
       },
       ownerships: {
         include: {
-          user: { select: { id: true, name: true, email: true, username: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              image: true,
+              updatedAt: true,
+            },
+          },
         },
       },
       parentGroups: {

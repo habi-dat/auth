@@ -2,6 +2,7 @@ import type { PrismaClient } from '@habidat/db'
 import type { LdapService } from '@habidat/ldap'
 import type { JOB_NAMES, LdapSyncJobData } from '@habidat/sync'
 import type { Job } from 'bullmq'
+import { jpegPhotoNeedsUpdate, loadUserJpegPhoto } from '../avatar-file'
 
 export function createLdapProcessor(
   ldap: LdapService,
@@ -48,7 +49,7 @@ export function createLdapProcessor(
         data: { status: 'COMPLETED', processedAt: new Date(), lastError: null },
       })
     } catch (err) {
-      const message = err instanceof Error ? err.message : err != null ? String(err) : 'unknown'
+      const message = formatSyncError(err)
       console.error(`[LDAP] syncEvent ${syncEventId} failed:`, message)
       if (err instanceof Error && err.stack) console.error(err.stack)
       await prisma.syncEvent.update({
@@ -77,7 +78,8 @@ async function createUserOrThrow(
     primaryGroupName?: string | null
     primaryGroupLdapDn?: string | null
   },
-  userPassword?: string
+  userPassword?: string,
+  jpegPhoto?: Buffer
 ): Promise<string> {
   try {
     return await ldap.createUser({
@@ -91,6 +93,7 @@ async function createUserOrThrow(
       ...(user.primaryGroupName ? { title: user.primaryGroupName } : {}),
       ...(user.primaryGroupLdapDn ? { ou: user.primaryGroupLdapDn } : {}),
       ...(userPassword ? { userPassword } : {}),
+      ...(jpegPhoto ? { jpegPhoto } : {}),
     })
   } catch (err) {
     if (isNoSuchObjectError(err)) {
@@ -132,6 +135,7 @@ async function handleSyncUser(
     ? await ldap.findUserByDn(user.ldapDn)
     : await ldap.findUserByUsername(user.username)
   const userPassword = payload.hashedPassword
+  const jpegPhoto = await loadUserJpegPhoto(user)
 
   if (!ldapUser) {
     const dn = await createUserOrThrow(
@@ -142,7 +146,8 @@ async function handleSyncUser(
         primaryGroupName: user.primaryGroup?.name ?? null,
         primaryGroupLdapDn: user.primaryGroup?.ldapDn ?? null,
       },
-      userPassword
+      userPassword,
+      jpegPhoto ?? undefined
     )
     await prisma.user.update({
       where: { id: user.id },
@@ -153,15 +158,19 @@ async function handleSyncUser(
 
   const primaryGroupName = user.primaryGroup?.name ?? ''
   const primaryGroupLdapDn = user.primaryGroup?.ldapDn ?? ''
+  const rdnType = (ldapUser.dn.split(',')[0] ?? '').split('=')[0]?.toLowerCase()
+  // cn-named entries (habidat-setup) keep cn as the username; display name lives in sn.
+  const ldapDisplayName = rdnType === 'cn' ? (ldapUser.sn ?? '') : (ldapUser.cn ?? '')
   const needsUpdate =
-    ldapUser.cn !== user.name ||
+    ldapDisplayName !== user.name ||
     ldapUser.mail !== user.email ||
     (ldapUser.l ?? '') !== (user.location ?? '') ||
     (ldapUser.preferredLanguage ?? 'de') !== (user.preferredLanguage ?? 'de') ||
     (ldapUser.description ?? '1 GB') !== (user.storageQuota ?? '1 GB') ||
     (ldapUser.title ?? '') !== primaryGroupName ||
     (ldapUser.ou ?? '') !== primaryGroupLdapDn ||
-    (userPassword != null && ldapUser.userPassword !== userPassword)
+    (userPassword != null && ldapUser.userPassword !== userPassword) ||
+    jpegPhotoNeedsUpdate(jpegPhoto, ldapUser.jpegPhoto)
 
   if (needsUpdate) {
     try {
@@ -174,6 +183,7 @@ async function handleSyncUser(
         ...(primaryGroupName && primaryGroupName !== '' ? { title: primaryGroupName } : {}),
         ...(primaryGroupLdapDn && primaryGroupLdapDn !== '' ? { ou: primaryGroupLdapDn } : {}),
         ...(userPassword ? { userPassword } : {}),
+        ...(jpegPhoto !== undefined ? { jpegPhoto } : {}),
       })
     } catch (updateErr) {
       if (isNoSuchObjectError(updateErr)) {
@@ -185,7 +195,8 @@ async function handleSyncUser(
             primaryGroupName: user.primaryGroup?.name ?? null,
             primaryGroupLdapDn: user.primaryGroup?.ldapDn ?? null,
           },
-          userPassword
+          userPassword,
+          jpegPhoto ?? undefined
         )
         await prisma.user.update({
           where: { id: user.id },
@@ -205,6 +216,13 @@ async function handleSyncUser(
       ldapSyncedAt: new Date(),
     },
   })
+}
+
+function formatSyncError(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message && err.message !== 'null' ? err.message : err.name
+  }
+  return err != null ? String(err) : 'unknown'
 }
 
 function isNoSuchObjectError(err: unknown): boolean {
