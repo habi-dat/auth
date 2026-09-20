@@ -59,11 +59,7 @@ export const importDiscourseAvatarsAction = adminAction
         }
 
         const url = resolveDiscourseAvatarDownloadUrl(webEnv.DISCOURSE_URL, info.avatarTemplate)
-        const raw = await discourse.downloadBinary(url)
-        if (raw.length > MAX_DOWNLOAD_BYTES) {
-          result.failed.push({ username: user.username, reason: 'Downloaded image too large' })
-          continue
-        }
+        const raw = await discourse.downloadBinary(url, MAX_DOWNLOAD_BYTES)
 
         const jpeg = await encodeAvatarJpeg(raw)
         const filepath = avatarFilePath(user.id)

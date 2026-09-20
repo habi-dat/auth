@@ -496,7 +496,7 @@ export class DiscourseService {
   }
 
   /** Download a URL with the Discourse API key (avatars may not be public). */
-  async downloadBinary(url: string): Promise<Buffer> {
+  async downloadBinary(url: string, maxBytes = 5 * 1024 * 1024): Promise<Buffer> {
     const response = await fetch(url, {
       headers: {
         'Api-Key': this.config.apiKey,
@@ -506,7 +506,29 @@ export class DiscourseService {
     if (!response.ok) {
       throw new DiscourseApiError(response.status)
     }
-    return Buffer.from(await response.arrayBuffer())
+    const declared = Number(response.headers.get('content-length') ?? '')
+    if (Number.isFinite(declared) && declared > maxBytes) {
+      throw new Error('Downloaded image too large')
+    }
+    if (!response.body) {
+      const buf = Buffer.from(await response.arrayBuffer())
+      if (buf.length > maxBytes) throw new Error('Downloaded image too large')
+      return buf
+    }
+    const reader = response.body.getReader()
+    const chunks: Buffer[] = []
+    let total = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > maxBytes) {
+        await reader.cancel()
+        throw new Error('Downloaded image too large')
+      }
+      chunks.push(Buffer.from(value))
+    }
+    return Buffer.concat(chunks)
   }
 
   /**
