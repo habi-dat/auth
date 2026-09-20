@@ -6,7 +6,7 @@ User management and identity provider for habidat groupware.
 
 This is a monorepo containing:
 
-- `apps/web` - Next.js 15 web application
+- `apps/web` - Next.js 16 web application
 - `apps/worker` - BullMQ worker for background jobs
 - `packages/db` - Prisma database schema and client
 - `packages/env` - Environment variable validation
@@ -14,7 +14,7 @@ This is a monorepo containing:
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - pnpm 9+
 - Docker & Docker Compose
 - A local clone of `soudis/habidat-setup`
@@ -83,6 +83,7 @@ Copy relevant values from `habidat-setup/store/auth/auth.env` (or legacy `store/
 
 ```bash
 pnpm install
+pnpm db:generate
 ```
 
 ### 4. Stop user container from habidat-setup

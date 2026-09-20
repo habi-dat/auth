@@ -6,11 +6,9 @@ export interface SamlLogoutRequest {
 }
 
 /** Result of parsing a SAML LogoutRequest; pass to createLogoutResponseRedirect. */
-export interface ParsedLogoutRequest {
-  samlContent: string
-  extract: { request?: { id?: string }; [key: string]: unknown }
-  sigAlg?: string | null
-}
+export type ParsedLogoutRequest = Awaited<
+  ReturnType<ReturnType<typeof getIdentityProvider>['parseLogoutRequest']>
+>
 
 /**
  * Parse incoming SAML LogoutRequest from SP (GET redirect binding).
@@ -37,7 +35,12 @@ export function createLogoutResponseRedirect(
   const idp = getIdentityProvider()
   const sp = getServiceProvider(app)
   const binding = 'redirect'
-  const result = idp.createLogoutResponse(sp, requestInfo, binding, relayState ?? '')
+  const result = idp.createLogoutResponse(
+    sp,
+    { extract: requestInfo.extract },
+    binding,
+    relayState ?? ''
+  )
   return (result as { context: string }).context
 }
 
@@ -96,4 +99,11 @@ export function createMinimalParsedRequest(requestId: string): ParsedLogoutReque
     samlContent: '',
     extract: { request: { id: requestId } },
   }
+}
+
+export function samlExtractRequestId(extract: ParsedLogoutRequest['extract']): string | undefined {
+  const id = extract.request?.id
+  if (typeof id === 'string' && id.length > 0) return id
+  if (Array.isArray(id) && typeof id[0] === 'string' && id[0].length > 0) return id[0]
+  return undefined
 }

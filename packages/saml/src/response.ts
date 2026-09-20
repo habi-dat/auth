@@ -30,6 +30,13 @@ export async function parseLoginRequest(
  * Create SAML Login response and POST binding context using samlify.
  * Returns context suitable for generateSamlPostForm (context is base64-encoded).
  */
+function samlRequestId(extract: ParsedLoginRequest['extract']): string {
+  const id = extract.request?.id
+  if (typeof id === 'string' && id.length > 0) return id
+  if (Array.isArray(id) && typeof id[0] === 'string' && id[0].length > 0) return id[0]
+  throw new Error('SAML AuthnRequest is missing an ID')
+}
+
 export async function createLoginResponse(
   app: AppSaml,
   requestInfo: ParsedLoginRequest,
@@ -40,15 +47,19 @@ export async function createLoginResponse(
   const sp = getServiceProvider(app)
   const binding = 'post'
 
-  return idp.createLoginResponse(
+  const result = await idp.createLoginResponse(
     sp,
-    requestInfo,
+    { extract: requestInfo.extract },
     binding,
     user,
-    createTemplateCallback(idp, sp, user, requestInfo.extract.request.id),
+    createTemplateCallback(idp, sp, user, samlRequestId(requestInfo.extract)),
     false,
     relayState ?? undefined
   )
+  if (!('entityEndpoint' in result)) {
+    throw new Error('Expected a SAML POST binding response')
+  }
+  return result
 }
 
 function escapeHtml(s: string): string {

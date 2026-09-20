@@ -15,8 +15,8 @@ export const webEnv = createEnv({
     SMTP_PORT: z.coerce.number(),
     SMTP_SECURE: z
       .string()
-      .transform((v) => v === 'true')
-      .default('false'),
+      .default('false')
+      .transform((v) => v === 'true'),
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
     SMTP_FROM: z.string().email(),

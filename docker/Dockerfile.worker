@@ -22,6 +22,9 @@ RUN --mount=type=cache,id=pnpm-store-worker,target=/pnpm/store pnpm install --fr
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
+# Dummy URL is enough for `prisma generate` (no live DB at image build).
+ENV DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy
+
 RUN pnpm turbo build --filter=@habidat/worker...
 
 # Production-only deployment (includes prisma + tsx since they are regular deps now)

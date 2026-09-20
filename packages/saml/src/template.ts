@@ -10,9 +10,27 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;')
 }
 
+/** Sentinel spliced after samlify tag replacement so group AttributeValues stay real XML. */
+export const GROUPS_XML_PLACEHOLDER = '__HABIDAT_SAML_GROUPS__'
+
+function groupAttributeValuesXml(groups: string[] | undefined): string {
+  return (groups || [])
+    .map(
+      (group) =>
+        `<saml:AttributeValue xsi:type="xs:string">${escapeXml(group)}</saml:AttributeValue>`
+    )
+    .join('')
+}
+
 export const buildLoginResponseTemplate = () => {
-  let attributes = `${['username', 'uid', 'place', 'email', 'title'].map((attribute) => `<saml:Attribute Name="${attribute}" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attr_${attribute}}</saml:AttributeValue></saml:Attribute>`).join('')}`
-  attributes += `<saml:Attribute Name="groups" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">{attr_groups}</saml:Attribute>`
+  const attributes = `${['username', 'uid', 'place', 'email', 'title']
+    .map(
+      (attribute) =>
+        `<saml:Attribute Name="${attribute}" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xsi:type="xs:string">{attr_${attribute}}</saml:AttributeValue></saml:Attribute>`
+    )
+    .join(
+      ''
+    )}<saml:Attribute Name="groups" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">${GROUPS_XML_PLACEHOLDER}</saml:Attribute>`
   return `<?xml version="1.0" encoding="utf-8"?><samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{ID}" Version="2.0" IssueInstant="{IssueInstant}" Destination="{Destination}" InResponseTo="{InResponseTo}"><saml:Issuer>{Issuer}</saml:Issuer><samlp:Status><samlp:StatusCode Value="{StatusCode}" /></samlp:Status><saml:Assertion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="{AssertionID}" Version="2.0" IssueInstant="{IssueInstant}"><saml:Issuer>{Issuer}</saml:Issuer><saml:Subject><saml:NameID Format="{NameIDFormat}">{NameID}</saml:NameID><saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"><saml:SubjectConfirmationData NotOnOrAfter="{SubjectConfirmationDataNotOnOrAfter}" Recipient="{SubjectRecipient}" InResponseTo="{InResponseTo}" /></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore="{ConditionsNotBefore}" NotOnOrAfter="{ConditionsNotOnOrAfter}"><saml:AudienceRestriction><saml:Audience>{Audience}</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant="{ConditionsNotOnOrAfter}" SessionNotOnOrAfter="{ConditionsNotOnOrAfter}" SessionIndex="{AssertionID}"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement>${attributes}</saml:AttributeStatement></saml:Assertion></samlp:Response>`
 }
 
@@ -39,40 +57,39 @@ export const createTemplateCallback =
     const fiveMinutesLater = new Date(now.getTime())
     fiveMinutesLater.setMinutes(fiveMinutesLater.getMinutes() + 5)
 
+    // samlify 2.13+ XML-escapes every {tag} value. Pass raw strings here.
+    // Group AttributeValue elements are spliced after replacement so they stay markup.
     const tvalue: Record<string, string | null | undefined> = {
-      ID: escapeXml(_id),
-      AssertionID: escapeXml(assertionID),
-      Destination: escapeXml(acs),
-      Audience: escapeXml(spEntityID),
-      SubjectRecipient: escapeXml(acs),
+      ID: _id,
+      AssertionID: assertionID,
+      Destination: acs,
+      Audience: spEntityID,
+      SubjectRecipient: acs,
       NameIDFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified',
-      NameID: escapeXml(user.uid),
-      Issuer: escapeXml(_idp.entityMeta.getEntityID() as string),
+      NameID: user.uid,
+      Issuer: _idp.entityMeta.getEntityID() as string,
       IssueInstant: now.toISOString(),
       ConditionsNotBefore: now.toISOString(),
       ConditionsNotOnOrAfter: fiveMinutesLater.toISOString(),
       SubjectConfirmationDataNotOnOrAfter: fiveMinutesLater.toISOString(),
-      AssertionConsumerServiceURL: escapeXml(acs),
-      EntityID: escapeXml(spEntityID),
-      InResponseTo: escapeXml(requestId),
+      AssertionConsumerServiceURL: acs,
+      EntityID: spEntityID,
+      InResponseTo: requestId,
       StatusCode: 'urn:oasis:names:tc:SAML:2.0:status:Success',
-      attr_username: escapeXml(user.username),
-      attr_uid: escapeXml(user.uid),
-      attr_place: escapeXml(user.location ?? ''),
-      attr_email: escapeXml(user.email),
-      attr_title: escapeXml(user.title ?? ''),
-      attr_groups: (user.groups || [])
-        .map(
-          (group) =>
-            `<saml:AttributeValue xsi:type="xs:string">${escapeXml(group)}</saml:AttributeValue>`
-        )
-        .join(''),
+      attr_username: user.username,
+      attr_uid: user.uid,
+      attr_place: user.location ?? '',
+      attr_email: user.email,
+      attr_title: user.title ?? '',
     }
 
-    const result = {
+    const context = SamlLib.replaceTagsByValue(template, tvalue).replaceAll(
+      GROUPS_XML_PLACEHOLDER,
+      groupAttributeValuesXml(user.groups)
+    )
+
+    return {
       id: _id,
-      context: SamlLib.replaceTagsByValue(template, tvalue),
+      context,
     }
-
-    return result
   }

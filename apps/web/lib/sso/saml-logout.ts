@@ -10,6 +10,7 @@ import {
   encodeLogoutState,
   type ParsedLogoutRequest,
   parseLogoutRequest,
+  samlExtractRequestId,
 } from '@habidat/saml'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -94,7 +95,7 @@ async function handleLogoutRequest(
     remainingAppIds: otherSamlApps.map((a) => a.appId),
     initiatorAppId: app.id,
     initiatorRelayState: relayState ?? undefined,
-    initiatorRequestId: requestInfo.extract.request?.id,
+    initiatorRequestId: samlExtractRequestId(requestInfo.extract),
   })
 
   return processNextInChain(request, chainState)
