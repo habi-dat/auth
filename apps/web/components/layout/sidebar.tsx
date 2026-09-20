@@ -6,6 +6,7 @@ import {
   History,
   Home,
   Layers,
+  LogOut,
   Mail,
   RefreshCw,
   Settings,
@@ -14,8 +15,9 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { performSignOut } from '@/lib/auth/perform-sign-out'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
@@ -44,6 +46,7 @@ export function Sidebar({
 }: SidebarProps) {
   const t = useTranslations('sidebar')
   const pathname = usePathname()
+  const router = useRouter()
   const displayName = brandName ?? t('brand')
 
   const navItems = [
@@ -86,7 +89,7 @@ export function Sidebar({
               </span>
             </div>
           )}
-          <span className="font-semibold text-lg truncate">{displayName}</span>
+          <span className="font-semibold text-xl truncate">{displayName}</span>
         </Link>
       </div>
       <nav className="flex-1 overflow-y-auto">
@@ -118,6 +121,19 @@ export function Sidebar({
           })}
         </ul>
       </nav>
+      <div className="mt-auto border-t">
+        <button
+          type="button"
+          onClick={async () => {
+            onItemClick?.()
+            await performSignOut(router)
+          }}
+          className="flex w-full cursor-pointer items-center gap-3 px-6 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          {t('nav.signOut')}
+        </button>
+      </div>
     </aside>
   )
 }

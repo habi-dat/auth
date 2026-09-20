@@ -294,7 +294,8 @@
       "apps": "Apps",
       "settings": "Settings",
       "audit": "Audit",
-      "sync": "Sync"
+      "sync": "Sync",
+      "signOut": "Sign out"
     }
   },
   "categories": {

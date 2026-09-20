@@ -9,15 +9,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
-import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+  AuthCard,
+  AuthCardContent,
+  AuthCardFooter,
+  AuthCardHeader,
+} from '@/components/auth/auth-card'
+import { Button } from '@/components/ui/button'
+import { CardDescription, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
@@ -136,47 +135,47 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-        <CardHeader className="space-y-1">
+      <AuthCard>
+        <AuthCardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">{t('invalidLink')}</CardTitle>
           <CardDescription>{t('invalidLinkDescription')}</CardDescription>
-        </CardHeader>
-        <CardFooter>
+        </AuthCardHeader>
+        <AuthCardFooter>
           <Link href="/forgot-password" className="w-full">
             <Button className="w-full">{t('requestNewLink')}</Button>
           </Link>
-        </CardFooter>
-      </Card>
+        </AuthCardFooter>
+      </AuthCard>
     )
   }
 
   if (isSuccess) {
     return (
-      <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-        <CardHeader className="space-y-1">
+      <AuthCard>
+        <AuthCardHeader className="space-y-1">
           <div className="mb-4">
             <CheckCircle className="h-12 w-12 text-green-500" />
           </div>
           <CardTitle className="text-2xl font-bold">{t('success')}</CardTitle>
           <CardDescription>{t('successDescription')}</CardDescription>
-        </CardHeader>
-        <CardFooter>
+        </AuthCardHeader>
+        <AuthCardFooter>
           <Link href="/login" className="w-full">
             <Button className="w-full">{t('toLogin')}</Button>
           </Link>
-        </CardFooter>
-      </Card>
+        </AuthCardFooter>
+      </AuthCard>
     )
   }
 
   return (
-    <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-      <CardHeader className="space-y-1">
+    <AuthCard>
+      <AuthCardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
-      </CardHeader>
+      </AuthCardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
+        <AuthCardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">{t('password')}</Label>
             <Input
@@ -220,8 +219,8 @@ export default function ResetPasswordPage() {
               <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
             )}
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
+        </AuthCardContent>
+        <AuthCardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('submit')}
@@ -232,8 +231,8 @@ export default function ResetPasswordPage() {
               {tCommon('backToLogin')}
             </Button>
           </Link>
-        </CardFooter>
+        </AuthCardFooter>
       </form>
-    </Card>
+    </AuthCard>
   )
 }

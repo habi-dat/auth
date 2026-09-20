@@ -1,7 +1,6 @@
 'use client'
 
-import { signOut } from '@habidat/auth/client'
-import { LogOut, Menu, Moon, Settings, Sun, User } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Moon, Settings, Sun, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -23,8 +22,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { getLogoutUrlAction } from '@/lib/actions/auth-actions'
 import { updateProfileAction } from '@/lib/actions/user-actions'
+import { performSignOut } from '@/lib/auth/perform-sign-out'
 
 interface HeaderProps {
   user: {
@@ -66,16 +65,7 @@ export function Header({ user, sidebarProps }: HeaderProps) {
     })
   }
 
-  const handleSignOut = async () => {
-    const { logoutUrl } = await getLogoutUrlAction()
-    if (logoutUrl) {
-      router.push(logoutUrl)
-      return
-    }
-    await signOut()
-    router.push('/login')
-    router.refresh()
-  }
+  const handleSignOut = () => performSignOut(router)
 
   const initials = user.name
     .split(' ')
@@ -113,12 +103,15 @@ export function Header({ user, sidebarProps }: HeaderProps) {
         <div className="flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 gap-2 rounded-full px-2">
-                <Avatar className="h-8 w-8">
+              <Button variant="outline" className="relative h-11 gap-2.5 rounded-md px-2 pr-3">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={user.image || undefined} alt={user.name} />
-                  <AvatarFallback>{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="max-w-[8rem] truncate text-sm font-medium">{user.name}</span>
+                <span className="max-w-[10rem] truncate text-sm font-semibold">{user.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>

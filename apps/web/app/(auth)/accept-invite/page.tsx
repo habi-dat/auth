@@ -7,15 +7,14 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import zxcvbn from 'zxcvbn'
-import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+  AuthCard,
+  AuthCardContent,
+  AuthCardFooter,
+  AuthCardHeader,
+} from '@/components/auth/auth-card'
+import { Button } from '@/components/ui/button'
+import { CardDescription, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -158,13 +157,13 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <Card className="w-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-border/60 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-      <CardHeader>
+    <AuthCard>
+      <AuthCardHeader>
         <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
-      </CardHeader>
+      </AuthCardHeader>
 
-      <CardContent>
+      <AuthCardContent>
         {!token ? (
           <p className="text-destructive text-sm">{t('invalidOrExpired')}</p>
         ) : (
@@ -225,7 +224,8 @@ export default function AcceptInvitePage() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {tReg('passwordStrength')}: {tReg(PASSWORD_STRENGTH_KEYS[passwordStrength] ?? '')}
+                    {tReg('passwordStrength')}:{' '}
+                    {tReg(PASSWORD_STRENGTH_KEYS[passwordStrength] ?? '')}
                   </p>
                 </div>
               ) : null}
@@ -273,13 +273,13 @@ export default function AcceptInvitePage() {
             </Button>
           </form>
         )}
-      </CardContent>
+      </AuthCardContent>
 
-      <CardFooter className="border-t border-border/60 pt-6">
+      <AuthCardFooter className="max-md:border-0 border-t border-border/60 pt-6">
         <Link href="/login" className="text-sm text-primary hover:underline">
           {t('backToLogin')}
         </Link>
-      </CardFooter>
-    </Card>
+      </AuthCardFooter>
+    </AuthCard>
   )
 }

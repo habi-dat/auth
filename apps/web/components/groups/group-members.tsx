@@ -263,7 +263,7 @@ export function GroupMembers({ group, users, canManage }: GroupMembersProps) {
             </div>
           )}
 
-          <DataTable columns={columns} data={data} emptyMessage={t('noMembers')} />
+          <DataTable columns={columns} data={data} emptyMessage={t('noMembers')} disableRowHover />
         </CardContent>
       </Card>
       <ConfirmDialog

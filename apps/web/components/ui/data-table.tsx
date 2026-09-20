@@ -50,6 +50,8 @@ export interface DataTableProps<TData, TValue> {
   className?: string
   /** When set, rows are clickable and trigger this callback (clicks on links/buttons are ignored) */
   onRowClick?: (row: TData) => void
+  /** Disable the default row hover background */
+  disableRowHover?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -60,6 +62,7 @@ export function DataTable<TData, TValue>({
   pageSize: initialPageSize = 25,
   className,
   onRowClick,
+  disableRowHover,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('dataTable')
   const [globalFilter, setGlobalFilter] = useQueryState(
@@ -204,7 +207,10 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={onRowClick ? 'cursor-pointer' : undefined}
+                  className={cn(
+                    onRowClick && 'cursor-pointer',
+                    disableRowHover && 'hover:bg-transparent'
+                  )}
                   onClick={
                     onRowClick
                       ? (e) => {

@@ -1,13 +1,16 @@
 import { getCurrentUserThemePreferences } from '@habidat/auth/session'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Source_Sans_3 } from 'next/font/google'
 import { getMessages } from 'next-intl/server'
 import { getGeneralSettings } from '@/lib/settings/general'
 import { generateThemeVariables } from '@/lib/theme-generator'
 import './globals.css'
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const sourceSans = Source_Sans_3({
+  subsets: ['latin', 'latin-ext'],
+  display: 'swap',
+})
 
 const defaultTitle = 'habidat auth'
 const defaultDescription = 'User management and identity provider'
@@ -76,7 +79,7 @@ export default async function RootLayout({
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: needed */}
         <style dangerouslySetInnerHTML={{ __html: css }} />
       </head>
-      <body className={inter.className}>
+      <body className={sourceSans.className}>
         <Providers
           messages={messages}
           themeColor={settings.themeColor}
