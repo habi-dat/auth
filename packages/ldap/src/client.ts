@@ -10,7 +10,7 @@ import type {
   UpdateUserData,
 } from './types.js'
 
-const USER_SEARCH_ATTRIBUTES = [
+const USER_LIST_ATTRIBUTES = [
   'dn',
   'uid',
   'cn',
@@ -23,8 +23,9 @@ const USER_SEARCH_ATTRIBUTES = [
   'userPassword',
   'title',
   'ou',
-  'jpegPhoto',
 ]
+
+const USER_SEARCH_ATTRIBUTES = [...USER_LIST_ATTRIBUTES, 'jpegPhoto']
 
 export class LdapService {
   private client: LdapClient | null = null
@@ -128,7 +129,7 @@ export class LdapService {
       const results = await client.search(this.config.usersDn, {
         filter: '(objectClass=inetOrgPerson)',
         scope: 'one',
-        attributes: USER_SEARCH_ATTRIBUTES,
+        attributes: USER_LIST_ATTRIBUTES,
       })
       if (!results || results.length === 0) return []
       return results.map((entry) => mapSearchEntryToUser(entry as Record<string, unknown>))
