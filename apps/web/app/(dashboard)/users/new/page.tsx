@@ -1,4 +1,4 @@
-import { requireGroupAdmin } from '@habidat/auth/session'
+import { requireAdmin } from '@habidat/auth/session'
 import { getTranslations } from 'next-intl/server'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
 import { UserForm } from '@/components/users/user-form'
@@ -6,7 +6,7 @@ import { getGroupsForSelect } from '@/lib/actions/group-actions'
 
 export default async function NewUserPage() {
   const t = await getTranslations('users')
-  const session = await requireGroupAdmin()
+  const session = await requireAdmin()
   const groups = await getGroupsForSelect()
 
   return (

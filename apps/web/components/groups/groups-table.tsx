@@ -130,7 +130,9 @@ export function GroupsTable({ groups, isAdmin }: { groups: GroupRow[]; isAdmin: 
                 </Button>
               </Link>
             )}
-            {!g.isSystem && <DeleteAction onClick={() => setDeleteTarget(g)} title={t('delete')} />}
+            {isAdmin && !g.isSystem && (
+              <DeleteAction onClick={() => setDeleteTarget(g)} title={t('delete')} />
+            )}
           </RowActions>
         )
       },

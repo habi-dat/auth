@@ -5,7 +5,8 @@ import { getTranslations } from 'next-intl/server'
 import { InvitesTable } from '@/components/invites/invites-table'
 import { ListPageLayout } from '@/components/layout/list-page-layout'
 import { Button } from '@/components/ui/button'
-import { getGroupsForSelect, getInvites } from '@/lib/actions/invite-actions'
+import { getGroupsForSelect } from '@/lib/actions/group-actions'
+import { getInvites } from '@/lib/actions/invite-actions'
 
 export default async function InvitesPage() {
   await requireGroupAdmin()

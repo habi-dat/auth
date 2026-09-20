@@ -19,10 +19,11 @@ export default async function EditGroupPage({ params }: PageProps) {
     notFound()
   }
 
-  const canManage = canManageGroup(session, group.id)
-  const [allGroups, allUsers] = canManage
-    ? await Promise.all([getGroupsForSelect(), getUsersForSelect()])
-    : [[], []]
+  if (!canManageGroup(session, group.id)) {
+    notFound()
+  }
+
+  const [allGroups, allUsers] = await Promise.all([getGroupsForSelect(), getUsersForSelect()])
 
   return (
     <FormPageLayout
@@ -35,7 +36,7 @@ export default async function EditGroupPage({ params }: PageProps) {
         group={group}
         allGroups={allGroups}
         allUsers={allUsers}
-        canManage={canManage}
+        canManage={true}
         isAdmin={session.isAdmin}
       />
     </FormPageLayout>

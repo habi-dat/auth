@@ -1,7 +1,7 @@
 'use server'
 import { canManageGroup } from '@habidat/auth/roles'
 import { requireGroupAdmin } from '@habidat/auth/session'
-import { type Prisma, prisma } from '@habidat/db'
+import { prisma } from '@habidat/db'
 import { hashPassword } from 'better-auth/crypto'
 import { addDays } from 'date-fns'
 import { revalidatePath } from 'next/cache'
@@ -155,25 +155,6 @@ export async function getInviteByToken(token: string): Promise<InviteWithGroupsR
         })
       : []
   return { invite: { memberGroups: invite.memberGroups, ownerGroups: invite.ownerGroups }, groups }
-}
-
-export async function getGroupsForSelect() {
-  const session = await requireGroupAdmin()
-
-  const where: Prisma.GroupWhereInput = {}
-  if (!session.isAdmin) {
-    where.ownerships = {
-      some: {
-        userId: session.user.id,
-      },
-    }
-  }
-
-  return prisma.group.findMany({
-    where,
-    select: { id: true, name: true, slug: true },
-    orderBy: { name: 'asc' },
-  })
 }
 
 const deleteInvitesSchema = z.object({

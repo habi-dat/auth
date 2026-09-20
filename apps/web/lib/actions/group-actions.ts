@@ -866,9 +866,12 @@ export async function getGroups(search?: string) {
   })
 }
 
-// Get single group
+// Get single group (admin: any group; group admin: only groups they own)
 export async function getGroup(id: string) {
-  return prisma.group.findUnique({
+  const session = await getCurrentUserWithGroups()
+  if (!session) return null
+
+  const group = await prisma.group.findUnique({
     where: { id },
     include: {
       memberships: {
@@ -893,13 +896,26 @@ export async function getGroup(id: string) {
       },
     },
   })
+  if (!group || !canManageGroup(session, group.id)) return null
+  return group
 }
 
-// Get groups for select dropdown
+// Get groups for select dropdown (admin: all groups; otherwise owned groups only)
 export async function getGroupsForSelect() {
   const session = await getCurrentUserWithGroups()
   if (!session) return []
+
+  const where: Prisma.GroupWhereInput = {}
+  if (!session.isAdmin) {
+    where.ownerships = {
+      some: {
+        userId: session.user.id,
+      },
+    }
+  }
+
   return prisma.group.findMany({
+    where,
     select: { id: true, name: true, slug: true },
     orderBy: { name: 'asc' },
   })

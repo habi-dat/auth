@@ -259,13 +259,15 @@ export function GroupForm({ group, allGroups, isAdmin }: GroupFormProps) {
             isLoading={isLoading}
             isEditing={isEditing}
             onCancel={() => router.back()}
-            onDelete={isEditing && !isSystemGroup ? () => setDeleteDialogOpen(true) : undefined}
+            onDelete={
+              isAdmin && isEditing && !isSystemGroup ? () => setDeleteDialogOpen(true) : undefined
+            }
             deleteLabel={t('delete')}
             submitDisabled={isSystemGroup}
           />
         </CardFooter>
       </form>
-      {isEditing && !isSystemGroup && (
+      {isAdmin && isEditing && !isSystemGroup && (
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}

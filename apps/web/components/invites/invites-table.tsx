@@ -14,7 +14,8 @@ import {
   RowActions,
 } from '@/components/ui/data-table-cells'
 import { useToast } from '@/components/ui/use-toast'
-import type { getGroupsForSelect, getInvites } from '@/lib/actions/invite-actions'
+import type { getGroupsForSelect } from '@/lib/actions/group-actions'
+import type { getInvites } from '@/lib/actions/invite-actions'
 import { deleteInvitesAction, resendInviteAction } from '@/lib/actions/invite-actions'
 
 type InviteRow = Awaited<ReturnType<typeof getInvites>>[number]

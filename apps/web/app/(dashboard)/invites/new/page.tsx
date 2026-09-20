@@ -2,7 +2,7 @@ import { requireGroupAdmin } from '@habidat/auth/session'
 import { getTranslations } from 'next-intl/server'
 import { InviteForm } from '@/components/invites/invite-form'
 import { FormPageLayout } from '@/components/layout/form-page-layout'
-import { getGroupsForSelect } from '@/lib/actions/invite-actions'
+import { getGroupsForSelect } from '@/lib/actions/group-actions'
 
 export default async function NewInvitePage() {
   await requireGroupAdmin()

@@ -18,7 +18,7 @@ import {
   dispatchDiscourseSyncAfterCommit,
   dispatchLdapSyncAfterCommit,
 } from '@/lib/sync/create-sync-event'
-import { groupAdminAction, userAction } from './client'
+import { adminAction, groupAdminAction, userAction } from './client'
 
 const SYSTEM_GROUP_SLUGS = [ADMIN_GROUP_SLUG, GROUPADMIN_GROUP_SLUG]
 
@@ -67,8 +67,8 @@ const updateProfileSchema = z.object({
   primaryGroupId: z.string().optional().nullable(),
 })
 
-// Create user action (group admin or admin)
-export const createUserAction = groupAdminAction
+// Create user action (platform admin only; group admins invite instead)
+export const createUserAction = adminAction
   .schema(createUserSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { session } = ctx
@@ -104,6 +104,11 @@ export const createUserAction = groupAdminAction
     for (const groupId of memberGroupIds) {
       if (!canManageGroup(session, groupId)) {
         throw new Error('You cannot add users to this group')
+      }
+    }
+    for (const groupId of ownerGroupIds) {
+      if (!canManageGroup(session, groupId)) {
+        throw new Error('You cannot add owners to this group')
       }
     }
 
