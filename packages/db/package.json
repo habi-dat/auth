@@ -19,6 +19,7 @@
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
+    "test": "tsx --test prisma/oidc-from-app.test.ts",
     "clean": "rm -rf dist generated"
   },
   "dependencies": {

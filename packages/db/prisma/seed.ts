@@ -30,6 +30,7 @@ import { hashPassword } from 'better-auth/crypto'
 import { config } from 'dotenv'
 import { Pool } from 'pg'
 import { PrismaClient } from '../generated/client/client'
+import { oidcFieldsFromApp, oidcHasClient, oidcIsUnconfigured } from './oidc-from-app'
 
 // Load root .env so ADMIN_* and DATABASE_URL are available when running from monorepo root
 config({ path: resolve(process.cwd(), '../../.env') })
@@ -890,6 +891,7 @@ async function importJsonData(prisma: PrismaClient) {
           }
 
           const exists = await prisma.app.findUnique({ where: { slug } })
+          const oidc = oidcFieldsFromApp(app)
           if (exists) {
             if (groups.length > 0) {
               await prisma.appGroupAccess.createMany({
@@ -897,7 +899,14 @@ async function importJsonData(prisma: PrismaClient) {
                 skipDuplicates: true,
               })
               console.log(`App ${slug} already exists, attached ${groups.length} group(s).`)
-            } else {
+            }
+            if (oidcIsUnconfigured(exists) && oidcHasClient(oidc)) {
+              await prisma.app.update({
+                where: { id: exists.id },
+                data: oidc,
+              })
+              console.log(`App ${slug} already exists, filled OIDC client fields.`)
+            } else if (groups.length === 0) {
               console.log(`App ${slug} already exists, skipping import.`)
             }
             continue
@@ -912,6 +921,7 @@ async function importJsonData(prisma: PrismaClient) {
               samlEntityId: app.saml?.entityId,
               samlAcsUrl: app.saml?.acs,
               samlSloUrl: app.saml?.slo,
+              ...oidc,
               ...(groups.length > 0 && {
                 groupAccess: { create: groups.map((g) => ({ groupId: g.id })) },
               }),
