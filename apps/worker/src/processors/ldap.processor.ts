@@ -131,9 +131,9 @@ async function handleSyncUser(
     user.ldapUidNumber = ldapUidNumber
   }
 
-  const ldapUser = user.ldapDn
-    ? await ldap.findUserByDn(user.ldapDn)
-    : await ldap.findUserByUsername(user.username)
+  const ldapUser =
+    (user.ldapDn ? await ldap.findUserByDn(user.ldapDn) : null) ??
+    (await ldap.findUserByUsername(user.username))
   const userPassword = payload.hashedPassword
   const jpegPhoto = await loadUserJpegPhoto(user)
 
@@ -158,12 +158,9 @@ async function handleSyncUser(
 
   const primaryGroupName = user.primaryGroup?.name ?? ''
   const primaryGroupLdapDn = user.primaryGroup?.ldapDn ?? ''
-  const rdnType = (ldapUser.dn.split(',')[0] ?? '').split('=')[0]?.toLowerCase()
-  // cn-named entries (habidat-setup) keep cn as the username; display name lives in sn.
-  const ldapDisplayName = rdnType === 'cn' ? (ldapUser.sn ?? '') : (ldapUser.cn ?? '')
   const photoNeedsUpdate = jpegPhotoNeedsUpdate(jpegPhoto, ldapUser.jpegPhoto)
   const attrsNeedUpdate =
-    ldapDisplayName !== user.name ||
+    (ldapUser.cn ?? '') !== user.name ||
     ldapUser.mail !== user.email ||
     (ldapUser.l ?? '') !== (user.location ?? '') ||
     (ldapUser.preferredLanguage ?? 'de') !== (user.preferredLanguage ?? 'de') ||

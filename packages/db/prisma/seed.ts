@@ -10,7 +10,9 @@ import { resolve } from 'node:path'
  *               LDAP_BASE_DN, LDAP_USERS_DN, LDAP_GROUPS_DN
  *
  * Behaviour:
- * - If LDAP env is set and LDAP has users/groups: import from LDAP into DB (member = users + subgroups, owner = group admins).
+ * - If LDAP env is set and Postgres has no users: rewrite cn= user DNs to uid=<uid>
+ *   (and group member/owner) first, then import from LDAP into DB
+ *   (member = users + subgroups, owner = group admins).
  * - If LDAP is empty or not set: create admin user/group in DB, then optionally bootstrap LDAP.
  * - Always import JSON stores from /app/import when present (apps/settings/invites), even if users already exist.
  * Imported users keep LDAP hashed passwords (SSHA) or have plaintext LDAP
@@ -420,6 +422,10 @@ async function main() {
         const ldap = new LdapService(ldapEnv)
         await ldap.connect()
         try {
+          const rewrite = await ldap.rewriteUserRdnsToUid()
+          console.log(
+            `LDAP RDN rewrite: renamed ${rewrite.renamed}, already uid=${rewrite.alreadyUid}, groups updated ${rewrite.groupsUpdated}`
+          )
           const didImport = await importFromLdap(ldap, prisma, ldapEnv.usersDn, ldapEnv.groupsDn)
           if (didImport) {
             console.log('LDAP import completed. Skipping admin creation.')

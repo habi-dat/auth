@@ -53,6 +53,8 @@ export interface UpdateGroupData {
   name?: string
   description?: string
   memberDns?: string[]
+  /** Group admin DNs (LDAP "owner") */
+  ownerDns?: string[]
 }
 
 export interface LdapUserEntry {

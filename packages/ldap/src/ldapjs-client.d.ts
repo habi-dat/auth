@@ -28,6 +28,7 @@ declare module 'ldapjs-client' {
     unbind(): Promise<void>
     add(dn: string, entry: Record<string, string | string[] | number | Buffer>): Promise<void>
     modify(dn: string, change: ModifyChange): Promise<void>
+    modifyDN(dn: string, newRdn: string): Promise<void>
     del(dn: string): Promise<void>
     search(base: string, options: SearchOptions): Promise<Record<string, unknown>[]>
     destroy(): Promise<void>
