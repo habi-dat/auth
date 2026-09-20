@@ -13,8 +13,13 @@ import { webEnv } from '@habidat/env/web'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { DISCOURSE_SSO_SECRET, DISCOURSE_URL, APP_URL, DISCOURSE_AVATAR_BASE_URL, TRUSTED_ORIGINS } =
-    webEnv
+  const {
+    DISCOURSE_SSO_SECRET,
+    DISCOURSE_URL,
+    APP_URL,
+    DISCOURSE_AVATAR_BASE_URL,
+    TRUSTED_ORIGINS,
+  } = webEnv
   if (!DISCOURSE_SSO_SECRET) {
     return NextResponse.json({ error: 'Discourse SSO not configured' }, { status: 503 })
   }
