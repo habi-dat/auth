@@ -18,16 +18,13 @@ export async function loadUserJpegPhoto(user: {
   }
 }
 
-/**
- * ldapjs-client returns jpegPhoto as a UTF-8 string, so byte equality is
- * unreliable. Always push when we have a file; delete only when LDAP still
- * has a photo.
- */
+/** Push when the file is new or bytes differ; delete only when LDAP still has a photo. */
 export function jpegPhotoNeedsUpdate(
   desired: Buffer | null | undefined,
   current: Buffer | undefined
 ): boolean {
   if (desired === undefined) return false
   if (desired === null) return current != null
-  return true
+  if (current == null || current.length === 0) return true
+  return !desired.equals(current)
 }

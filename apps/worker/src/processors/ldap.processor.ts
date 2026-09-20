@@ -161,7 +161,8 @@ async function handleSyncUser(
   const rdnType = (ldapUser.dn.split(',')[0] ?? '').split('=')[0]?.toLowerCase()
   // cn-named entries (habidat-setup) keep cn as the username; display name lives in sn.
   const ldapDisplayName = rdnType === 'cn' ? (ldapUser.sn ?? '') : (ldapUser.cn ?? '')
-  const needsUpdate =
+  const photoNeedsUpdate = jpegPhotoNeedsUpdate(jpegPhoto, ldapUser.jpegPhoto)
+  const attrsNeedUpdate =
     ldapDisplayName !== user.name ||
     ldapUser.mail !== user.email ||
     (ldapUser.l ?? '') !== (user.location ?? '') ||
@@ -169,21 +170,26 @@ async function handleSyncUser(
     (ldapUser.description ?? '1 GB') !== (user.storageQuota ?? '1 GB') ||
     (ldapUser.title ?? '') !== primaryGroupName ||
     (ldapUser.ou ?? '') !== primaryGroupLdapDn ||
-    (userPassword != null && ldapUser.userPassword !== userPassword) ||
-    jpegPhotoNeedsUpdate(jpegPhoto, ldapUser.jpegPhoto)
+    (userPassword != null && ldapUser.userPassword !== userPassword)
 
-  if (needsUpdate) {
+  if (attrsNeedUpdate || photoNeedsUpdate) {
     try {
       await ldap.updateUser(ldapUser.dn, {
-        name: user.name,
-        email: user.email,
-        ...(user.location && user.location !== '' ? { location: user.location } : {}),
-        preferredLanguage: user.preferredLanguage,
-        storageQuota: user.storageQuota ?? undefined,
-        ...(primaryGroupName && primaryGroupName !== '' ? { title: primaryGroupName } : {}),
-        ...(primaryGroupLdapDn && primaryGroupLdapDn !== '' ? { ou: primaryGroupLdapDn } : {}),
-        ...(userPassword ? { userPassword } : {}),
-        ...(jpegPhoto !== undefined ? { jpegPhoto } : {}),
+        ...(attrsNeedUpdate
+          ? {
+              name: user.name,
+              email: user.email,
+              ...(user.location && user.location !== '' ? { location: user.location } : {}),
+              preferredLanguage: user.preferredLanguage,
+              storageQuota: user.storageQuota ?? undefined,
+              ...(primaryGroupName && primaryGroupName !== '' ? { title: primaryGroupName } : {}),
+              ...(primaryGroupLdapDn && primaryGroupLdapDn !== ''
+                ? { ou: primaryGroupLdapDn }
+                : {}),
+              ...(userPassword ? { userPassword } : {}),
+            }
+          : {}),
+        ...(photoNeedsUpdate ? { jpegPhoto } : {}),
       })
     } catch (updateErr) {
       if (isNoSuchObjectError(updateErr)) {
