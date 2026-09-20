@@ -66,6 +66,21 @@ describe('SAML login response template', () => {
     assert.equal(context.includes('<script>'), false)
   })
 
+  it('sets AuthnInstant to the issue time, not the assertion expiry', () => {
+    const { idp, sp } = fakeIdpSp()
+    const { context } = createTemplateCallback(
+      idp as never,
+      sp as never,
+      user,
+      'req-1'
+    )(buildLoginResponseTemplate())
+
+    const issueInstant = context.match(/IssueInstant="([^"]+)"/)?.[1]
+    const authnInstant = context.match(/AuthnInstant="([^"]+)"/)?.[1]
+    assert.ok(issueInstant)
+    assert.equal(authnInstant, issueInstant)
+  })
+
   it('does not double-escape values that samlify already escapes', () => {
     const escaped = SamlLib.replaceTagsByValue('<x>{v}</x>', { v: 'a&b' })
     assert.equal(escaped, '<x>a&amp;b</x>')
