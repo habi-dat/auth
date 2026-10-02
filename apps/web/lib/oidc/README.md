@@ -9,7 +9,7 @@ Issuer: `{APP_URL}/oidc`
 - Discovery: `{APP_URL}/oidc/.well-known/openid-configuration`
 - Authorization: `{APP_URL}/oidc/auth`
 - Token: `{APP_URL}/oidc/token`
-- UserInfo: `{APP_URL}/oidc/userinfo`
+- UserInfo: `{APP_URL}/oidc/me`
 - JWKS: `{APP_URL}/oidc/jwks`
 
 ## App configuration

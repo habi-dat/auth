@@ -1,5 +1,6 @@
 import { prisma } from '@habidat/db'
 import type { AdapterPayload, ClientMetadata } from 'oidc-provider'
+import { OIDC_GRANT_TYPES } from './policy'
 
 export function appToClientMetadata(app: {
   oidcClientId: string
@@ -25,7 +26,7 @@ export function appToClientMetadata(app: {
     client_id: app.oidcClientId,
     redirect_uris,
     response_types: ['code'],
-    grant_types: ['authorization_code', 'refresh_token'],
+    grant_types: [...OIDC_GRANT_TYPES],
     scope: 'openid profile email',
     token_endpoint_auth_method: app.oidcClientSecret ? 'client_secret_basic' : 'none',
   }

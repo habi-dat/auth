@@ -2,6 +2,7 @@ import { prisma } from '@habidat/db'
 import type { Configuration, FindAccount } from 'oidc-provider'
 import { HabidatOidcAdapter } from './adapter'
 import { loadOidcJwks } from './jwks'
+import { OIDC_GRANT_TYPES } from './policy'
 
 const APP_URL = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 export const OIDC_ISSUER = `${APP_URL}/oidc`
@@ -22,7 +23,7 @@ export function createFindAccount(): FindAccount {
   return async (_ctx, sub: string) => {
     const user = await prisma.user.findUnique({
       where: { id: sub },
-      select: { id: true, email: true, name: true, username: true },
+      select: { id: true, email: true, emailVerified: true, name: true, username: true },
     })
     if (!user) return undefined
     return {
@@ -30,7 +31,7 @@ export function createFindAccount(): FindAccount {
       claims: async () => ({
         sub: user.id,
         email: user.email,
-        email_verified: true,
+        email_verified: user.emailVerified,
         name: user.name,
         preferred_username: user.username,
       }),
@@ -64,7 +65,7 @@ export function getOidcConfiguration(): Configuration {
       profile: ['name', 'preferred_username'],
     },
     clientDefaults: {
-      grant_types: ['authorization_code', 'refresh_token'],
+      grant_types: [...OIDC_GRANT_TYPES],
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
     },

@@ -5,7 +5,7 @@ Habidat is the login a person uses to reach the apps of a housing project.
 ## Language
 
 **SSO session**:
-The habidat login that lets a person open connected apps without typing the password again.
+The habidat login that lets a person open connected apps without typing the password again. A connected app can still demand the password for a single visit.
 _Avoid_: session TTL, remember me
 
 **Ordinary SSO session**:

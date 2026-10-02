@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { resolveLoginEmail } from '@/lib/actions/auth-actions'
-import { resolvePostLoginHref } from '@/lib/auth/post-login-redirect'
+import { isAllowedCallbackUrl, resolvePostLoginHref } from '@/lib/auth/post-login-redirect'
 
 export function LoginForm() {
   const t = useTranslations('auth.login')
@@ -111,9 +111,19 @@ export function LoginForm() {
         if (samlRequest) ssoUrl.searchParams.set('SAMLRequest', samlRequest)
         if (relayState) ssoUrl.searchParams.set('RelayState', relayState)
         router.push(ssoUrl.pathname + ssoUrl.search)
-      } else {
-        router.push(resolvePostLoginHref(returnTo, callbackUrl, window.location.origin))
+        router.refresh()
+        return
       }
+
+      const nextHref = resolvePostLoginHref(returnTo, callbackUrl, window.location.origin)
+      // OIDC must be a full browser navigation. A client-side Next.js
+      // navigation fetches the one-time interaction as RSC, consumes it, and
+      // the following document load then fails with "interaction session not found".
+      if (isAllowedCallbackUrl(nextHref, window.location.origin)) {
+        window.location.assign(nextHref)
+        return
+      }
+      router.push(nextHref)
       router.refresh()
     } catch {
       toast({
