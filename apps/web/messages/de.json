@@ -46,6 +46,7 @@
       "identity": "Benutzer*innenname oder E-Mail",
       "password": "Passwort",
       "forgotPassword": "Passwort vergessen?",
+      "stayLoggedIn": "Angemeldet bleiben",
       "submit": "Anmelden",
       "noAccount": "Noch kein Konto?",
       "register": "Registrieren",

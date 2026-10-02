@@ -1,15 +1,17 @@
 'use client'
 
 import { signIn } from '@habidat/auth/client'
+import { STAY_LOGGED_IN_HEADER, STAY_LOGGED_IN_STORAGE_KEY } from '@habidat/auth/session-lifetime'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
@@ -31,6 +33,24 @@ export function LoginForm() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [stayLoggedIn, setStayLoggedIn] = useState(false)
+
+  useEffect(() => {
+    try {
+      setStayLoggedIn(window.localStorage.getItem(STAY_LOGGED_IN_STORAGE_KEY) === '1')
+    } catch {
+      // Private browsing can block storage. The checkbox stays unchecked.
+    }
+  }, [])
+
+  const onStayLoggedInChange = (checked: boolean) => {
+    setStayLoggedIn(checked)
+    try {
+      window.localStorage.setItem(STAY_LOGGED_IN_STORAGE_KEY, checked ? '1' : '0')
+    } catch {
+      // The choice still applies to this login if storage is unavailable.
+    }
+  }
 
   const returnTo = searchParams.get('returnTo') || '/'
   const callbackUrl = searchParams.get('callbackUrl') // OIDC interaction return URL
@@ -68,10 +88,14 @@ export function LoginForm() {
         }
       }
 
-      const result = await signIn.email({
-        email,
-        password: data.password,
-      })
+      const result = await signIn.email(
+        {
+          email,
+          password: data.password,
+          rememberMe: true,
+        },
+        stayLoggedIn ? { headers: { [STAY_LOGGED_IN_HEADER]: '1' } } : undefined
+      )
 
       if (result.error) {
         toast({
@@ -145,6 +169,17 @@ export function LoginForm() {
             </Link>
           </div>
           {errors.password && <p className="text-destructive text-sm">{errors.password.message}</p>}
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="stayLoggedIn"
+            checked={stayLoggedIn}
+            onCheckedChange={(checked) => onStayLoggedInChange(checked === true)}
+            disabled={isLoading}
+          />
+          <Label htmlFor="stayLoggedIn" className="cursor-pointer font-normal text-foreground/90">
+            {t('stayLoggedIn')}
+          </Label>
         </div>
         <Button type="submit" className="w-full h-11 font-semibold shadow-sm" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

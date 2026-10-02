@@ -67,6 +67,8 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
+  // Null on rows created before the two-lifetime policy. Those sessions are not refreshed.
+  stayLoggedIn Boolean?
 
   // SAML session tracking
   samlApps  SamlSessionApp[]

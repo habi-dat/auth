@@ -23,6 +23,10 @@
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
+    },
+    "./session-lifetime": {
+      "types": "./src/session-lifetime.ts",
+      "default": "./src/session-lifetime.ts"
     }
   },
   "scripts": {

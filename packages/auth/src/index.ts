@@ -7,6 +7,12 @@ import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
 import { nextCookies } from 'better-auth/next-js'
 import { cookieParentDomain } from './cookie-domain'
+import { asDate, SESSION_EXPIRES_IN_SECONDS } from './session-lifetime'
+import {
+  alignSignInSessionCookie,
+  refreshSessionLifetime,
+  sessionCreateData,
+} from './session-lifetime-hooks'
 
 const baseURL = (
   process.env.APP_URL ||
@@ -85,8 +91,18 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
       },
     },
     session: {
-      expiresIn: 60 * 60 * 12,
-      updateAge: 60 * 60,
+      // Longest lifetime. Per-session expiry is applied in sessionCreateData;
+      // built-in refresh would otherwise overwrite a short session with this value.
+      expiresIn: SESSION_EXPIRES_IN_SECONDS,
+      disableSessionRefresh: true,
+      additionalFields: {
+        stayLoggedIn: {
+          type: 'boolean',
+          required: false,
+          // Set only in session.create.before. Client updates would turn a 12h session into 30 days.
+          input: false,
+        },
+      },
       cookieCache: {
         enabled: true,
         maxAge: 5 * 60,
@@ -120,40 +136,49 @@ export function createAuth(overrides: CreateAuthOverrides = {}) {
         }
       : {}),
     plugins: [nextCookies()],
-    ...(syncLdapPassword
-      ? {
-          hooks: {
-            before: createAuthMiddleware(async (ctx) => {
-              if (ctx.path !== '/reset-password') return
-              const { token } = readPasswordSyncBody(ctx.body)
-              if (!token) return
-              const verification = await ctx.context.internalAdapter.findVerificationValue(
-                `reset-password:${token}`
-              )
-              if (!verification || verification.expiresAt < new Date()) return
-              return { context: { ldapPasswordSyncUserId: verification.value } }
-            }),
-            after: createAuthMiddleware(async (ctx) => {
-              if (!PASSWORD_SYNC_PATHS.has(ctx.path)) return
-              if (ctx.context.returned instanceof APIError) return
-              const { newPassword } = readPasswordSyncBody(ctx.body)
-              if (!newPassword) return
-
-              const userId =
-                ctx.path === '/change-password'
-                  ? sessionUserId(ctx.context.session)
-                  : (ctx as { ldapPasswordSyncUserId?: string }).ldapPasswordSyncUserId
-              if (!userId) return
-
-              try {
-                await syncLdapPassword({ userId, password: newPassword })
-              } catch (err) {
-                console.error('[Auth] Failed to enqueue LDAP password sync for user', userId, err)
-              }
-            }),
+    databaseHooks: {
+      session: {
+        create: {
+          before: async (session, context) => {
+            const createdAt = asDate(session.createdAt) ?? new Date()
+            return { data: sessionCreateData(createdAt, context?.headers) }
           },
+        },
+      },
+    },
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (!syncLdapPassword || ctx.path !== '/reset-password') return
+        const { token } = readPasswordSyncBody(ctx.body)
+        if (!token) return
+        const verification = await ctx.context.internalAdapter.findVerificationValue(
+          `reset-password:${token}`
+        )
+        if (!verification || verification.expiresAt < new Date()) return
+        return { context: { ldapPasswordSyncUserId: verification.value } }
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        await alignSignInSessionCookie(ctx)
+        await refreshSessionLifetime(ctx)
+
+        if (!syncLdapPassword || !PASSWORD_SYNC_PATHS.has(ctx.path)) return
+        if (ctx.context.returned instanceof APIError) return
+        const { newPassword } = readPasswordSyncBody(ctx.body)
+        if (!newPassword) return
+
+        const userId =
+          ctx.path === '/change-password'
+            ? sessionUserId(ctx.context.session)
+            : (ctx as { ldapPasswordSyncUserId?: string }).ldapPasswordSyncUserId
+        if (!userId) return
+
+        try {
+          await syncLdapPassword({ userId, password: newPassword })
+        } catch (err) {
+          console.error('[Auth] Failed to enqueue LDAP password sync for user', userId, err)
         }
-      : {}),
+      }),
+    },
   })
 }
 
