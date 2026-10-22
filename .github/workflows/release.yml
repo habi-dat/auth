@@ -47,6 +47,7 @@ jobs:
           tags: |
             ${{ matrix.image }}:${{ github.event.release.tag_name }}
             ${{ matrix.image }}:2
+            ${{ matrix.image }}:2.2
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.cache-scope }}
           cache-to: type=gha,scope=${{ matrix.cache-scope }},mode=max
