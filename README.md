@@ -14,7 +14,7 @@ This is a monorepo containing:
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - pnpm 9+
 - Docker & Docker Compose
 - A local clone of `soudis/habidat-setup`

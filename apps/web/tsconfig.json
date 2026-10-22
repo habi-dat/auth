@@ -1,7 +1,6 @@
 {
   "extends": "@habidat/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "types": ["node"],
     "paths": {
       "@/*": ["./*"]

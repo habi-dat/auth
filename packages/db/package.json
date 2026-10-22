@@ -24,18 +24,18 @@
   },
   "dependencies": {
     "@habidat/ldap": "workspace:*",
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
-    "better-auth": "^1.7.5",
-    "dotenv": "^16.4.7",
-    "pg": "^8.13.1"
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "better-auth": "^1.7.12",
+    "dotenv": "^18.0.8",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
-    "@types/node": "^22.13.4",
-    "@types/pg": "^8.11.11",
-    "prisma": "^7.10.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
+    "prisma": "^7.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
   }
 }

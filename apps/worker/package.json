@@ -16,21 +16,21 @@
     "@habidat/env": "workspace:*",
     "@habidat/ldap": "workspace:*",
     "@habidat/sync": "workspace:*",
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
-    "better-auth": "^1.7.5",
-    "bullmq": "^5.34.5",
-    "dotenv": "^16.4.7",
-    "ioredis": "^5.9.2",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "better-auth": "^1.7.12",
+    "bullmq": "^6.4.0",
+    "dotenv": "^18.0.8",
+    "ioredis": "^6.0.0",
     "ldapjs-client": "^0.1.7",
-    "pg": "^8.13.1",
-    "prisma": "^7.10.0",
-    "tsx": "^4.19.2"
+    "pg": "^8.23.1",
+    "prisma": "^7.10.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
-    "@types/node": "^22.13.4",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.19.2",
+    "tsup": "^9.0.0",
+    "typescript": "^6.0.3"
   }
 }

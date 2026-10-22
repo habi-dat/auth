@@ -39,14 +39,14 @@
     "@habidat/db": "workspace:*",
     "@habidat/env": "workspace:*",
     "@habidat/ldap": "workspace:*",
-    "better-auth": "^1.7.5",
-    "next": "^16.3.5",
-    "react": "^19.1.0"
+    "better-auth": "^1.7.12",
+    "next": "^16.4.2",
+    "react": "^19.3.1"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
-    "@types/node": "^22.13.4",
-    "@types/react": "^19.0.0",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "typescript": "^6.0.3"
   }
 }

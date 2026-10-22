@@ -18,13 +18,13 @@
   "dependencies": {
     "@habidat/db": "workspace:*",
     "@habidat/env": "workspace:*",
-    "fast-xml-parser": "^5.11.1",
-    "samlify": "^2.13.1"
+    "fast-xml-parser": "^5.11.2",
+    "samlify": "^2.15.1"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
-    "@types/node": "^22.13.4",
-    "tsx": "^4.19.2",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
   }
 }

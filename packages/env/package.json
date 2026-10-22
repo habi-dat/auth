@@ -28,11 +28,11 @@
   "dependencies": {
     "@t3-oss/env-core": "^0.13.11",
     "@t3-oss/env-nextjs": "^0.13.11",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@habidat/typescript-config": "workspace:*",
-    "@types/node": "^22.13.4",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.19.2",
+    "typescript": "^6.0.3"
   }
 }
