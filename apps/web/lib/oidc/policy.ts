@@ -32,3 +32,23 @@ export function sessionIsFresh(input: {
   if (!input.createdAt) return false
   return input.createdAt.getTime() + (input.skewMs ?? 1000) >= input.markedAt
 }
+
+/**
+ * oidc-provider keeps its own session cookie and answers an authorization
+ * request from it without an interaction. That session outlives a logout from
+ * habidat and does not see later changes to app access, so it may only be
+ * reused while it still matches the habidat SSO session.
+ *
+ * True when the request must go through the interaction instead. A request
+ * resumed from the interaction was checked there and passes.
+ */
+export function oidcSessionIsStale(input: {
+  oidcAccountId: string | undefined
+  resumedFromInteraction: boolean
+  ssoUserId: string | null
+  canUseApp: () => Promise<boolean>
+}): Promise<boolean> | boolean {
+  if (!input.oidcAccountId || input.resumedFromInteraction) return false
+  if (!input.ssoUserId || input.ssoUserId !== input.oidcAccountId) return true
+  return input.canUseApp().then((allowed) => !allowed)
+}

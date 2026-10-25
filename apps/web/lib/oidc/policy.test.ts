@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
-import { demandsFreshPassword, OIDC_GRANT_TYPES, promptValues, sessionIsFresh } from './policy'
+import {
+  demandsFreshPassword,
+  OIDC_GRANT_TYPES,
+  oidcSessionIsStale,
+  promptValues,
+  sessionIsFresh,
+} from './policy'
 
 describe('OIDC interaction policy', () => {
   it('demands a fresh password only for prompt=login and max_age', () => {
@@ -58,6 +64,53 @@ describe('OIDC interaction policy', () => {
     assert.equal(promptValues('none').has('none'), true)
     assert.equal(promptValues('login consent').has('none'), false)
     assert.equal(promptValues(undefined).size, 0)
+  })
+
+  it('reuses the OIDC session only while it matches the SSO session', async () => {
+    const allowed = async () => true
+    const stale = (input: Partial<Parameters<typeof oidcSessionIsStale>[0]>) =>
+      oidcSessionIsStale({
+        oidcAccountId: 'alice',
+        resumedFromInteraction: false,
+        ssoUserId: 'alice',
+        canUseApp: allowed,
+        ...input,
+      })
+
+    assert.equal(await stale({}), false)
+    // Logged out of habidat: the remembered OIDC session must not log alice in.
+    assert.equal(await stale({ ssoUserId: null }), true)
+    // Someone else is logged in to habidat now.
+    assert.equal(await stale({ ssoUserId: 'bob' }), true)
+    // alice lost access to the app since the OIDC session was created.
+    assert.equal(await stale({ canUseApp: async () => false }), true)
+  })
+
+  it('leaves requests without an OIDC session and resumed interactions alone', async () => {
+    let asked = false
+    const canUseApp = async () => {
+      asked = true
+      return false
+    }
+    assert.equal(
+      await oidcSessionIsStale({
+        oidcAccountId: undefined,
+        resumedFromInteraction: false,
+        ssoUserId: null,
+        canUseApp,
+      }),
+      false
+    )
+    assert.equal(
+      await oidcSessionIsStale({
+        oidcAccountId: 'alice',
+        resumedFromInteraction: true,
+        ssoUserId: null,
+        canUseApp,
+      }),
+      false
+    )
+    assert.equal(asked, false)
   })
 
   it('does not advertise refresh tokens', () => {

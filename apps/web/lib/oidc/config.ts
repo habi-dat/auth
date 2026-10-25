@@ -1,5 +1,5 @@
 import { prisma } from '@habidat/db'
-import type { Configuration, FindAccount } from 'oidc-provider'
+import type { Configuration, FindAccount, interactionPolicy } from 'oidc-provider'
 import { HabidatOidcAdapter } from './adapter'
 import { loadOidcJwks } from './jwks'
 import { OIDC_GRANT_TYPES } from './policy'
@@ -39,13 +39,14 @@ export function createFindAccount(): FindAccount {
   }
 }
 
-export function getOidcConfiguration(): Configuration {
+export function getOidcConfiguration(policy?: interactionPolicy.DefaultPolicy): Configuration {
   return {
     adapter: HabidatOidcAdapter,
     findAccount: createFindAccount(),
     jwks: loadOidcJwks(),
     clients: [],
     interactions: {
+      ...(policy ? { policy } : {}),
       url(_ctx, interaction) {
         return `${OIDC_INTERACTION_PATH}/${interaction.uid}`
       },

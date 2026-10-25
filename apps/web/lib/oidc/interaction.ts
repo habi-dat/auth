@@ -1,9 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getAncestorGroupIds } from '@habidat/auth/group-slugs'
-import { canAccessApp } from '@habidat/auth/roles'
 import { getCurrentUserWithGroups, getSession } from '@habidat/auth/session'
-import { prisma } from '@habidat/db'
 import type Provider from 'oidc-provider'
+import { canUseOidcClient } from './app-access'
 import { dispatchToNodeHandler } from './http'
 import { demandsFreshPassword, promptValues, sessionIsFresh } from './policy'
 import { getOidcProvider } from './provider'
@@ -12,6 +10,8 @@ import { markOidcReauth, oidcReauthMark } from './store'
 type InteractionDetails = Awaited<ReturnType<Provider['interactionDetails']>>
 
 type OidcGrant = {
+  accountId?: string
+  clientId?: string
   addOIDCScope: (scope: string) => void
   addOIDCClaims: (claims: string[]) => void
   save: () => Promise<string>
@@ -42,6 +42,11 @@ async function finishOidcLogin(
 
   const Grant = (provider as Provider & { Grant: GrantModel }).Grant
   let grant = details.grantId ? await Grant.find(details.grantId) : undefined
+  // The grant on file belongs to whoever held the OIDC session before. When the
+  // SSO session is now someone else's, start a new grant for them.
+  if (grant && (grant.accountId !== accountId || grant.clientId !== clientId)) {
+    grant = undefined
+  }
   if (!grant) {
     grant = new Grant({ accountId, clientId })
   }
@@ -178,25 +183,15 @@ export async function handleOidcInteraction(request: Request, uid: string): Prom
       }
 
       const clientId = details.params.client_id
-      if (typeof clientId === 'string') {
-        const app = await prisma.app.findFirst({
-          where: { oidcEnabled: true, oidcClientId: clientId },
-          include: { groupAccess: true },
-        })
-        if (app) {
-          const memberGroupIds = sessionWithGroups.memberships.map((m) => m.group.id)
-          const ancestorGroupIds = await getAncestorGroupIds(prisma, memberGroupIds)
-          if (!canAccessApp(sessionWithGroups, app, ancestorGroupIds)) {
-            await finishOidcError(
-              provider,
-              req,
-              res,
-              'access_denied',
-              'You are not allowed to use this application'
-            )
-            return
-          }
-        }
+      if (typeof clientId === 'string' && !(await canUseOidcClient(sessionWithGroups, clientId))) {
+        await finishOidcError(
+          provider,
+          req,
+          res,
+          'access_denied',
+          'You are not allowed to use this application'
+        )
+        return
       }
 
       await finishOidcLogin(provider, details, sessionWithGroups.user.id, req, res)

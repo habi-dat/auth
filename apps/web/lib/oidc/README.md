@@ -24,6 +24,8 @@ Clients are loaded from the database on each lookup; no restart is needed after 
 
 Unauthorized authorization requests go to `/oidc-interaction/<uid>`, then `/login?callbackUrl=...` if there is no session. After login the user is returned to finish the code flow. App group restrictions are applied the same way as SAML.
 
+oidc-provider also keeps its own session cookie and would answer later authorization requests from it without an interaction. The `sso_session` login check (`session-check.ts`) only lets it do so while that session still belongs to the user of the current habidat SSO session and the app is still allowed for them. Otherwise the request goes through the interaction again: after a logout from habidat that is the login page, for another logged-in user it is their account, and without app access it is `access_denied`. With `prompt=none` the client gets `login_required`.
+
 ## Environment
 
 - `APP_URL` / `NEXT_PUBLIC_APP_URL`: public origin.
