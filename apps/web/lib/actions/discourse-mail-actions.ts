@@ -8,10 +8,16 @@ import {
   type DiscourseTagBasic,
   type DiscourseTagNotification,
   isDiscourseNotFound,
+  NOTIFICATION_LEVEL_MUTED,
+  NOTIFICATION_LEVEL_WATCHING,
 } from '@habidat/discourse'
 import { z } from 'zod'
 import { getDiscourseClient } from '../discourse/client'
 import { userAction } from './client'
+
+/** Subscribed = watching, unsubscribed = muted (mailing list mode skips muted items). */
+const subscriptionLevel = (subscribed: boolean) =>
+  subscribed ? NOTIFICATION_LEVEL_WATCHING : NOTIFICATION_LEVEL_MUTED
 
 export interface MailSwitchData {
   mailingListMode: boolean
@@ -53,11 +59,15 @@ export async function getMailSwitchData(): Promise<MailSwitchLoadResult> {
 }
 
 export const toggleMailingListModeAction = userAction
-  .schema(z.object({ enabled: z.boolean() }))
+  .schema(z.object({ enabled: z.boolean(), echoOwnPosts: z.boolean().default(true) }))
   .action(async ({ parsedInput, ctx }) => {
     const discourse = getDiscourseClient()
     if (!discourse) throw new Error('Discourse not configured')
-    await discourse.setUserMailingListMode(ctx.session.user.username, parsedInput.enabled)
+    await discourse.setUserMailingListMode(
+      ctx.session.user.username,
+      parsedInput.enabled,
+      parsedInput.echoOwnPosts
+    )
     return { success: true }
   })
 
@@ -78,7 +88,7 @@ export const setCategorySubscriptionAction = userAction
     await discourse.setCategoryNotificationLevel(
       ctx.session.user.username,
       parsedInput.categoryId,
-      parsedInput.subscribed ? 3 : 1
+      subscriptionLevel(parsedInput.subscribed)
     )
     return { success: true }
   })
@@ -88,10 +98,10 @@ export const setTagSubscriptionAction = userAction
   .action(async ({ parsedInput, ctx }) => {
     const discourse = getDiscourseClient()
     if (!discourse) throw new Error('Discourse not configured')
-    await discourse.setTagNotificationLevel(
+    await discourse.setTagSubscription(
       ctx.session.user.username,
       parsedInput.tagName,
-      parsedInput.subscribed ? 3 : 1
+      parsedInput.subscribed
     )
     return { success: true }
   })
@@ -104,7 +114,7 @@ export const setGroupSubscriptionAction = userAction
     await discourse.setGroupNotificationLevel(
       ctx.session.user.username,
       parsedInput.groupName,
-      parsedInput.subscribed ? 3 : 1
+      subscriptionLevel(parsedInput.subscribed)
     )
     return { success: true }
   })

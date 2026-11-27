@@ -7,16 +7,21 @@ import {
   type DiscourseCategoryApi,
   type DiscourseCategoryWithNotification,
   type DiscourseConfig,
-  type DiscourseGroupBasic,
+  type DiscourseNotificationLevel,
   type DiscourseTagBasic,
+  type DiscourseTagListEntry,
   type DiscourseUserMailProfile,
+  type DiscourseUserMailResponse,
   flattenCategoryList,
   isDiscourseTagName,
   type ListCategoriesResponse,
-  mergeWatchedTags,
+  frequencyForEchoOwnPosts,
+  mergeTagSubscription,
+  parseUserMailProfile,
   type ShowCategoryResponse,
   type SsoUserData,
   type UpdateCategoryData,
+  tagNames,
   type UpdateGroupData,
 } from './types'
 
@@ -348,60 +353,46 @@ export class DiscourseService {
    * GET /u/{username}.json. Returns null when the user does not exist.
    */
   async getUserMailProfile(username: string): Promise<DiscourseUserMailProfile | null> {
-    let result: {
-      user?: {
-        user_option?: { mailing_list_mode?: boolean; mailing_list_mode_frequency?: number }
-        watched_tags?: Array<{ name: string }>
-        groups?: DiscourseGroupBasic[]
-        group_users?: Array<{ group_id: number; notification_level: number }>
-      }
-    }
     try {
-      result = await this.request(`/u/${encodeURIComponent(username)}.json`)
+      const result = await this.request<{ user?: DiscourseUserMailResponse }>(
+        `/u/${encodeURIComponent(username)}.json`
+      )
+      return parseUserMailProfile(result?.user)
     } catch (err) {
       if (isDiscourseNotFound(err)) return null
       throw err
     }
-
-    const user = result?.user
-    const opt = user?.user_option
-    const groups = (user?.groups ?? []).filter((g) => !g.automatic)
-    const notifByGroupId = Object.fromEntries(
-      (user?.group_users ?? []).map((gu) => [
-        gu.group_id,
-        gu.notification_level as 0 | 1 | 2 | 3 | 4,
-      ])
-    )
-
-    return {
-      mailingListMode: opt?.mailing_list_mode ?? false,
-      echoOwnPosts: (opt?.mailing_list_mode_frequency ?? 1) === 0,
-      tagNotifications: (user?.watched_tags ?? []).map((t) => ({
-        tag_name: t.name,
-        notification_level: 3 as const,
-      })),
-      groups: groups.map((g) => ({
-        ...g,
-        notification_level: (notifByGroupId[g.id] ?? 3) as 0 | 1 | 2 | 3 | 4,
-      })),
-    }
   }
 
-  /** Enable or disable mailing list mode for a user. PUT /u/{username} */
-  async setUserMailingListMode(username: string, enabled: boolean): Promise<void> {
+  /**
+   * Enable or disable mailing list mode for a user. PUT /u/{username}
+   * Enabling also sets the frequency so the user never ends up on the daily digest.
+   */
+  async setUserMailingListMode(
+    username: string,
+    enabled: boolean,
+    echoOwnPosts: boolean
+  ): Promise<void> {
     await this.request(`/u/${encodeURIComponent(username)}`, {
       method: 'PUT',
       headers: { 'Api-Username': username },
-      body: JSON.stringify({ mailing_list_mode: enabled }),
+      body: JSON.stringify(
+        enabled
+          ? {
+              mailing_list_mode: true,
+              mailing_list_mode_frequency: frequencyForEchoOwnPosts(echoOwnPosts),
+            }
+          : { mailing_list_mode: false }
+      ),
     })
   }
 
-  /** Set mailing list frequency: 0 = echo own posts, 1 = no own posts. PUT /u/{username} */
+  /** Whether mailing list mode also mails the user's own posts. PUT /u/{username} */
   async setMailingListEchoOwnPosts(username: string, echo: boolean): Promise<void> {
     await this.request(`/u/${encodeURIComponent(username)}`, {
       method: 'PUT',
       headers: { 'Api-Username': username },
-      body: JSON.stringify({ mailing_list_mode_frequency: echo ? 0 : 1 }),
+      body: JSON.stringify({ mailing_list_mode_frequency: frequencyForEchoOwnPosts(echo) }),
     })
   }
 
@@ -423,12 +414,12 @@ export class DiscourseService {
   /**
    * Set notification level for a category for the given user.
    * POST /category/{id}/notifications (called as the target user)
-   * level: 3 = watching (subscribed), 1 = regular (unsubscribed)
+   * Mail settings use 3 = watching (subscribed) and 0 = muted (unsubscribed).
    */
   async setCategoryNotificationLevel(
     username: string,
     categoryId: number,
-    level: 0 | 1 | 3
+    level: DiscourseNotificationLevel
   ): Promise<void> {
     await this.request(`/category/${categoryId}/notifications`, {
       method: 'POST',
@@ -446,28 +437,29 @@ export class DiscourseService {
   }
 
   /**
-   * Set notification level for a tag via PUT /u/{username}.
-   * Discourse manages tags as lists (watched_tags, tracked_tags, muted_tags) not numeric levels.
-   * Level 3 = watching, level 1 = regular (remove from all lists).
+   * Subscribe (watch) or unsubscribe (mute) a tag via PUT /u/{username}.
+   * Discourse manages tags as lists (watched_tags, tracked_tags, muted_tags), not numeric levels.
    */
-  async setTagNotificationLevel(
-    username: string,
-    tagName: string,
-    level: 0 | 1 | 3
-  ): Promise<void> {
+  async setTagSubscription(username: string, tagName: string, subscribed: boolean): Promise<void> {
     if (!isDiscourseTagName(tagName)) {
       throw new Error('Invalid tag name')
     }
     return this.enqueueUserTagUpdate(username, async () => {
-      const userData = await this.request<{ user: { watched_tags?: Array<{ name: string }> } }>(
-        `/u/${encodeURIComponent(username)}.json`
+      const userData = await this.request<{
+        user?: { watched_tags?: DiscourseTagListEntry[]; muted_tags?: DiscourseTagListEntry[] }
+      }>(`/u/${encodeURIComponent(username)}.json`)
+      const { watched, muted } = mergeTagSubscription(
+        {
+          watched: tagNames(userData?.user?.watched_tags),
+          muted: tagNames(userData?.user?.muted_tags),
+        },
+        tagName,
+        subscribed
       )
-      const current = (userData?.user?.watched_tags ?? []).map((t) => t.name)
-      const newList = mergeWatchedTags(current, tagName, level === 3)
       await this.request(`/u/${encodeURIComponent(username)}`, {
         method: 'PUT',
         headers: { 'Api-Username': username },
-        body: JSON.stringify({ watched_tags: newList.join(',') }),
+        body: JSON.stringify({ watched_tags: watched.join(','), muted_tags: muted.join(',') }),
       })
     })
   }
@@ -538,7 +530,7 @@ export class DiscourseService {
   async setGroupNotificationLevel(
     username: string,
     groupName: string,
-    level: 0 | 1 | 3
+    level: DiscourseNotificationLevel
   ): Promise<void> {
     await this.request(`/groups/${encodeURIComponent(groupName)}/notifications.json`, {
       method: 'POST',

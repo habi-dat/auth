@@ -1,5 +1,9 @@
 'use client'
 
+import {
+  NOTIFICATION_LEVEL_MUTED,
+  NOTIFICATION_LEVEL_WATCHING,
+} from '@habidat/discourse/types' // client-safe entry: no node:crypto
 import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,158 +21,140 @@ import {
 import { cn } from '@/lib/utils'
 import { type SubscriptionItem, SubscriptionList } from './subscription-list'
 
-const WATCHING = 3
+type ActionResult = { serverError?: unknown } | undefined
+
+/** Run a server action; returns false on thrown errors or serverError. */
+async function runAction(action: () => Promise<ActionResult>): Promise<boolean> {
+  try {
+    const result = await action()
+    return !result?.serverError
+  } catch {
+    return false
+  }
+}
+
+/** Boolean setting that updates optimistically and rolls back on failure. */
+function useOptimisticSwitch(
+  initial: boolean,
+  save: (value: boolean) => Promise<ActionResult>,
+  onError: () => void
+) {
+  const [value, setValue] = useState(initial)
+  const [pending, setPending] = useState(false)
+
+  const change = async (next: boolean) => {
+    setValue(next)
+    setPending(true)
+    if (!(await runAction(() => save(next)))) {
+      setValue(!next)
+      onError()
+    }
+    setPending(false)
+  }
+
+  return { value, pending, change }
+}
+
+/** Per-item subscribed state with optimistic updates and rollback on failure. */
+function useSubscriptionToggles<K extends string | number>(
+  initial: Iterable<readonly [K, boolean]>,
+  save: (id: K, subscribed: boolean) => Promise<ActionResult>,
+  onError: () => void
+) {
+  const [subscribed, setSubscribed] = useState(() => new Map(initial))
+  const [pending, setPending] = useState<Set<K>>(new Set())
+
+  const toggle = useCallback(
+    async (id: K, next: boolean) => {
+      const set = (value: boolean) => setSubscribed((current) => new Map(current).set(id, value))
+
+      set(next)
+      setPending((p) => new Set(p).add(id))
+
+      if (!(await runAction(() => save(id, next)))) {
+        set(!next)
+        onError()
+      }
+
+      setPending((p) => {
+        const rest = new Set(p)
+        rest.delete(id)
+        return rest
+      })
+    },
+    [save, onError]
+  )
+
+  return {
+    isSubscribed: (id: K) => subscribed.get(id) ?? false,
+    isPending: (id: K) => pending.has(id),
+    toggle,
+  }
+}
+
+const saveEchoOwnPosts = (echo: boolean) => toggleEchoOwnMessagesAction({ echo })
+const saveCategory = (categoryId: number, subscribed: boolean) =>
+  setCategorySubscriptionAction({ categoryId, subscribed })
+const saveTag = (tagName: string, subscribed: boolean) =>
+  setTagSubscriptionAction({ tagName, subscribed })
+const saveGroup = (groupName: string, subscribed: boolean) =>
+  setGroupSubscriptionAction({ groupName, subscribed })
 
 export function ProfileMailSection({ initialData }: { initialData: MailSwitchData }) {
   const t = useTranslations('mailSettings')
   const { toast } = useToast()
 
-  const [mailingListMode, setMailingListMode] = useState(initialData.mailingListMode)
-  const [mlmPending, setMlmPending] = useState(false)
-  const [echoOwnPosts, setEchoOwnPosts] = useState(initialData.echoOwnPosts)
-  const [echoPending, setEchoPending] = useState(false)
-
-  const [categoryLevels, setCategoryLevels] = useState<Record<number, 0 | 1 | 2 | 3 | 4>>(() =>
-    Object.fromEntries(initialData.categories.map((c) => [c.id, c.notification_level ?? 1]))
-  )
-  const [categoryPending, setCategoryPending] = useState<Set<number>>(new Set())
-
-  const tagNotifMap = Object.fromEntries(
-    initialData.tagNotifications.map((n) => [n.tag_name, n.notification_level])
-  )
-  const [tagLevels, setTagLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(() =>
-    Object.fromEntries(initialData.allTags.map((tg) => [tg.name, tagNotifMap[tg.name] ?? 1]))
-  )
-  const [tagPending, setTagPending] = useState<Set<string>>(new Set())
-
-  const [groupLevels, setGroupLevels] = useState<Record<string, 0 | 1 | 2 | 3 | 4>>(() =>
-    Object.fromEntries(initialData.groups.map((g) => [g.name, g.notification_level ?? 1]))
-  )
-  const [groupPending, setGroupPending] = useState<Set<string>>(new Set())
-
   const showMailError = useCallback(() => {
     toast({ title: t('errorTitle'), description: t('errorGeneric'), variant: 'destructive' })
   }, [t, toast])
 
-  const handleMailingListMode = async (enabled: boolean) => {
-    setMailingListMode(enabled)
-    setMlmPending(true)
-    try {
-      const result = await toggleMailingListModeAction({ enabled })
-      if (result?.serverError) {
-        setMailingListMode(!enabled)
-        showMailError()
-      }
-    } catch {
-      setMailingListMode(!enabled)
-      showMailError()
-    } finally {
-      setMlmPending(false)
-    }
-  }
-
-  const handleEchoOwnPosts = async (echo: boolean) => {
-    setEchoOwnPosts(echo)
-    setEchoPending(true)
-    try {
-      const result = await toggleEchoOwnMessagesAction({ echo })
-      if (result?.serverError) {
-        setEchoOwnPosts(!echo)
-        showMailError()
-      }
-    } catch {
-      setEchoOwnPosts(!echo)
-      showMailError()
-    } finally {
-      setEchoPending(false)
-    }
-  }
-
-  const handleCategoryToggle = useCallback(
-    async (id: string | number, subscribed: boolean) => {
-      const catId = id as number
-      const prev = categoryLevels[catId]
-      setCategoryLevels((l) => ({ ...l, [catId]: subscribed ? WATCHING : 1 }))
-      setCategoryPending((p) => new Set(p).add(catId))
-      try {
-        const result = await setCategorySubscriptionAction({ categoryId: catId, subscribed })
-        if (result?.serverError) {
-          setCategoryLevels((l) => ({ ...l, [catId]: prev }))
-          showMailError()
-        }
-      } catch {
-        setCategoryLevels((l) => ({ ...l, [catId]: prev }))
-        showMailError()
-      } finally {
-        setCategoryPending((p) => {
-          const next = new Set(p)
-          next.delete(catId)
-          return next
-        })
-      }
-    },
-    [categoryLevels, showMailError]
+  const echoOwnPosts = useOptimisticSwitch(
+    initialData.echoOwnPosts,
+    saveEchoOwnPosts,
+    showMailError
+  )
+  // Enabling also writes the frequency from the echo switch (never the daily digest).
+  const echoValue = echoOwnPosts.value
+  const saveMailingListMode = useCallback(
+    (enabled: boolean) => toggleMailingListModeAction({ enabled, echoOwnPosts: echoValue }),
+    [echoValue]
+  )
+  const mailingListMode = useOptimisticSwitch(
+    initialData.mailingListMode,
+    saveMailingListMode,
+    showMailError
   )
 
-  const handleTagToggle = useCallback(
-    async (id: string | number, subscribed: boolean) => {
-      const tagName = id as string
-      const prev = tagLevels[tagName]
-      setTagLevels((l) => ({ ...l, [tagName]: subscribed ? WATCHING : 1 }))
-      setTagPending((p) => new Set(p).add(tagName))
-      try {
-        const result = await setTagSubscriptionAction({ tagName, subscribed })
-        if (result?.serverError) {
-          setTagLevels((l) => ({ ...l, [tagName]: prev }))
-          showMailError()
-        }
-      } catch {
-        setTagLevels((l) => ({ ...l, [tagName]: prev }))
-        showMailError()
-      } finally {
-        setTagPending((p) => {
-          const next = new Set(p)
-          next.delete(tagName)
-          return next
-        })
-      }
-    },
-    [tagLevels, showMailError]
+  // Mailing list mode mails every post except muted categories/tags, so those
+  // count as subscribed unless muted. Group inboxes are only mailed when watched.
+  const categories = useSubscriptionToggles(
+    initialData.categories.map((c) => [c.id, c.notification_level !== NOTIFICATION_LEVEL_MUTED] as const),
+    saveCategory,
+    showMailError
   )
-
-  const handleGroupToggle = useCallback(
-    async (id: string | number, subscribed: boolean) => {
-      const groupName = id as string
-      const prev = groupLevels[groupName]
-      setGroupLevels((l) => ({ ...l, [groupName]: subscribed ? WATCHING : 1 }))
-      setGroupPending((p) => new Set(p).add(groupName))
-      try {
-        const result = await setGroupSubscriptionAction({ groupName, subscribed })
-        if (result?.serverError) {
-          setGroupLevels((l) => ({ ...l, [groupName]: prev }))
-          showMailError()
-        }
-      } catch {
-        setGroupLevels((l) => ({ ...l, [groupName]: prev }))
-        showMailError()
-      } finally {
-        setGroupPending((p) => {
-          const next = new Set(p)
-          next.delete(groupName)
-          return next
-        })
-      }
-    },
-    [groupLevels, showMailError]
+  const mutedTags = new Set(
+    initialData.tagNotifications
+      .filter((n) => n.notification_level === NOTIFICATION_LEVEL_MUTED)
+      .map((n) => n.tag_name)
+  )
+  const tags = useSubscriptionToggles(
+    initialData.allTags.map((tg) => [tg.name, !mutedTags.has(tg.name)] as const),
+    saveTag,
+    showMailError
+  )
+  const groups = useSubscriptionToggles(
+    initialData.groups.map((g) => [g.name, g.notification_level === NOTIFICATION_LEVEL_WATCHING] as const),
+    saveGroup,
+    showMailError
   )
 
   const handleToggle = useCallback(
     (item: SubscriptionItem, subscribed: boolean) => {
-      if (item.kind === 'category') return handleCategoryToggle(item.id, subscribed)
-      if (item.kind === 'tag') return handleTagToggle(item.id, subscribed)
-      return handleGroupToggle(item.id, subscribed)
+      if (item.kind === 'category') return categories.toggle(item.id as number, subscribed)
+      if (item.kind === 'tag') return tags.toggle(item.id as string, subscribed)
+      return groups.toggle(item.id as string, subscribed)
     },
-    [handleCategoryToggle, handleTagToggle, handleGroupToggle]
+    [categories.toggle, tags.toggle, groups.toggle]
   )
 
   const categoryItems: SubscriptionItem[] = initialData.categories.map((c) => ({
@@ -178,8 +164,8 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     color: c.color,
     description: c.description_text ?? undefined,
     email: c.email_in,
-    subscribed: (categoryLevels[c.id] ?? 1) === WATCHING,
-    pending: categoryPending.has(c.id),
+    subscribed: categories.isSubscribed(c.id),
+    pending: categories.isPending(c.id),
   }))
 
   const tagItems: SubscriptionItem[] = initialData.allTags.map((tag) => ({
@@ -187,8 +173,8 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     kind: 'tag' as const,
     name: tag.name,
     description: tag.description ?? undefined,
-    subscribed: (tagLevels[tag.name] ?? 1) === WATCHING,
-    pending: tagPending.has(tag.name),
+    subscribed: tags.isSubscribed(tag.name),
+    pending: tags.isPending(tag.name),
   }))
 
   const groupItems: SubscriptionItem[] = initialData.groups.map((g) => ({
@@ -197,8 +183,8 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
     name: g.display_name || g.name,
     email: g.incoming_email,
     description: g.bio_excerpt,
-    subscribed: (groupLevels[g.name] ?? 1) === WATCHING,
-    pending: groupPending.has(g.name),
+    subscribed: groups.isSubscribed(g.name),
+    pending: groups.isPending(g.name),
   }))
 
   const allItems: SubscriptionItem[] = [...categoryItems, ...groupItems, ...tagItems]
@@ -215,9 +201,9 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
           </div>
           <Switch
             id="profile-mailing-list-mode"
-            checked={mailingListMode}
-            disabled={mlmPending}
-            onCheckedChange={handleMailingListMode}
+            checked={mailingListMode.value}
+            disabled={mailingListMode.pending}
+            onCheckedChange={mailingListMode.change}
             className="mt-0.5 shrink-0"
           />
         </div>
@@ -227,7 +213,7 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
       <div
         className={cn(
           'grid transition-[grid-template-rows] duration-300 ease-in-out',
-          mailingListMode ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+          mailingListMode.value ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         )}
       >
         <div className="overflow-hidden">
@@ -242,9 +228,9 @@ export function ProfileMailSection({ initialData }: { initialData: MailSwitchDat
                 </div>
                 <Switch
                   id="profile-echo-own-messages"
-                  checked={echoOwnPosts}
-                  disabled={echoPending}
-                  onCheckedChange={handleEchoOwnPosts}
+                  checked={echoOwnPosts.value}
+                  disabled={echoOwnPosts.pending}
+                  onCheckedChange={echoOwnPosts.change}
                   className="mt-0.5 shrink-0"
                 />
               </div>
